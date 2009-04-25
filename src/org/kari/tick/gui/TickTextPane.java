@@ -1,11 +1,14 @@
 package org.kari.tick.gui;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -34,14 +37,88 @@ import org.kari.tick.gui.painter.TickPainter;
  * @author kari
  */
 public class TickTextPane extends JTextPane 
-    implements 
-        CaretListener,
-        KeyListener
+    
 {
     public static final Logger LOG = Logger.getLogger("tick.editor");
+    public static final int DEF_MAX_LINELEN = 80;
+    private static final BasicStroke MAX_LINELEN_STROKE = new BasicStroke(
+            1.0f, 
+            BasicStroke.CAP_SQUARE, 
+            BasicStroke.JOIN_BEVEL, 
+            0, 
+            new float[]{8f, 8f},
+            0);
     
+    private class EventHandler 
+        implements 
+            CaretListener,
+            KeyListener,
+            TickListener
+    {
+        /**
+         * Jump caret "word by word"
+         */
+        public void caretUpdate(CaretEvent pEvent) {
+            if (false) {
+                Element root = getDocument().getDefaultRootElement();
+                int line = root.getElementIndex(getCaretPosition()) + 1;
+                LOG.info("dot=" + pEvent.getDot() 
+                    + ", mark=" + pEvent.getMark()
+                    + ",line=" + line);
+            }
+            repaint();
+        }
+        
+        public void keyPressed(KeyEvent pE) {
+            // TODO KI add TICK
+            int keyCode = pE.getKeyCode();
+            if (keyCode == KeyEvent.VK_SPACE) {
+                if (mTickSet != null) {
+                    TickDefinition current = mTickSet.getCurrent();
+                    if (current != null) {
+                        try {
+                            int caretLocation = getCaretPosition();
+                            int startPos = findWordStart(caretLocation);
+                            int endPos = findWordEnd(caretLocation);
+                            if (startPos != endPos) {
+                                Tick tick = new Tick(current, startPos, endPos);
+                                TickDocument doc = getTickDocument();
+                                if (doc.getTicks().contains(tick)) {
+                                    doc.removeTick(tick);
+                                } else {
+                                    doc.addTick(tick);
+                                }
+                                repaint();
+                            }
+                        } catch (BadLocationException e) {
+                            // ignore
+                        }
+                    }
+                }
+            }
+        }
+
+        public void keyReleased(KeyEvent pE) {
+            // Ignore
+        }
+
+        public void keyTyped(KeyEvent pE) {
+            // Ignore
+        }
+
+        public void tickAdded(TickDocument pDocument, Tick pTick) {
+            repaint();
+        }
+
+        public void tickRemoved(TickDocument pDocument, Tick pTick) {
+            repaint();
+        }
+    }
+    
+    private final EventHandler mEventHandler = new EventHandler();
     private Rectangle mOldRect = new Rectangle(0, 0, 0 ,0);
     private TickSet mTickSet;
+    private int mMaxLineLen = DEF_MAX_LINELEN;
     
     private Action mLeft = new AbstractAction() {
         public void actionPerformed(ActionEvent pE) {
@@ -60,8 +137,8 @@ public class TickTextPane extends JTextPane
     public TickTextPane() {
         super(new TickDocument());
         setEditable(false);
-        addCaretListener(this);
-        addKeyListener(this);
+        addCaretListener(mEventHandler);
+        addKeyListener(mEventHandler);
         
         getActionMap().put("caret-backward", mLeft);
         getActionMap().put("caret-forward", mRight);
@@ -91,58 +168,19 @@ public class TickTextPane extends JTextPane
     public TickDocument getTickDocument() {
         return (TickDocument)super.getDocument();
     }
-
-    /**
-     * Jump caret "word by word"
-     */
-    public void caretUpdate(CaretEvent pEvent) {
-        if (false) {
-            Element root = getDocument().getDefaultRootElement();
-            int line = root.getElementIndex(getCaretPosition()) + 1;
-            LOG.info("dot=" + pEvent.getDot() 
-                + ", mark=" + pEvent.getMark()
-                + ",line=" + line);
-        }
-        repaint();
-    }
     
-    public void keyPressed(KeyEvent pE) {
-        // TODO KI add TICK
-        int keyCode = pE.getKeyCode();
-        if (keyCode == KeyEvent.VK_SPACE) {
-            if (mTickSet != null) {
-                TickDefinition current = mTickSet.getCurrent();
-                if (current != null) {
-                    try {
-                        int caretLocation = getCaretPosition();
-                        int startPos = findWordStart(caretLocation);
-                        int endPos = findWordEnd(caretLocation);
-                        if (startPos != endPos) {
-                            Tick tick = new Tick(current, startPos, endPos);
-                            TickDocument doc = getTickDocument();
-                            if (doc.getTicks().contains(tick)) {
-                                doc.removeTick(tick);
-                            } else {
-                                doc.addTick(tick);
-                            }
-                            repaint();
-                        }
-                    } catch (BadLocationException e) {
-                        // ignore
-                    }
-                }
-            }
+    @Override
+    public void setDocument(Document pDoc) {
+        Document oldDoc = getDocument();
+        if (oldDoc instanceof TickDocument) {
+            ((TickDocument)oldDoc).removeTickListener(mEventHandler);
+        }
+        super.setDocument(pDoc);
+        if (pDoc instanceof TickDocument) {
+            ((TickDocument)pDoc).addTickListener(mEventHandler);
         }
     }
 
-    public void keyReleased(KeyEvent pE) {
-        // Ignore
-    }
-
-    public void keyTyped(KeyEvent pE) {
-        // Ignore
-    }
-    
     public void moveCaret(int pKeyCode) {
         try {
             Document doc = getDocument();
@@ -236,10 +274,35 @@ public class TickTextPane extends JTextPane
 
     @Override
     protected void paintComponent(Graphics pG) {
+// -----------------------------------------------------------------------------123-----------------
         super.paintComponent(pG);
+        
+        Graphics2D g2d = (Graphics2D)pG;
+        paintLineLimit(g2d);
+        paintCaret(g2d);
+        paintTicks(g2d);
+        
+    }
 
-        paintCaret((Graphics2D)pG);
-        paintTicks((Graphics2D)pG);
+    /**
+     * Paint maximum line length limit
+     */
+    private void paintLineLimit(Graphics2D g2d) {
+        Color origColor = g2d.getColor();
+        Stroke origStroke = g2d.getStroke();
+        
+        Font font = getFont();
+        g2d.setFont(font);
+        FontMetrics fm = g2d.getFontMetrics(font);
+        int fontWidth = fm.getWidths()[0];
+        int x = fontWidth * mMaxLineLen;
+        
+        g2d.setColor(Color.LIGHT_GRAY);
+        g2d.setStroke(MAX_LINELEN_STROKE);
+        g2d.drawLine(x, 0, x, getHeight());
+        
+        g2d.setColor(origColor);
+        g2d.setStroke(origStroke);
     }
 
     private void paintCaret(Graphics2D g2d) {
@@ -382,6 +445,14 @@ public class TickTextPane extends JTextPane
 
     public void setLineNumberPanel(LineNumberPanel pLineNumberPanel) {
         mLineNumberPanel = pLineNumberPanel;
+    }
+
+    public int getMaxLineLen() {
+        return mMaxLineLen;
+    }
+
+    public void setMaxLineLen(int pMaxLineLen) {
+        mMaxLineLen = pMaxLineLen;
     }
     
 }

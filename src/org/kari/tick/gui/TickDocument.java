@@ -29,6 +29,7 @@ public class TickDocument extends DefaultStyledDocument {
      * Map of (tickdef, Set of (ticks-for-def))
      */
     private final Map<String, Set<Tick>> mTicks = new HashMap<String, Set<Tick>>();
+    private final List<TickListener> mTickListeners = new ArrayList<TickListener>();
     
     public TickDocument() {
         super();
@@ -65,6 +66,7 @@ public class TickDocument extends DefaultStyledDocument {
             mTicks.put(tickName, ticks);
         }
         ticks.add(pTick);
+        fireTickChanged(pTick, true);
     }
 
     /**
@@ -75,6 +77,7 @@ public class TickDocument extends DefaultStyledDocument {
         Set<Tick> ticks = mTicks.get(tickName);
         if (ticks != null) {
             ticks.remove(pTick);
+            fireTickChanged(pTick, false);
         }
     }
 
@@ -101,9 +104,36 @@ public class TickDocument extends DefaultStyledDocument {
      * Set ticks, clearing old ticks
      */
     public void setTicks(List<Tick> pTicks) {
+        List<Tick> oldTicks = getTicks();
         mTicks.clear();
+        for (Tick tick : oldTicks) {
+            fireTickChanged(tick, false);
+        }
         for (Tick tick : pTicks) {
             addTick(tick);
         }
     }
+    
+    public TickListener[] getTickListeners() {
+        return mTickListeners.toArray(new TickListener[mTickListeners.size()]);
+    }
+    
+    public void addTickListener(TickListener pTickListener) {
+        mTickListeners.add(pTickListener);
+    }
+    
+    public void removeTickListener(TickListener pTickListener) {
+        mTickListeners.remove(pTickListener);
+    }
+    
+    protected void fireTickChanged(Tick pTick, boolean pAdded) {
+        for (TickListener listener : getTickListeners()) {
+            if (pAdded) {
+                listener.tickAdded(this, pTick);
+            } else {
+                listener.tickRemoved(this, pTick);
+            }
+        }
+    }
+
 }

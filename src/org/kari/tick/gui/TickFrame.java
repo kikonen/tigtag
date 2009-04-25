@@ -30,6 +30,13 @@ public class TickFrame extends KApplicationFrame {
 
     private TickEditorPanel mEditor;
 
+    private final Action mNewViewAction = new KAction(TickConstants.R_NEW_VIEW) {
+        @Override
+        public void actionPerformed(ActionContext pCtx) {
+            new TickFrame().setVisible(true);
+        }
+    };
+    
     private final Action mAboutAction = new KAction("&About") {
         @Override
         public void actionPerformed(ActionContext pCtx) {
@@ -79,13 +86,14 @@ public class TickFrame extends KApplicationFrame {
         
         ac.addMenu(new KMenu(
                 ActionConstants.R_MENU_FILE,
+                mNewViewAction,
                 mOpenAction,
                 KAction.SEPARATOR,
                 new ExitAction()));
         
         ac.addMenu(new KMenu(
                 ActionConstants.R_MENU_VIEW,
-                mOpenAction));
+                new KAction("Tick Set 1")));
         
         ac.addMenu(new KMenu(
                 ActionConstants.R_MENU_HELP,

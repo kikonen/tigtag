@@ -3,6 +3,8 @@ package org.kari.tick.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.AdjustmentEvent;
@@ -87,9 +89,12 @@ public class TickEditorPanel
             int endline = rootElement.getElementIndex(end) + 1;
             
             // font height
-            g.setFont(pane.getFont());
-            int fontHeight = g.getFontMetrics(pane.getFont()).getHeight();
-            int fontDesc = g.getFontMetrics(pane.getFont()).getDescent();
+            Font font = pane.getFont();
+            Font boldFont = font.deriveFont(Font.BOLD);
+            g.setFont(font);
+            FontMetrics fm = g.getFontMetrics(font);
+            int fontHeight = fm.getHeight();
+            int fontDesc = fm.getDescent();
             int starting_y = -1;
 
             try {
@@ -110,6 +115,11 @@ public class TickEditorPanel
                     g.setColor(selectedTextColor);
                 } else {
                     g.setColor(color);
+                }
+                if ((line % 10 == 0)) {
+                    setFont(boldFont);
+                } else {
+                    setFont(font);
                 }
                 g.drawString(Integer.toString(line), 1, y);
                 if (line == caretLineNumber) {
