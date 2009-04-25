@@ -73,28 +73,7 @@ public class TickTextPane extends JTextPane
             // TODO KI add TICK
             int keyCode = pE.getKeyCode();
             if (keyCode == KeyEvent.VK_SPACE) {
-                if (mTickSet != null) {
-                    TickDefinition current = mTickSet.getCurrent();
-                    if (current != null) {
-                        try {
-                            int caretLocation = getCaretPosition();
-                            int startPos = findWordStart(caretLocation);
-                            int endPos = findWordEnd(caretLocation);
-                            if (startPos != endPos) {
-                                Tick tick = new Tick(current, startPos, endPos);
-                                TickDocument doc = getTickDocument();
-                                if (doc.getTicks().contains(tick)) {
-                                    doc.removeTick(tick);
-                                } else {
-                                    doc.addTick(tick);
-                                }
-                                repaint();
-                            }
-                        } catch (BadLocationException e) {
-                            // ignore
-                        }
-                    }
-                }
+                tick();
             }
         }
 
@@ -452,6 +431,56 @@ public class TickTextPane extends JTextPane
 
     public void setMaxLineLen(int pMaxLineLen) {
         mMaxLineLen = pMaxLineLen;
+    }
+
+    /**
+     * Toggle tick at current caret/selection. If there is already tick, then
+     * it's removed, otherwise new tick is created.
+     */
+    public void tick() {
+        if (mTickSet != null) {
+            TickDefinition current = mTickSet.getCurrent();
+            if (current != null) {
+                try {
+                    int caretLocation = getCaretPosition();
+                    
+                    int selStart = -1;
+                    int selEnd= -1;
+                    {
+                        selStart = getSelectionStart();
+                        selEnd = getSelectionEnd();
+                    }
+
+                    int startPos;
+                    int endPos;
+                    if (selStart != selEnd) {
+                        startPos = selStart;
+                        endPos = selEnd;
+                    } else {
+                        startPos = findWordStart(caretLocation);
+                        endPos = findWordEnd(caretLocation);
+                    }
+                    
+                    // TODO KI startPos/endPos depend from tick def
+                    // BLOCK/SIDEBAR = lines
+                    // WORD = word boundaries
+                    // POINT = exact selection range (or word from caret)
+                    
+                    if (startPos != endPos) {
+                        Tick tick = new Tick(current, startPos, endPos);
+                        TickDocument doc = getTickDocument();
+                        if (doc.getTicks().contains(tick)) {
+                            doc.removeTick(tick);
+                        } else {
+                            doc.addTick(tick);
+                        }
+                        repaint();
+                    }
+                } catch (BadLocationException e) {
+                    // ignore
+                }
+            }
+        }
     }
     
 }
