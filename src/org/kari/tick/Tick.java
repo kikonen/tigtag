@@ -1,16 +1,33 @@
 package org.kari.tick;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Tick in the document
  * 
  * @author kari
  */
 public final class Tick {
-    private final int mStartPos;
-    private final int mEndPos;
-    private final TickDefinition mTickDefinition;
-    private String mLinkName;
+    public static final String P_START_POS = "startPos";
+    public static final String P_END_POS = "endPos";
+    public static final String P_TICK = "tick";
+    public static final String P_LINK = "link";
+    public static final String P_COMMENT = "comment";
+    
+    private int mStartPos;
+    private int mEndPos;
+    private TickDefinition mTickDefinition;
+    private String mLink;
+    private String mComment;
     private boolean mInvalid;
+
+    /**
+     * For persistency
+     */
+    public Tick() {
+        // Nothing
+    }
     
     public Tick(
         TickDefinition pTickDefinition,
@@ -61,16 +78,24 @@ public final class Tick {
     public int getEndPos() {
         return mEndPos;
     }
+    
+    public String getComment() {
+        return mComment;
+    }
+
+    public void setComment(String pComment) {
+        mComment = pComment;
+    }
 
     /**
      * @return Link identification name, null if none
      */
-    public String getLinkName() {
-        return mLinkName;
+    public String getLink() {
+        return mLink;
     }
 
-    public void setLinkName(String pLinkName) {
-        mLinkName = pLinkName;
+    public void setLink(String pLink) {
+        mLink = pLink;
     }
 
     public boolean isInvalid() {
@@ -81,4 +106,32 @@ public final class Tick {
         mInvalid = pInvalid;
     }
     
+    /**
+     * Save tick in to persistent form
+     */
+    public Map<String, String> save() {
+        Map<String, String> result = new HashMap<String, String>();
+        result.put(P_TICK, mTickDefinition.getName());
+        if (mComment != null) {
+            result.put(P_COMMENT, mComment);
+        }
+        if (mLink != null) {
+            result.put(P_LINK, mLink);
+        }
+        result.put(P_START_POS, Integer.toString(mStartPos));
+        result.put(P_END_POS, Integer.toString(mEndPos));
+        return result;
+    }
+
+    /**
+     * Restore tick from persistent form
+     */
+    public void restore(Map<String, String> pProperties) {
+        mTickDefinition = TickRegistry.getInstance().getDefinition(pProperties.get(P_TICK));
+        mStartPos = Integer.parseInt(pProperties.get(P_START_POS));
+        mEndPos = Integer.parseInt(pProperties.get(P_END_POS));        
+        mLink = pProperties.get(P_LINK);
+        mComment = pProperties.get(P_COMMENT);
+    }
+
 }

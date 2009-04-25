@@ -109,7 +109,7 @@ public class TickFrame extends KApplicationFrame {
         
         // Just testing
         if (true) {
-            String DEF_FILE = "/home/kari/data/devel/work/tigtag/src/org/kari/tick/gui/TickTextPane.java";
+            String DEF_FILE = "/home/kari/data/devel/work/tigtag/src/org/kari/tick/TickRegistry.java";
             try {
                 mEditor.setFile(new File(DEF_FILE), true);
                 setTitle(mEditor.getTextPane().getTickDocument().getFilename());
