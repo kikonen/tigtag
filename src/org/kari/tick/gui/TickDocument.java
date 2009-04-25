@@ -31,6 +31,9 @@ public class TickDocument extends DefaultStyledDocument {
     private final Map<String, Set<Tick>> mTicks = new HashMap<String, Set<Tick>>();
     private final List<TickListener> mTickListeners = new ArrayList<TickListener>();
     
+    private boolean mModified;
+
+    
     public TickDocument() {
         super();
     }
@@ -67,6 +70,7 @@ public class TickDocument extends DefaultStyledDocument {
         }
         ticks.add(pTick);
         fireTickChanged(pTick, true);
+        setModified(true);
     }
 
     /**
@@ -78,7 +82,16 @@ public class TickDocument extends DefaultStyledDocument {
         if (ticks != null) {
             ticks.remove(pTick);
             fireTickChanged(pTick, false);
+            setModified(true);
         }
+    }
+
+    public boolean isModified() {
+        return mModified;
+    }
+
+    public void setModified(boolean pModified) {
+        mModified = pModified;
     }
 
     public String getFilename() {

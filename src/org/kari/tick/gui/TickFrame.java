@@ -89,7 +89,11 @@ public class TickFrame extends KApplicationFrame {
         @Override
         public void actionPerformed(ActionContext pCtx) {
             try {
-                new FileSaver(mEditor.getTextPane().getTickDocument()).save();
+                TickDocument doc = mEditor.getTextPane().getTickDocument();
+                new FileSaver(doc).save();
+                doc.setModified(false);
+                // TODO KI enable save via doc listener
+//                mSaveAction.setEnabled(false);
             } catch (Exception e) {
                 LOG.error("Failed to load", e);
             }
@@ -118,6 +122,7 @@ public class TickFrame extends KApplicationFrame {
 
         KToolbar mainTb = new KToolbar(
             ActionConstants.R_TB_MAIN,
+            mSaveAction,
             mOpenAction);
         
         ac.addToolbar(mainTb);
