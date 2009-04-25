@@ -13,6 +13,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.apache.log4j.Logger;
+import org.kari.tick.gui.TickConstants;
 import org.kari.util.FileUtil;
 
 /**
@@ -52,7 +53,7 @@ public class FileLoader {
      * @return File, may not exist
      */
     public File getTickFile() {
-        return new File(mFile.getAbsolutePath() + ".zip");
+        return new File(mFile.getAbsolutePath() + TickConstants.TICK_FILE_EXT);
     }
 
     /**
@@ -75,7 +76,7 @@ public class FileLoader {
             mText = new String(data, "UTF-8");
             
             // ticks
-            ZipEntry tickEntry = zip.getEntry(basename + ".ticks");
+            ZipEntry tickEntry = zip.getEntry(basename + TickConstants.TICK_ENTRY_EXT);
             mTicks.addAll(loadTicks(zip.getInputStream(tickEntry)));
         } else {
             byte[] data = FileUtil.load(mFile);
@@ -86,7 +87,7 @@ public class FileLoader {
     /**
      * Load ticks from file
      */
-    public List<Tick> loadTicks(InputStream pInput) 
+    private List<Tick> loadTicks(InputStream pInput) 
         throws
             IOException
     {

@@ -19,6 +19,7 @@ import org.kari.action.KMenu;
 import org.kari.action.KToolbar;
 import org.kari.action.std.ExitAction;
 import org.kari.perspective.KApplicationFrame;
+import org.kari.tick.FileSaver;
 
 /**
  * TigTag window
@@ -81,13 +82,29 @@ public class TickFrame extends KApplicationFrame {
         }
     };
     
+    /**
+     * Save contents of editor in this window
+     */
+    private final Action mSaveAction = new KAction(ActionConstants.R_SAVE) {
+        @Override
+        public void actionPerformed(ActionContext pCtx) {
+            try {
+                new FileSaver(mEditor.getTextPane().getTickDocument()).save();
+            } catch (Exception e) {
+                LOG.error("Failed to load", e);
+            }
+        }
+    };
+    
     public TickFrame() {
         ActionContainer ac = getActionContainer();
         
         ac.addMenu(new KMenu(
                 ActionConstants.R_MENU_FILE,
                 mNewViewAction,
+                KAction.SEPARATOR,
                 mOpenAction,
+                mSaveAction,
                 KAction.SEPARATOR,
                 new ExitAction()));
         
