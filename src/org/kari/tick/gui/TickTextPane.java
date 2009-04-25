@@ -279,9 +279,8 @@ public class TickTextPane extends JTextPane
         
         Graphics2D g2d = (Graphics2D)pG;
         paintLineLimit(g2d);
-        paintCaret(g2d);
         paintTicks(g2d);
-        
+        paintCaret(g2d);
     }
 
     /**
