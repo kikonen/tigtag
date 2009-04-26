@@ -14,12 +14,14 @@ import javax.swing.JPanel;
 import org.kari.action.ActionConstants;
 import org.kari.action.ActionContainer;
 import org.kari.action.ActionContext;
+import org.kari.action.ActionGroup;
 import org.kari.action.KAction;
 import org.kari.action.KMenu;
 import org.kari.action.KToolbar;
 import org.kari.action.std.ExitAction;
 import org.kari.perspective.KApplicationFrame;
 import org.kari.tick.FileSaver;
+import org.kari.tick.TickDefinition.BlockMode;
 
 /**
  * TigTag window
@@ -35,18 +37,26 @@ public class TickFrame extends KApplicationFrame {
      * Selects ticking mode (word/block/...)
      */
     final class ModeAction extends KAction {
-        public ModeAction(String pActionName) {
-            super(pActionName);
+        private BlockMode mBlockMode;
+        
+        public ModeAction(BlockMode pBlockMode, ActionGroup pGroup) {
+            super(pBlockMode.getName(), pGroup);
+            mBlockMode = pBlockMode;
         }
 
         @Override
         public void actionPerformed(ActionContext pCtx) {
-            // TODO Auto-generated method stub
-            super.actionPerformed(pCtx);
+            getEditor().getTextPane().getTickSet().setBlockMode(mBlockMode);
         }
-        
     }
 
+    private final ActionGroup mModeGroup = new ActionGroup();
+    private KAction[] mModeActions = {
+        new ModeAction(BlockMode.BLOCK, mModeGroup),
+        new ModeAction(BlockMode.SIDEBAR, mModeGroup),
+        new ModeAction(BlockMode.WORD, mModeGroup),
+    };
+    
 
     private final Action mNewViewAction = new KAction(TickConstants.R_NEW_VIEW) {
         @Override
@@ -121,6 +131,7 @@ public class TickFrame extends KApplicationFrame {
     
     public TickFrame() {
         ActionContainer ac = getActionContainer();
+        mModeActions[0].setSelected(true);
         
         ac.addMenu(new KMenu(
                 ActionConstants.R_MENU_FILE,
@@ -133,6 +144,10 @@ public class TickFrame extends KApplicationFrame {
         
         ac.addMenu(new KMenu(
                 ActionConstants.R_MENU_VIEW,
+                mModeActions[0],
+                mModeActions[1],
+                mModeActions[2],
+                KAction.SEPARATOR,
                 new KAction("Tick Set 1")));
         
         ac.addMenu(new KMenu(
@@ -142,7 +157,12 @@ public class TickFrame extends KApplicationFrame {
         KToolbar mainTb = new KToolbar(
             ActionConstants.R_TB_MAIN,
             mSaveAction,
-            mOpenAction);
+            mOpenAction,
+            KAction.SEPARATOR,
+            mModeActions[0],
+            mModeActions[1],
+            mModeActions[2]
+            );
         
         ac.addToolbar(mainTb);
         
