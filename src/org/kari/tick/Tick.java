@@ -3,21 +3,23 @@ package org.kari.tick;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.kari.tick.TickDefinition.BlockMode;
+
 /**
  * Tick in the document
  * 
  * @author kari
  */
 public final class Tick {
-    public static final String P_START_POS = "startPos";
-    public static final String P_END_POS = "endPos";
+    public static final String P_LOCATION = "location";
     public static final String P_TICK = "tick";
     public static final String P_LINK = "link";
     public static final String P_COMMENT = "comment";
-    
-    private int mStartPos;
-    private int mEndPos;
+    public static final String P_MODE = "mode";
+
     private TickDefinition mTickDefinition;
+    private TickLocation mLocation;
+    
     private String mLink;
     private String mComment;
     private boolean mInvalid;
@@ -31,12 +33,10 @@ public final class Tick {
     
     public Tick(
         TickDefinition pTickDefinition,
-        int pStartPos, 
-        int pEndPos)
+        TickLocation pLocation)
     {
         mTickDefinition = pTickDefinition;
-        mStartPos = pStartPos;
-        mEndPos = pEndPos;
+        mLocation = pLocation;
     }
     
     @Override
@@ -46,12 +46,10 @@ public final class Tick {
             result = true;
         } else if (pObj instanceof Tick) {
             Tick tick = (Tick)pObj;
-            // TODO KI equality depends from tick mode
-            // WORD = start & end pos
-            // BLOCK = start/end line
             result = mTickDefinition.equals(tick.mTickDefinition)
-                && mStartPos == tick.mStartPos
-                && mEndPos == tick.mEndPos;
+                && mLocation.equals(tick.mLocation);
+            
+            mLocation.equals(tick.mLocation);
         }
         
         return result;
@@ -59,26 +57,22 @@ public final class Tick {
 
     @Override
     public int hashCode() {
-        return mTickDefinition.hashCode() ^ mStartPos ^ mEndPos;
+        return mTickDefinition.hashCode() ^ mLocation.hashCode();
     }
     
     @Override
     public String toString() {
-        return "Tick: start=" + mStartPos + ", end=" + mEndPos + "def=" + mTickDefinition;
+        return "Tick=" + mTickDefinition + ",loc=" +mLocation;
     }
 
     public TickDefinition getTickDefinition() {
         return mTickDefinition;
     }
-
-    public int getStartPos() {
-        return mStartPos;
-    }
-
-    public int getEndPos() {
-        return mEndPos;
-    }
     
+    public TickLocation getLocation() {
+        return mLocation;
+    }
+
     public String getComment() {
         return mComment;
     }
@@ -118,8 +112,8 @@ public final class Tick {
         if (mLink != null) {
             result.put(P_LINK, mLink);
         }
-        result.put(P_START_POS, Integer.toString(mStartPos));
-        result.put(P_END_POS, Integer.toString(mEndPos));
+        result.put(P_LOCATION, mLocation.toString());
+        result.put(P_MODE, mLocation.mBlockMode.getName());
         return result;
     }
 
@@ -128,8 +122,11 @@ public final class Tick {
      */
     public void restore(Map<String, String> pProperties) {
         mTickDefinition = TickRegistry.getInstance().getDefinition(pProperties.get(P_TICK));
-        mStartPos = Integer.parseInt(pProperties.get(P_START_POS));
-        mEndPos = Integer.parseInt(pProperties.get(P_END_POS));        
+        mLocation = new TickLocation(pProperties.get(P_LOCATION));
+        mLocation.mBlockMode = BlockMode.getMode(pProperties.get(P_MODE));
+        if (mLocation.mBlockMode == null) {
+            mLocation.mBlockMode = mTickDefinition.getBlockMode();
+        }
         mLink = pProperties.get(P_LINK);
         mComment = pProperties.get(P_COMMENT);
     }

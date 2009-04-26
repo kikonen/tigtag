@@ -7,10 +7,12 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 
+import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import org.kari.tick.Tick;
+import org.kari.tick.TickLocation;
 import org.kari.tick.gui.TickTextPane;
 
 /**
@@ -25,18 +27,20 @@ public class BlockPainter extends TickPainter {
 
     @Override
     public void paint(
+        JComponent pComponent,
         TickTextPane pEditor,
-        Graphics g2d, 
+        Graphics g2d,
+        int pYOffset,
         Tick pTick) 
     {
-        Rectangle rect = calculateTickRect(pEditor, pTick);
+        Rectangle rect = calculateTickRect(pComponent, pEditor, pTick);
         if (rect != null) {
             String text = pTick.getTickDefinition().getName();
             Color color = pTick.getTickDefinition().getColor();
             g2d.setColor(color);
             g2d.drawRoundRect(
                     rect.x - GAP_H, 
-                    rect.y - GAP_V, 
+                    rect.y - GAP_V + pYOffset, 
                     rect.width + GAP_H * 2, 
                     rect.height + GAP_V * 2,
                     10,
@@ -47,7 +51,8 @@ public class BlockPainter extends TickPainter {
             FontMetrics fm = g2d.getFontMetrics();
             Rectangle2D textBounds = font.getStringBounds(text, 0, text.length(), fm.getFontRenderContext());
             int x = rect.x - GAP_H + rect.width + GAP_H * 2 - (int)textBounds.getWidth();
-            int y = rect.y - GAP_V + (int)textBounds    .getHeight();
+            int y = rect.y - GAP_V + (int)textBounds.getHeight() + pYOffset;
+            
             g2d.drawString(
                     text,
                     x, 
@@ -56,13 +61,18 @@ public class BlockPainter extends TickPainter {
     }
 
     @Override
-    protected Rectangle calculateTickRect(TickTextPane pEditor, Tick pTick) {
+    protected Rectangle calculateTickRect(
+        JComponent pComponent,
+        TickTextPane pEditor, 
+        Tick pTick) 
+    {
         Rectangle rect = null;
         try {
             Document doc = pEditor.getDocument();
             int docLen = doc.getLength();
-            int startPos = pTick.getStartPos();
-            int endPos = pTick.getEndPos();
+            TickLocation loc = pTick.getLocation();
+            int startPos = loc.mStartPos;
+            int endPos = loc.mEndPos;
             
             boolean valid = startPos >= 0
                 && startPos <= docLen
@@ -73,7 +83,7 @@ public class BlockPainter extends TickPainter {
             if (valid) {
                 Rectangle start = pEditor.modelToView(startPos);
                 Rectangle end = pEditor.modelToView(endPos);
-                int width = pEditor.getWidth() - GAP_H * 3;
+                int width = pComponent.getWidth() - GAP_H * 3;
                 int height = end.y - start.y + end.height;
                 int x = GAP_H;
                 int y = start.y;

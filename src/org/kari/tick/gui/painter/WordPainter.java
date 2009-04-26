@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
+import javax.swing.JComponent;
+
 import org.kari.tick.Tick;
 import org.kari.tick.gui.TickTextPane;
 
@@ -18,11 +20,13 @@ public class WordPainter extends TickPainter {
 
     @Override
     public void paint(
+        JComponent pComponent,
         TickTextPane pEditor,
-        Graphics g2d, 
+        Graphics g2d,
+        int pYOffset,
         Tick pTick) 
     {
-        Rectangle rect = calculateTickRect(pEditor, pTick);
+        Rectangle rect = calculateTickRect(pComponent, pEditor, pTick);
         if (rect != null) {
             g2d.setColor(Color.RED);
             int GAP_H = 4;

@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
@@ -19,8 +20,11 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 
+import org.kari.tick.Tick;
 import org.kari.tick.TickRegistry;
 import org.kari.tick.TickSet;
+import org.kari.tick.TickDefinition.BlockMode;
+import org.kari.tick.gui.painter.TickPainter;
 
 /**
  * Tick editor
@@ -37,7 +41,7 @@ public class TickEditorPanel
         extends JPanel
     {
         public LineNumberPanel() {
-            Dimension SIZE = new Dimension(40, 10);
+            Dimension SIZE = new Dimension(80, 10);
             setMinimumSize(SIZE);
             setMaximumSize(SIZE);
             setPreferredSize(SIZE);
@@ -48,6 +52,8 @@ public class TickEditorPanel
         @Override
         public void paint(Graphics g) {
             super.paint(g);
+            
+            final Graphics2D g2d = (Graphics2D)g;
             final int width = getWidth();
 
             final TickTextPane pane = getTextPane();
@@ -126,12 +132,28 @@ public class TickEditorPanel
                     g.drawRect(1, y - fontHeight + 2, width, fontHeight + 2);
                 }
             }
+            
+            paintTicks(g2d, -viewPosition.y);
+        }
+        
+        private void paintTicks(Graphics2D g2d, int pYOffset) {
+            TickTextPane pane = getTextPane();
+            TickDocument doc = pane.getTickDocument();
+            for (String tickName : doc.getTickNames()) {
+                for (Tick tick : doc.getTicks(tickName)) {
+                    BlockMode mode = tick.getLocation().mBlockMode;
+                    if (mode == BlockMode.SIDEBAR) {
+                        TickPainter painter = mode.getPainter();
+                        painter.paint(this, pane, g2d, pYOffset, tick);
+                    }
+                }
+            }
         }
     }
 
     private JScrollPane mScrollPane;
 
-    private TickTextPane mEditor;
+    private TickTextPane mTextPane;
 
     private LineNumberPanel mLineNumberPanel;
 
@@ -164,12 +186,12 @@ public class TickEditorPanel
     }
 
     public TickTextPane getTextPane() {
-        if (mEditor == null) {
-            mEditor = new TickTextPane();
+        if (mTextPane == null) {
+            mTextPane = new TickTextPane();
             TickSet set = TickRegistry.getInstance().createSet("Set 1");
-            mEditor.setTickSet(set);
+            mTextPane.setTickSet(set);
         }
-        return mEditor;
+        return mTextPane;
     }
 
     public void setFile(File pFile, boolean pLoadTicks)

@@ -27,7 +27,9 @@ import javax.swing.text.Utilities;
 import org.apache.log4j.Logger;
 import org.kari.tick.Tick;
 import org.kari.tick.TickDefinition;
+import org.kari.tick.TickLocation;
 import org.kari.tick.TickSet;
+import org.kari.tick.TickDefinition.BlockMode;
 import org.kari.tick.gui.TickEditorPanel.LineNumberPanel;
 import org.kari.tick.gui.painter.TickPainter;
 
@@ -36,9 +38,7 @@ import org.kari.tick.gui.painter.TickPainter;
  * 
  * @author kari
  */
-public class TickTextPane extends JTextPane 
-    
-{
+public class TickTextPane extends JTextPane {
     public static final Logger LOG = Logger.getLogger("tick.editor");
     public static final int DEF_MAX_LINELEN = 80;
     private static final BasicStroke MAX_LINELEN_STROKE = new BasicStroke(
@@ -333,8 +333,11 @@ public class TickTextPane extends JTextPane
         TickDocument doc = getTickDocument();
         for (String tickName : doc.getTickNames()) {
             for (Tick tick : doc.getTicks(tickName)) {
-                TickPainter painter = tick.getTickDefinition().getPainter();
-                painter.paint(this, g2d, tick);
+                BlockMode mode = tick.getLocation().mBlockMode;
+                if (mode != BlockMode.SIDEBAR) {
+                    TickPainter painter = mode.getPainter();
+                    painter.paint(this, this, g2d, 0, tick);
+                }
             }
         }
     }
@@ -441,46 +444,72 @@ public class TickTextPane extends JTextPane
         if (mTickSet != null) {
             TickDefinition current = mTickSet.getCurrent();
             if (current != null) {
-                try {
-                    int caretLocation = getCaretPosition();
-                    
-                    int selStart = -1;
-                    int selEnd= -1;
-                    {
-                        selStart = getSelectionStart();
-                        selEnd = getSelectionEnd();
-                    }
-
-                    int startPos;
-                    int endPos;
-                    if (selStart != selEnd) {
-                        startPos = selStart;
-                        endPos = selEnd;
+                TickLocation loc = getTickLocation(mTickSet.getCurrentMode());
+                
+                if (loc != null) {
+                    Tick tick = new Tick(current, loc);
+                    TickDocument doc = getTickDocument();
+                    if (doc.getTicks().contains(tick)) {
+                        doc.removeTick(tick);
                     } else {
-                        startPos = findWordStart(caretLocation);
-                        endPos = findWordEnd(caretLocation);
+                        doc.addTick(tick);
                     }
-                    
-                    // TODO KI startPos/endPos depend from tick def
-                    // BLOCK/SIDEBAR = lines
-                    // WORD = word boundaries
-                    // POINT = exact selection range (or word from caret)
-                    
-                    if (startPos != endPos) {
-                        Tick tick = new Tick(current, startPos, endPos);
-                        TickDocument doc = getTickDocument();
-                        if (doc.getTicks().contains(tick)) {
-                            doc.removeTick(tick);
-                        } else {
-                            doc.addTick(tick);
-                        }
-                        repaint();
-                    }
-                } catch (BadLocationException e) {
-                    // ignore
+                    repaint();
                 }
             }
         }
+    }
+    
+    
+    /**
+     * Get tick position based into current tick mode
+     * 
+     * @return location, null if current location is invalid for ticking
+     */
+    public TickLocation getTickLocation(BlockMode pBlockMode) {
+        TickLocation result = null;
+        try {
+            int caretLocation = getCaretPosition();
+            
+            int selStart = -1;
+            int selEnd= -1;
+            {
+                selStart = getSelectionStart();
+                selEnd = getSelectionEnd();
+            }
+
+            int startPos;
+            int endPos;
+            if (selStart != selEnd) {
+                startPos = selStart;
+                endPos = selEnd;
+            } else {
+                startPos = findWordStart(caretLocation);
+                endPos = findWordEnd(caretLocation);
+            }
+            
+            // TODO KI startPos/endPos depend from tick def
+            // BLOCK/SIDEBAR = lines
+            // WORD = word boundaries
+            // POINT = exact selection range (or word from caret)
+            if (startPos != endPos) {
+                final Document doc = getDocument();
+                final Element rootElement = doc.getDefaultRootElement();
+                int startLine = rootElement.getElementIndex(startPos);
+                int endLine = rootElement.getElementIndex(endPos);
+                
+                result = new TickLocation(
+                        pBlockMode,
+                        startPos, 
+                        endPos, 
+                        startLine, 
+                        endLine);
+            }
+        } catch (BadLocationException e) {
+            // ignore
+        }
+        
+        return result;
     }
     
 }

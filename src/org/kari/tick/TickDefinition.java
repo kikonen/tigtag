@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.kari.tick.gui.painter.BlockPainter;
 import org.kari.tick.gui.painter.TickPainter;
 import org.kari.tick.gui.painter.WordPainter;
 
@@ -16,12 +15,84 @@ import org.kari.tick.gui.painter.WordPainter;
  */
 public class TickDefinition {
     private static final Logger LOG = Logger.getLogger("tick.definition");
-    private static final TickPainter DEF_PAINTER = new WordPainter();
+    public static final TickPainter DEF_PAINTER = new WordPainter();
+    
+    /**
+     * Tick block mode
+     * 
+     * @author kari
+     */
+    public enum BlockMode {
+        /**
+         * Block around lines
+         */
+        BLOCK("Block"),
+        /**
+         * Block strictly around selected words
+         */
+        WORD("Word"),
+        /**
+         * Lines highlighted in sidebar
+         */
+        SIDEBAR("Sidebar");
+        
+        private final String mName;
+        private TickPainter mPainter;
+
+        private BlockMode(String pName) {
+            mName = pName;
+        }
+
+        public String getName() {
+            return mName;
+        }
+
+        /**
+         * @return true if mode uses lines (instead of char positions)
+         */
+        public boolean isLineMode() {
+            return this == BLOCK
+                || this == SIDEBAR;
+        }
+        
+        public TickPainter getPainter() {
+            if (mPainter == null) {
+                try {
+                    String clsName = "org.kari.tick.gui.painter." + mName + "Painter";
+                    Class cls = Class.forName(clsName);
+                    mPainter = (TickPainter)cls.newInstance();
+                } catch (Exception e) {
+                    LOG.error("Invalid style: " + mName, e);
+                    mPainter = DEF_PAINTER;
+                } 
+            }
+            return mPainter;
+        }
+
+        /**
+         * Find block mode matching name
+         * 
+         * @return block mode, null if not found
+         */
+        public static BlockMode getMode(String pName) {
+            if (pName != null) {
+                pName = pName.toLowerCase();
+                pName = Character.toUpperCase(pName.charAt(0)) + pName.substring(1);
+                for (BlockMode mode : values()) {
+                    if (mode.getName().equals(pName)) {
+                        return mode;
+                    }
+                }
+            }
+            return null;
+        }
+    }
+    
     
     private String mName;
     private final Map<String, String> mProperties = new HashMap<String, String>();
+    private BlockMode mBlockMode;
     
-    private transient TickPainter mPainter;
     private transient Color mColor;
     
     public TickDefinition() {
@@ -76,24 +147,14 @@ public class TickDefinition {
         if (pValue == null) {
             mProperties.remove(pKey);
         }
+        mBlockMode = null;
     }
 
-    
-    public TickPainter getPainter() {
-        if (mPainter == null) {
-            String style = getString("style", "word");
-            try {
-                style = Character.toUpperCase(style.charAt(0)) + style.substring(1);
-                String clsName = "org.kari.tick.gui.painter." + style + "Painter";
-                Class cls = Class.forName(clsName);
-                mPainter = (TickPainter)cls.newInstance();
-                mPainter = new BlockPainter();
-            } catch (Exception e) {
-                LOG.error("Invalid style: " + style, e);
-                mPainter = DEF_PAINTER;
-            } 
+    public BlockMode getBlockMode() {
+        if (mBlockMode == null) {
+            mBlockMode = BlockMode.getMode(getString("mode", "Block"));
         }
-        return mPainter;
+        return mBlockMode;
     }
     
     public Color getColor() {

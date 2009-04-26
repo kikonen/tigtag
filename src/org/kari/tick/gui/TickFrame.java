@@ -127,7 +127,7 @@ public class TickFrame extends KApplicationFrame {
         
         ac.addToolbar(mainTb);
         
-        setSize(new Dimension(600, 600));
+        setSize(new Dimension(700, 600));
         
         // Just testing
         if (true) {

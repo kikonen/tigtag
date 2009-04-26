@@ -3,6 +3,8 @@ package org.kari.tick;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.kari.tick.TickDefinition.BlockMode;
+
 
 /**
  * Currently active tick set
@@ -12,6 +14,7 @@ import java.util.List;
 public class TickSet {
     private final String mName;
     private TickDefinition mCurrent;
+    private BlockMode mBlockMode;
     private List<TickDefinition> mDefinitions = new ArrayList<TickDefinition>();
 
     public TickSet(String pName) {
@@ -29,6 +32,29 @@ public class TickSet {
 
     public void setCurrent(TickDefinition pCurrent) {
         mCurrent = pCurrent;
+    }
+
+    /**
+     * Get current active block mode
+     */
+    public BlockMode getCurrentMode() {
+        return mBlockMode != null
+            ? mBlockMode
+            : mCurrent.getBlockMode();
+    }
+    
+    /**
+     * @return Blockmode, if null then default of current will be used
+     */
+    public BlockMode getBlockMode() {
+        return mBlockMode;
+    }
+
+    /**
+     * @param pBlockMode Blockmode, null to use default
+     */
+    public void setBlockMode(BlockMode pBlockMode) {
+        mBlockMode = pBlockMode;
     }
 
     public String getName() {
