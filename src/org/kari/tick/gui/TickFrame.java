@@ -30,6 +30,23 @@ public class TickFrame extends KApplicationFrame {
     public static final String APP_NAME = "TigTag";
 
     private TickEditorPanel mEditor;
+    
+    /**
+     * Selects ticking mode (word/block/...)
+     */
+    final class ModeAction extends KAction {
+        public ModeAction(String pActionName) {
+            super(pActionName);
+        }
+
+        @Override
+        public void actionPerformed(ActionContext pCtx) {
+            // TODO Auto-generated method stub
+            super.actionPerformed(pCtx);
+        }
+        
+    }
+
 
     private final Action mNewViewAction = new KAction(TickConstants.R_NEW_VIEW) {
         @Override
@@ -42,10 +59,12 @@ public class TickFrame extends KApplicationFrame {
         @Override
         public void actionPerformed(ActionContext pCtx) {
             String msg = "<html>"
+                + "<b>TigTag v" + TickConstants.VERSION + "</b><br><br>"
                 + "All copyrights owned by Kari Ikonen<br>"
                 + "(except for the  concept of the 'ticks')<br>"
                 + "<br>"
-                + "Contact: mr.kari.ikonen@gmail.com"
+                + "Contact Info:<br>"
+                + "Email: <b>mr.kari.ikonen@gmail.com</b>"
                 + "</html>";
             JOptionPane.showMessageDialog(
                     pCtx.getWindow(), 
