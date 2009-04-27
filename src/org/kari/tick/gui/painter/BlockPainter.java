@@ -71,8 +71,6 @@ public class BlockPainter extends TickPainter {
         try {
             final Document doc = pEditor.getDocument();
             final TickLocation loc = pTick.getLocation();
-            int locStartPos = loc.mStartPos;
-            final int len = doc.getLength();
 
             int minX = Integer.MAX_VALUE;
             int minY = Integer.MAX_VALUE;

@@ -42,7 +42,7 @@ public final class Tick {
         mTickDefinition = pTickDefinition;
         mLocation = pLocation;
         mColor = mTickDefinition.getColor();
-        mText = pText;
+        setText(pText);
     }
     
     @Override
@@ -85,6 +85,9 @@ public final class Tick {
 
     public void setText(String pText) {
         mText = pText;
+        if (mText != null) {
+            mText = mText.trim();
+        }
     }
 
     public String getComment() {

@@ -520,6 +520,11 @@ public class TickTextPane extends JTextPane {
                 int startLine = rootElement.getElementIndex(startPos);
                 int endLine = rootElement.getElementIndex(endPos);
                 
+                if (pBlockMode.isLineMode()) {
+                    startPos = findLineStart(startPos);
+                    endPos = findLineEnd(endPos);
+                }
+                
                 result = new TickLocation(
                         pBlockMode,
                         startPos, 
