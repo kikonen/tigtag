@@ -118,19 +118,19 @@ public class TickEditorPanel
             for (int line = startline, y = starting_y; line <= endline; line++, y += fontHeight) {
                 if (line >= selStartLine && line <= selEndLine) {
                     g.setColor(selectionColor);
-                    g.fillRect(1, y - fontHeight + 2, width, fontHeight + 2);
+                    g.fillRect(2, y - fontHeight + 2, width, fontHeight + 2);
                     g.setColor(selectedTextColor);
                 } else {
                     g.setColor(color);
                 }
                 if ((line % 10 == 0)) {
-                    setFont(boldFont);
+                    g2d.setFont(boldFont);
                 } else {
-                    setFont(font);
+                    g2d.setFont(font);
                 }
-                g.drawString(Integer.toString(line), 1, y);
+                g.drawString(Integer.toString(line), 4, y);
                 if (line == caretLineNumber) {
-                    g.drawRect(1, y - fontHeight + 2, width, fontHeight + 2);
+                    g.drawRect(2, y - fontHeight + 2, width, fontHeight + 2);
                 }
             }
             
