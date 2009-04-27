@@ -2,5 +2,7 @@
 *~
 *.class
 bin/*
+dist/*
 test/*
 tmp/*
+tick_dist.zip
