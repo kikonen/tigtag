@@ -189,6 +189,7 @@ public class TickEditorPanel
                     getTopPanel(),
                     new JScrollPane(getTickTable()));
             mSplitPane.setDividerLocation(400);
+            mSplitPane.setResizeWeight(1.0);
         }
         return mSplitPane;
     }
