@@ -1,5 +1,12 @@
 package org.kari.tick.gui.painter;
 
+import java.awt.Rectangle;
+
+import javax.swing.JComponent;
+
+import org.kari.tick.Tick;
+import org.kari.tick.gui.TickTextPane;
+
 /**
  * Same logic than in BlockPAinter, except this painter is used
  * in side bar only
@@ -11,4 +18,18 @@ public class SidebarPainter extends BlockPainter {
         super();
     }
 
+    @Override
+    protected Rectangle calculateTickRect(
+        JComponent pComponent,
+        TickTextPane pEditor, 
+        Tick pTick) 
+    {
+        Rectangle rect = super.calculateTickRect(pComponent, pEditor, pTick);
+        if (rect != null) {
+            rect.x = GAP_H;
+            rect.width = pComponent.getWidth() - GAP_H * 3;
+        }
+        return rect;
+    }
+    
 }

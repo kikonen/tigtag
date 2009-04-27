@@ -83,6 +83,7 @@ public class BlockPainter extends TickPainter {
             while (pos < loc.mEndPos) {
                 int startPos = pEditor.findLineStart(pos);
                 int endPos = pEditor.findLineEnd(pos);
+                pos = endPos + 1;
                 
                 String line = doc.getText(startPos, endPos - startPos);
                 int lineLen = line.length();
@@ -117,7 +118,6 @@ public class BlockPainter extends TickPainter {
                         maxY = end.y + end.height;
                     }
                 }
-                pos = endPos + 1;
             }
             rect = new Rectangle(minX, minY, maxX - minX, maxY - minY);
         } catch (BadLocationException e) {
