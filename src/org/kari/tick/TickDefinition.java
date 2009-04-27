@@ -1,12 +1,14 @@
 package org.kari.tick;
 
 import java.awt.Color;
+import java.lang.reflect.Field;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.kari.tick.gui.painter.TickPainter;
 import org.kari.tick.gui.painter.HighlightPainter;
+import org.kari.tick.gui.painter.TickPainter;
 
 /**
  * Definition of the tick
@@ -14,14 +16,23 @@ import org.kari.tick.gui.painter.HighlightPainter;
  * @author kari
  */
 public class TickDefinition {
+    private static final String STYLE = "style";
+    private static final String COLOR = "color";
     private static final Logger LOG = Logger.getLogger("tick.definition");
     public static final TickPainter DEF_PAINTER = new HighlightPainter();
+    
+    public static final Comparator<TickDefinition> NAME_COMPARATOR = new Comparator<TickDefinition>() {
+        @Override
+        public int compare(TickDefinition def1, TickDefinition def2) {
+            return def1.getName().compareTo(def2.getName());
+        }
+    };
     
     /**
      * Tick block mode
      * 
      * @author kari
-     */
+     */ 
     public enum BlockMode {
         /**
          * Block around lines
@@ -156,14 +167,31 @@ public class TickDefinition {
 
     public BlockMode getBlockMode() {
         if (mBlockMode == null) {
-            mBlockMode = BlockMode.getMode(getString("mode", "Block"));
+            mBlockMode = BlockMode.getMode(getString(STYLE, BlockMode.BLOCK.getName()));
         }
         return mBlockMode;
     }
     
     public Color getColor() {
         if (mColor == null) {
-            mColor = Color.CYAN;
+            Color color = Color.GREEN;
+            String colorName = mProperties.get(COLOR);
+            if (colorName != null) {
+                colorName = colorName.toUpperCase();
+                try {
+                    Field field = Color.class.getField(colorName);
+                    color = (Color)field.get(null);
+                } catch (Exception e) {
+                    // not valid color name: try RGB
+                    try {
+                        int rgb = Integer.parseInt(colorName, 16);
+                        color = new Color(rgb);
+                    } catch (Exception e2) {
+                        LOG.error("Invalid color:" + colorName, e2);
+                    }
+                }
+            }
+            mColor = color;
         }
         return mColor;
     }

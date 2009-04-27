@@ -7,6 +7,9 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -25,6 +28,9 @@ import org.kari.action.std.CloseWindowAction;
 import org.kari.action.std.ExitAction;
 import org.kari.perspective.KApplicationFrame;
 import org.kari.tick.FileSaver;
+import org.kari.tick.TickDefinition;
+import org.kari.tick.TickRegistry;
+import org.kari.tick.TickSet;
 import org.kari.tick.TickDefinition.BlockMode;
 
 /**
@@ -38,19 +44,36 @@ public class TickFrame extends KApplicationFrame {
     private TickEditorPanel mEditor;
     
     /**
-     * Selects ticking mode (word/block/...)
+     * Selects mode (word/block/...)
      */
     final class ModeAction extends KAction {
         private BlockMode mBlockMode;
         
         public ModeAction(BlockMode pBlockMode, ActionGroup pGroup) {
-            super(pBlockMode.getName(), pGroup);
+            super(pBlockMode != null ? pBlockMode.getName() : "&Default", pGroup);
             mBlockMode = pBlockMode;
         }
 
         @Override
         public void actionPerformed(ActionContext pCtx) {
             getEditor().getTextPane().getTickSet().setBlockMode(mBlockMode);
+        }
+    }
+    
+    /**
+     * Selects predefine tick 
+     */
+    final class TickAction extends KAction {
+        private TickDefinition mDefinition;
+        
+        public TickAction(TickDefinition pDefinition, ActionGroup pGroup) {
+            super(pDefinition.getName(), pGroup);
+            mDefinition = pDefinition;
+        }
+        
+        @Override
+        public void actionPerformed(ActionContext pCtx) {
+            getEditor().getTextPane().getTickSet().setCurrent(mDefinition);
         }
     }
     
@@ -68,12 +91,14 @@ public class TickFrame extends KApplicationFrame {
     
     private final ActionGroup mModeGroup = new ActionGroup();
     private KAction[] mModeActions = {
+        new ModeAction(null, mModeGroup),
         new ModeAction(BlockMode.HIGHLIGHT, mModeGroup),
         new ModeAction(BlockMode.UNDERLINE, mModeGroup),
         new ModeAction(BlockMode.BLOCK, mModeGroup),
         new ModeAction(BlockMode.SIDEBAR, mModeGroup),
     };
     
+    private final ActionGroup mDefinitionGroup = new ActionGroup();
 
     private final Action mNewViewAction = new KAction(TickConstants.R_NEW_VIEW) {
         @Override
@@ -151,7 +176,10 @@ public class TickFrame extends KApplicationFrame {
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         
         ActionContainer ac = getActionContainer();
+        
+        KAction[] tickActions = createTickActions();
         mModeActions[0].setSelected(true);
+        tickActions[0].setSelected(true);
         
         ac.addMenu(new KMenu(
                 ActionConstants.R_MENU_FILE,
@@ -169,8 +197,11 @@ public class TickFrame extends KApplicationFrame {
                 mModeActions[1],
                 mModeActions[2],
                 mModeActions[3],
-                KAction.SEPARATOR,
-                new KAction("Tick Set 1")));
+                mModeActions[4]));
+        
+        ac.addMenu(new KMenu(
+                "&Ticks",
+                tickActions));
         
         ac.addMenu(new KMenu(
                 ActionConstants.R_MENU_HELP,
@@ -184,7 +215,8 @@ public class TickFrame extends KApplicationFrame {
             mModeActions[0],
             mModeActions[1],
             mModeActions[2],
-            mModeActions[3]
+            mModeActions[3],
+            mModeActions[4]
             );
         
         ac.addToolbar(mainTb);
@@ -201,7 +233,11 @@ public class TickFrame extends KApplicationFrame {
                 LOG.error("Failed to load: " + DEF_FILE, e);
                 mEditor.getTextPane().setText("Failed to load: " + DEF_FILE);
             }
-        }        
+        }
+        
+        TickSet tickSet = getEditor().getTextPane().getTickSet();
+        tickSet.setBlockMode(null);
+        tickSet.setCurrent( ((TickAction)tickActions[0]).mDefinition );
     }
 
     @Override
@@ -224,7 +260,22 @@ public class TickFrame extends KApplicationFrame {
         }
         return mEditor;
     }
-    
-    
+
+    /**
+     * Create/Update tick actions
+     */
+    private KAction[] createTickActions() {
+        mDefinitionGroup.clear();
+        
+        List<KAction> result = new ArrayList<KAction>();
+        List<TickDefinition> definitions = new ArrayList<TickDefinition>(TickRegistry.getInstance().getDefinitions());
+        Collections.sort(definitions, TickDefinition.NAME_COMPARATOR);
+        
+        for (TickDefinition def : definitions) {
+            result.add(new TickAction(def, mDefinitionGroup));
+        }
+        
+        return result.toArray(new KAction[result.size()]);
+    }
     
 }
