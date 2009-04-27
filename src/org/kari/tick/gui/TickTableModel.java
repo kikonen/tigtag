@@ -75,7 +75,7 @@ public class TickTableModel extends AbstractTableModel
             case IDX_NAME:
                 return "Name";
             case IDX_MODE:
-                return "Mode";
+                return "Style";
             case IDX_LINE:
                 return "Line";
             case IDX_TEXT:
