@@ -105,9 +105,9 @@ public class TickTableModel extends AbstractTableModel
             break;
         case IDX_LINE:
             if (loc.mStartLine != loc.mEndLine) {
-                result = loc.mStartLine + " .. " + loc.mEndLine;
+                result = (loc.mStartLine + 1) + " .. " + (loc.mEndLine + 1);
             } else {
-                result = Integer.toString(loc.mStartLine);
+                result = Integer.toString(loc.mStartLine + 1);
             }
             break;
         case IDX_TEXT:
