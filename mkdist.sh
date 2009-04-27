@@ -1,4 +1,4 @@
-rm -fr dist
+rm -fr dist/*
 mkdir dist
 
 jar cvf dist/tick.jar -C ./bin .
