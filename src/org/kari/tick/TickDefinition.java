@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.kari.tick.gui.painter.TickPainter;
-import org.kari.tick.gui.painter.WordPainter;
+import org.kari.tick.gui.painter.HighlightPainter;
 
 /**
  * Definition of the tick
@@ -15,7 +15,7 @@ import org.kari.tick.gui.painter.WordPainter;
  */
 public class TickDefinition {
     private static final Logger LOG = Logger.getLogger("tick.definition");
-    public static final TickPainter DEF_PAINTER = new WordPainter();
+    public static final TickPainter DEF_PAINTER = new HighlightPainter();
     
     /**
      * Tick block mode
@@ -28,9 +28,13 @@ public class TickDefinition {
          */
         BLOCK("Block"),
         /**
-         * Block strictly around selected words
+         * Use hightlight pen on area
          */
-        WORD("Word"),
+        HIGHLIGHT("Highlight"),
+        /**
+         * Show underline for selected text
+         */
+        UNDERLINE("Underline"),
         /**
          * Lines highlighted in sidebar
          */
@@ -159,7 +163,7 @@ public class TickDefinition {
     
     public Color getColor() {
         if (mColor == null) {
-            mColor = Color.RED;
+            mColor = Color.CYAN;
         }
         return mColor;
     }

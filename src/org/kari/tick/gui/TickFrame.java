@@ -2,6 +2,9 @@ package org.kari.tick.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 
@@ -18,6 +21,7 @@ import org.kari.action.ActionGroup;
 import org.kari.action.KAction;
 import org.kari.action.KMenu;
 import org.kari.action.KToolbar;
+import org.kari.action.std.CloseWindowAction;
 import org.kari.action.std.ExitAction;
 import org.kari.perspective.KApplicationFrame;
 import org.kari.tick.FileSaver;
@@ -49,12 +53,25 @@ public class TickFrame extends KApplicationFrame {
             getEditor().getTextPane().getTickSet().setBlockMode(mBlockMode);
         }
     }
+    
+    private WindowListener mWindowListener = new WindowAdapter() {
+        @Override
+        public void windowClosing(WindowEvent pE) {
+            dispose();
+        }
 
+        @Override
+        public void windowClosed(WindowEvent pE) {
+            // Nothing
+        }
+    };
+    
     private final ActionGroup mModeGroup = new ActionGroup();
     private KAction[] mModeActions = {
+        new ModeAction(BlockMode.HIGHLIGHT, mModeGroup),
+        new ModeAction(BlockMode.UNDERLINE, mModeGroup),
         new ModeAction(BlockMode.BLOCK, mModeGroup),
         new ModeAction(BlockMode.SIDEBAR, mModeGroup),
-        new ModeAction(BlockMode.WORD, mModeGroup),
     };
     
 
@@ -130,6 +147,9 @@ public class TickFrame extends KApplicationFrame {
     };
     
     public TickFrame() {
+        addWindowListener(mWindowListener);
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        
         ActionContainer ac = getActionContainer();
         mModeActions[0].setSelected(true);
         
@@ -140,6 +160,7 @@ public class TickFrame extends KApplicationFrame {
                 mOpenAction,
                 mSaveAction,
                 KAction.SEPARATOR,
+                new CloseWindowAction(),
                 new ExitAction()));
         
         ac.addMenu(new KMenu(
@@ -147,6 +168,7 @@ public class TickFrame extends KApplicationFrame {
                 mModeActions[0],
                 mModeActions[1],
                 mModeActions[2],
+                mModeActions[3],
                 KAction.SEPARATOR,
                 new KAction("Tick Set 1")));
         
@@ -161,7 +183,8 @@ public class TickFrame extends KApplicationFrame {
             KAction.SEPARATOR,
             mModeActions[0],
             mModeActions[1],
-            mModeActions[2]
+            mModeActions[2],
+            mModeActions[3]
             );
         
         ac.addToolbar(mainTb);
@@ -181,6 +204,12 @@ public class TickFrame extends KApplicationFrame {
         }        
     }
 
+    @Override
+    public void dispose() {
+        TickDocumentManager.getInstance().closeDocument(getEditor().getTextPane().getTickDocument());
+        super.dispose();
+    }
+    
     @Override
     protected JComponent createCenterPanel()
     {

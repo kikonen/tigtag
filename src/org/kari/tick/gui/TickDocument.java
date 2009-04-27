@@ -1,12 +1,7 @@
 package org.kari.tick.gui;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.swing.text.DefaultStyledDocument;
 
@@ -25,50 +20,31 @@ public class TickDocument extends DefaultStyledDocument {
     public static final String EXT_TICKS = ".ticks";
     
     private String mFilename;
-    /**
-     * Map of (tickdef, Set of (ticks-for-def))
-     */
-    private final Map<String, Set<Tick>> mTicks = new HashMap<String, Set<Tick>>();
     private final List<TickListener> mTickListeners = new ArrayList<TickListener>();
+    private final List<Tick> mTicks = new ArrayList<Tick>();
     
     private boolean mModified;
+    
+    private int mReferenceCount;
 
     
     public TickDocument() {
         super();
     }
-
-    /**
-     * Get ticks defined for given tick name
-     * 
-     * @return Ticks, empty if none
-     */
-    public Set<Tick> getTicks(String pTickName) {
-        Set<Tick> ticks = mTicks.get(pTickName);
-        if (ticks == null) {
-            ticks = Collections.EMPTY_SET;
-        }
-        return ticks;
+    
+    public int getReferenceCount() {
+        return mReferenceCount;
     }
 
-    /**
-     * @return Set of existing ticks, empty if none
-     */
-    public Set<String> getTickNames() {
-        return mTicks.keySet();
+    public void setReferenceCount(int pReferenceCount) {
+        mReferenceCount = pReferenceCount;
     }
 
     /**
      * Add new tick, if duplicate then existing one is overridden
      */
     public void addTick(Tick pTick) {
-        String tickName = pTick.getTickDefinition().getName();
-        Set<Tick> ticks = mTicks.get(tickName);
-        if (ticks == null) {
-            ticks = new HashSet<Tick>();
-            mTicks.put(tickName, ticks);
-        }
-        ticks.add(pTick);
+        mTicks.add(pTick);
         fireTickChanged(pTick, true);
         setModified(true);
     }
@@ -77,13 +53,9 @@ public class TickDocument extends DefaultStyledDocument {
      * Remove new tick
      */
     public void removeTick(Tick pTick) {
-        String tickName = pTick.getTickDefinition().getName();
-        Set<Tick> ticks = mTicks.get(tickName);
-        if (ticks != null) {
-            ticks.remove(pTick);
-            fireTickChanged(pTick, false);
-            setModified(true);
-        }
+        mTicks.remove(pTick);
+        fireTickChanged(pTick, false);
+        setModified(true);
     }
 
     public boolean isModified() {
@@ -106,18 +78,14 @@ public class TickDocument extends DefaultStyledDocument {
      * @return All ticks from the document, empty if none
      */
     public List<Tick> getTicks() {
-        List<Tick> ticks = new ArrayList<Tick>();
-        for (String defName : mTicks.keySet()) {
-            ticks.addAll(mTicks.get(defName));
-        }
-        return ticks;
+        return mTicks;
     }
 
     /**
      * Set ticks, clearing old ticks
      */
     public void setTicks(List<Tick> pTicks) {
-        List<Tick> oldTicks = getTicks();
+        Tick[] oldTicks = mTicks.toArray(new Tick[mTicks.size()]);
         mTicks.clear();
         for (Tick tick : oldTicks) {
             fireTickChanged(tick, false);

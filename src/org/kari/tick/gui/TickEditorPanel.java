@@ -15,6 +15,7 @@ import java.io.IOException;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.border.MatteBorder;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -139,29 +140,39 @@ public class TickEditorPanel
         private void paintTicks(Graphics2D g2d, int pYOffset) {
             TickTextPane pane = getTextPane();
             TickDocument doc = pane.getTickDocument();
-            for (String tickName : doc.getTickNames()) {
-                for (Tick tick : doc.getTicks(tickName)) {
-                    BlockMode mode = tick.getLocation().mBlockMode;
-                    if (mode == BlockMode.SIDEBAR) {
-                        TickPainter painter = mode.getPainter();
-                        painter.paint(this, pane, g2d, pYOffset, tick);
-                    }
+            for (Tick tick : doc.getTicks()) {
+                BlockMode mode = tick.getLocation().mBlockMode;
+                if (mode == BlockMode.SIDEBAR) {
+                    TickPainter painter = mode.getPainter();
+                    painter.paint(this, pane, g2d, pYOffset, tick);
                 }
             }
         }
     }
 
+    private JSplitPane mSplitPane;
+
+    private JPanel mTopPanel;
     private JScrollPane mScrollPane;
-
     private TickTextPane mTextPane;
-
     private LineNumberPanel mLineNumberPanel;
-
+    
+    private TickTable mTickTable;
+    
     public TickEditorPanel() {
         super(new BorderLayout());
-        add(getLineNumberPanel(), BorderLayout.WEST);
-        add(getScrollPane(), BorderLayout.CENTER);
-        getTextPane().setLineNumberPanel(getLineNumberPanel());
+        add(getSplitPane(), BorderLayout.CENTER);
+        getTickTable().getTickTableModel().setDocument(getTextPane().getTickDocument());
+    }
+
+    public JPanel getTopPanel() {
+        if (mTopPanel== null) {
+            mTopPanel = new JPanel(new BorderLayout());
+            mTopPanel.add(getLineNumberPanel(), BorderLayout.WEST);
+            mTopPanel.add(getScrollPane(), BorderLayout.CENTER);
+            getTextPane().setLineNumberPanel(getLineNumberPanel());
+        }
+        return mTopPanel;
     }
 
     public LineNumberPanel getLineNumberPanel() {
@@ -171,7 +182,18 @@ public class TickEditorPanel
         return mLineNumberPanel;
     }
 
-    public JScrollPane getScrollPane() {
+    protected JSplitPane getSplitPane() {
+        if (mSplitPane == null) {
+            mSplitPane = new JSplitPane(
+                    JSplitPane.VERTICAL_SPLIT,
+                    getTopPanel(),
+                    new JScrollPane(getTickTable()));
+            mSplitPane.setDividerLocation(400);
+        }
+        return mSplitPane;
+    }
+
+    protected JScrollPane getScrollPane() {
         if (mScrollPane == null) {
             mScrollPane = new JScrollPane(getTextPane());
             AdjustmentListener al = new AdjustmentListener() {
@@ -193,13 +215,29 @@ public class TickEditorPanel
         }
         return mTextPane;
     }
+    
+    public TickTable getTickTable() {
+        if (mTickTable == null) {
+            mTickTable = new TickTable();
+        }
+        return mTickTable;
+    }
 
     public void setFile(File pFile, boolean pLoadTicks)
         throws IOException
     {
-        TickDocument doc = TickDocumentManager.getInstance().openDocument(
-                pFile, pLoadTicks);
-        getTextPane().setDocument(doc);
+        TickDocumentManager docMgr = TickDocumentManager.getInstance();
+        TickDocument doc = docMgr.openDocument(
+                pFile, 
+                pLoadTicks);
+        TickDocument oldDoc = getTextPane().getTickDocument();
+        if (doc != oldDoc) {
+            docMgr.closeDocument(oldDoc);
+            getTextPane().setDocument(doc);
+            getTickTable().getTickTableModel().setDocument(doc);
+        } else {
+            docMgr.closeDocument(doc);
+        }
     }
 
 }

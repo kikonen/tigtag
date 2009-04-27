@@ -1,6 +1,6 @@
 package org.kari.tick.gui.painter;
 
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 
 import javax.swing.JComponent;
@@ -27,7 +27,7 @@ public abstract class TickPainter {
     public abstract void paint(
         JComponent pComponent,
         TickTextPane pEditor, 
-        Graphics g2d, 
+        Graphics2D g2d, 
         int pYOffset,
         Tick pTick);
 

@@ -331,13 +331,11 @@ public class TickTextPane extends JTextPane {
     
     private void paintTicks(Graphics2D g2d) {
         TickDocument doc = getTickDocument();
-        for (String tickName : doc.getTickNames()) {
-            for (Tick tick : doc.getTicks(tickName)) {
-                BlockMode mode = tick.getLocation().mBlockMode;
-                if (mode != BlockMode.SIDEBAR) {
-                    TickPainter painter = mode.getPainter();
-                    painter.paint(this, this, g2d, 0, tick);
-                }
+        for (Tick tick : doc.getTicks()) {
+            BlockMode mode = tick.getLocation().mBlockMode;
+            if (mode != BlockMode.SIDEBAR) {
+                TickPainter painter = mode.getPainter();
+                painter.paint(this, this, g2d, 0, tick);
             }
         }
     }
@@ -447,7 +445,7 @@ public class TickTextPane extends JTextPane {
                 TickLocation loc = getTickLocation(mTickSet.getCurrentMode());
                 
                 if (loc != null) {
-                    Tick tick = new Tick(current, loc);
+                    Tick tick = new Tick(current, loc, getText(loc));
                     TickDocument doc = getTickDocument();
                     if (doc.getTicks().contains(tick)) {
                         doc.removeTick(tick);
@@ -510,6 +508,19 @@ public class TickTextPane extends JTextPane {
         }
         
         return result;
+    }
+    
+    /**
+     * Get text for tick location
+     */
+    public String getText(TickLocation pLoc) {
+        String text = null;
+        try {
+            text = getDocument().getText(pLoc.mStartPos, pLoc.mEndPos - pLoc.mStartPos);
+        } catch (BadLocationException e) {
+            // ignore
+        }
+        return text;
     }
     
 }

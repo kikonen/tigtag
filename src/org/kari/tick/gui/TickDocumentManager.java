@@ -35,6 +35,19 @@ public final class TickDocumentManager {
     public TickDocument getDocument(String pFilename) {
         return mDocuments.get(pFilename);
     }
+
+    /**
+     * Close document, and possibly release model if last client was closed
+     * @param pDocument
+     */
+    public void closeDocument(TickDocument pDocument) {
+        int refCount = pDocument.getReferenceCount();
+        refCount--;
+        pDocument.setReferenceCount(refCount);
+        if (refCount <= 0) {
+            mDocuments.remove(pDocument.getFilename());
+        }
+    }
     
     /**
      * Open tick document for given file. Loads file and all associated saved
@@ -47,6 +60,7 @@ public final class TickDocumentManager {
         String filename = pFile.getAbsolutePath();
         
         TickDocument doc = getDocument(filename);
+        int refCount = 0;
         if (doc == null) {
             doc = new TickDocument();
             doc.setFilename(filename);
@@ -62,7 +76,11 @@ public final class TickDocumentManager {
             doc.setTicks(loader.getTicks());
             
             mDocuments.put(filename, doc);
+        } else {
+            refCount = doc.getReferenceCount();
         }
+        refCount++;
+        doc.setReferenceCount(refCount);
         return doc;
     }
 

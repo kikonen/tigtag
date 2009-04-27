@@ -1,5 +1,6 @@
 package org.kari.tick;
 
+import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +24,9 @@ public final class Tick {
     private String mLink;
     private String mComment;
     private boolean mInvalid;
-
+    private Color mColor;
+    private String mText;
+    
     /**
      * For persistency
      */
@@ -33,10 +36,13 @@ public final class Tick {
     
     public Tick(
         TickDefinition pTickDefinition,
-        TickLocation pLocation)
+        TickLocation pLocation,
+        String pText)
     {
         mTickDefinition = pTickDefinition;
         mLocation = pLocation;
+        mColor = mTickDefinition.getColor();
+        mText = pText;
     }
     
     @Override
@@ -72,6 +78,14 @@ public final class Tick {
     public TickLocation getLocation() {
         return mLocation;
     }
+    
+    public String getText() {
+        return mText;
+    }
+
+    public void setText(String pText) {
+        mText = pText;
+    }
 
     public String getComment() {
         return mComment;
@@ -79,6 +93,14 @@ public final class Tick {
 
     public void setComment(String pComment) {
         mComment = pComment;
+    }
+
+    public Color getColor() {
+        return mColor;
+    }
+
+    public void setColor(Color pColor) {
+        mColor = pColor;
     }
 
     /**

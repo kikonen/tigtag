@@ -3,7 +3,7 @@ package org.kari.tick.gui.painter;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 
@@ -29,14 +29,14 @@ public class BlockPainter extends TickPainter {
     public void paint(
         JComponent pComponent,
         TickTextPane pEditor,
-        Graphics g2d,
+        Graphics2D g2d,
         int pYOffset,
         Tick pTick) 
     {
         Rectangle rect = calculateTickRect(pComponent, pEditor, pTick);
         if (rect != null) {
             String text = pTick.getTickDefinition().getName();
-            Color color = pTick.getTickDefinition().getColor();
+            Color color = pTick.getColor();
             g2d.setColor(color);
             g2d.drawRoundRect(
                     rect.x - GAP_H, 
