@@ -10,6 +10,7 @@ import java.awt.geom.Rectangle2D;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Utilities;
 
 import org.kari.tick.Tick;
 import org.kari.tick.TickLocation;
@@ -68,40 +69,57 @@ public class BlockPainter extends TickPainter {
     {
         Rectangle rect = null;
         try {
-            Document doc = pEditor.getDocument();
-            int docLen = doc.getLength();
-            TickLocation loc = pTick.getLocation();
-            int startPos = loc.mStartPos;
-            int endPos = loc.mEndPos;
-            
-            boolean valid = startPos >= 0
-                && startPos <= docLen
-                && endPos >= 0
-                && endPos <= docLen
-                && startPos <= endPos;
+            final Document doc = pEditor.getDocument();
+            final TickLocation loc = pTick.getLocation();
+            int locStartPos = loc.mStartPos;
+            final int len = doc.getLength();
+
+            int minX = Integer.MAX_VALUE;
+            int minY = Integer.MAX_VALUE;
+            int maxY = -1;
+            int maxX = -1;
+
+            int pos = loc.mStartPos;
+            while (pos < loc.mEndPos) {
+                int startPos = pEditor.findLineStart(pos);
+                int endPos = pEditor.findLineEnd(pos);
                 
-            if (valid) {
-                Rectangle start = pEditor.modelToView(startPos);
-                Rectangle end = pEditor.modelToView(endPos);
-                int width = pComponent.getWidth() - GAP_H * 3;
-                int height = end.y - start.y + end.height;
-                int x = GAP_H;
-                int y = start.y;
+                String line = doc.getText(startPos, endPos - startPos);
+                int lineLen = line.length();
+                if (line.endsWith("\n")) {
+                    lineLen--;
+                    endPos--;
+                }
+                int startOffset = 0;
+                int endOffset = 0;
+                while (startOffset < lineLen && Character.isWhitespace(line.charAt(startOffset))) {
+                    startOffset++;
+                }
+                while (endOffset < lineLen - startOffset && Character.isWhitespace(line.charAt(lineLen - endOffset - 1))) {
+                    endOffset++;
+                }
+                startPos += startOffset;
+                endPos -= endOffset;
                 
-                if (width > 0) {
-                    rect = new Rectangle(x, y, width, height);
+                {
+                    Rectangle start = pEditor.modelToView(startPos);
+                    Rectangle end = pEditor.modelToView(endPos);
+                    if (start.x < minX) {
+                        minX = start.x;
+                    }
+                    if (start.y < minY) {
+                        minY = start.y;
+                    }
+                    if (end.x > maxX) {
+                        maxX = end.x;
+                    }
+                    if (end.y + end.height > maxY) {
+                        maxY = end.y + end.height;
+                    }
                 }
-                
-                if (pTick.isInvalid()) {
-                    LOG.info("tick is now valid:" + pTick);
-                    pTick.setInvalid(false);
-                }
-            } else {
-                if (!pTick.isInvalid()) {
-                    LOG.warn("invalid tick:" + pTick);
-                    pTick.setInvalid(true);
-                }
+                pos = endPos + 1;
             }
+            rect = new Rectangle(minX, minY, maxX - minX, maxY - minY);
         } catch (BadLocationException e) {
             if (!pTick.isInvalid()) {
                 LOG.warn("invalid tick:" + pTick, e);

@@ -339,7 +339,31 @@ public class TickTextPane extends JTextPane {
             }
         }
     }
-            
+    
+    /**
+     * Find location for the line start
+     */
+    public int findLineStart(int pStartPosition) 
+        throws BadLocationException
+    {
+        final Document doc = getDocument();
+        Element rootElement = doc.getDefaultRootElement();
+        int line = rootElement.getElementIndex(pStartPosition);
+        Element elem = rootElement.getElement(line);
+
+        return elem.getStartOffset();
+    }
+
+    public int findLineEnd(int pStartPosition) 
+        throws BadLocationException
+    {
+        final Document doc = getDocument();
+        Element rootElement = doc.getDefaultRootElement();
+        int line = rootElement.getElementIndex(pStartPosition);
+        Element elem = rootElement.getElement(line);
+        return elem.getEndOffset();
+    }
+
     /**
      * Find beginning of the current word
      */
