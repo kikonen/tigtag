@@ -25,6 +25,7 @@ public final class Tick {
     public static final String P_LINK = "link";
     public static final String P_COMMENT = "comment";
     public static final String P_MODE = "mode";
+    public static final String P_COLOR = "color";
 
     private TickDefinition mTickDefinition;
     private TickLocation mLocation;
@@ -147,6 +148,7 @@ public final class Tick {
         }
         result.put(P_LOCATION, mLocation.toString());
         result.put(P_MODE, mLocation.mBlockMode.getName());
+        result.put(P_COLOR, Integer.toString(mColor.getRGB()));
         return result;
     }
 
@@ -162,6 +164,12 @@ public final class Tick {
         }
         mLink = pProperties.get(P_LINK);
         mComment = pProperties.get(P_COMMENT);
+        String colorStr = pProperties.get(P_COLOR);
+        if (colorStr != null) {
+            mColor = new Color(Integer.parseInt(colorStr));
+        } else {
+            mColor = Color.GREEN;
+        }
     }
 
 
