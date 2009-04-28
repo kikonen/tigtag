@@ -3,6 +3,8 @@ package org.kari.tick.gui.painter;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 
+import org.kari.tick.gui.TickHighlighter.Highlight;
+
 /**
  * Paint underline for tick
  * 
@@ -14,8 +16,14 @@ public class UnderlinePainter extends HighlightPainter {
     protected void paintLine(
         Graphics2D g2d, 
         Rectangle start, 
-        Rectangle end)
+        Rectangle end,
+        Highlight pHighlight)
     {
+        if (pHighlight == Highlight.DIM) {
+            g2d.setComposite(DIM_COMPOSITE);
+        } else if (pHighlight == Highlight.BRIGHT) {
+            g2d.setStroke(BRIGHT_STROKE);
+        }
         g2d.drawLine(
                 start.x - GAP_H, 
                 start.y + start.height, 

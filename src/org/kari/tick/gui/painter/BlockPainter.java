@@ -29,8 +29,6 @@ public class BlockPainter extends TickPainter {
     public static final int GAP_H = 4;
     public static final int GAP_V = 2;
     
-    protected final BasicStroke HIGHLIGHT_STROKE = new BasicStroke(2);
-
     @Override
     public void paint(
         JComponent pComponent,
@@ -48,7 +46,7 @@ public class BlockPainter extends TickPainter {
             if (pHighlight == Highlight.DIM) {
                 g2d.setComposite(DIM_COMPOSITE);
             } else if (pHighlight == Highlight.BRIGHT) {
-                g2d.setStroke(HIGHLIGHT_STROKE);
+                g2d.setStroke(BRIGHT_STROKE);
             }
             g2d.drawRoundRect(
                     rect.x - GAP_H, 

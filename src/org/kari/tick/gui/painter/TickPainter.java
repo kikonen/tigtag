@@ -1,6 +1,7 @@
 package org.kari.tick.gui.painter;
 
 import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 
@@ -22,7 +23,9 @@ import org.kari.tick.gui.TickHighlighter.Highlight;
 public abstract class TickPainter {
     public static final Logger LOG = Logger.getLogger("tick.painter");
 
+    protected final BasicStroke BRIGHT_STROKE = new BasicStroke(2);
     protected final AlphaComposite DIM_COMPOSITE = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.20f);
+
 
     /**
      * @param pComponent Component on which tick is painted

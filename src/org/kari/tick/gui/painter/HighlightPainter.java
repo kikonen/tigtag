@@ -26,7 +26,9 @@ import org.kari.tick.gui.TickHighlighter.Highlight;
  * @author kari
  */
 public class HighlightPainter extends TickPainter {
-    private final AlphaComposite composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f);
+    protected final AlphaComposite PEN_DIM_COMPOSITE = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.10f);
+    protected final AlphaComposite NORMAL_COMPOSITE = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.20f);
+    protected final AlphaComposite BRIGHT_COMPOSITE = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.40f);
     protected final int GAP_H = 2;
     protected final int GAP_V = 1;
 
@@ -65,7 +67,7 @@ public class HighlightPainter extends TickPainter {
                 {
                     Rectangle start = pEditor.modelToView(locStartPos + startPos);
                     Rectangle end = pEditor.modelToView(locStartPos + endPos);
-                    paintLine(g2d, start, end);
+                    paintLine(g2d, start, end, pHighlight);
                     if (rect == null) {
                         rect = start;
                     }
@@ -97,15 +99,28 @@ public class HighlightPainter extends TickPainter {
         }
     }
 
-    protected void paintLine(Graphics2D g2d, Rectangle start, Rectangle end) {
+    protected void paintLine(
+        Graphics2D g2d, 
+        Rectangle start, 
+        Rectangle end,
+        Highlight pHighlight)
+    {
         Composite origComposite = g2d.getComposite();
-        g2d.setComposite(composite);
+        if (pHighlight == Highlight.DIM) {
+            g2d.setComposite(PEN_DIM_COMPOSITE);
+        } else if (pHighlight == Highlight.BRIGHT) {
+            g2d.setComposite(BRIGHT_COMPOSITE);
+        } else{
+            g2d.setComposite(NORMAL_COMPOSITE);
+        }
         g2d.fillRect(
             start.x - GAP_H, 
             start.y - GAP_V, 
             end.x - start.x + GAP_H * 2, 
             start.height + GAP_V * 2);
-        g2d.setComposite(origComposite);
+        if (pHighlight != Highlight.DIM) {
+            g2d.setComposite(origComposite);
+        }
     }
 
 }
