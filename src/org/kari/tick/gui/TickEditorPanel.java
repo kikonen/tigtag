@@ -8,6 +8,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.AdjustmentEvent;
@@ -21,6 +22,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.TransferHandler;
 import javax.swing.border.MatteBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
@@ -30,7 +33,6 @@ import org.kari.tick.TickEditorStarter;
 import org.kari.tick.TickRegistry;
 import org.kari.tick.TickSet;
 import org.kari.tick.TickDefinition.BlockMode;
-import org.kari.tick.gui.painter.TickPainter;
 
 /**
  * Tick editor
@@ -148,8 +150,8 @@ public class TickEditorPanel
             for (Tick tick : doc.getTicks()) {
                 BlockMode mode = tick.getLocation().mBlockMode;
                 if (mode == BlockMode.SIDEBAR) {
-                    TickPainter painter = mode.getPainter();
-                    painter.paint(this, pane, g2d, pYOffset, tick);
+                    tick.paint(this, pane, g2d, pYOffset, getTickTable().getHighlight(tick));
+
                 }
             }
         }
@@ -216,6 +218,8 @@ public class TickEditorPanel
         super(new BorderLayout());
         add(getSplitPane(), BorderLayout.CENTER);
         getTickTable().getTickTableModel().setDocument(getTextPane().getTickDocument());
+        getTextPane().setTickHighlighter(getTickTable());
+        
         TransferHandler th = new TickTransferHandler();
         getTickTable().setTransferHandler(th);
         getTextPane().setTransferHandler(th);
@@ -248,6 +252,7 @@ public class TickEditorPanel
                     new JScrollPane(getTickTable()));
             mSplitPane.setDividerLocation(400);
             mSplitPane.setResizeWeight(1.0);
+            mSplitPane.setContinuousLayout(true);
         }
         return mSplitPane;
     }
@@ -278,6 +283,22 @@ public class TickEditorPanel
     public TickTable getTickTable() {
         if (mTickTable == null) {
             mTickTable = new TickTable();
+            mTickTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent pEvent) {
+                    int selectedRow = mTickTable.getSelectedRow();
+                    if (selectedRow != -1) {
+                        Tick tick = mTickTable.getTickTableModel().getRowElement(selectedRow);
+                        try {
+                            Rectangle rect = getTextPane().modelToView(tick.getLocation().mStartPos);
+                            getTextPane().scrollRectToVisible(rect);
+                        } catch (BadLocationException e) {
+                            // Ignore
+                        }
+                    }
+                    getTextPane().repaint();
+                }
+            });
         }
         return mTickTable;
     }

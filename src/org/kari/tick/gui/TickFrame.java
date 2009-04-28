@@ -29,6 +29,7 @@ import org.kari.action.std.ExitAction;
 import org.kari.perspective.KApplicationFrame;
 import org.kari.tick.FileSaver;
 import org.kari.tick.TickDefinition;
+import org.kari.tick.TickEditorStarter;
 import org.kari.tick.TickRegistry;
 import org.kari.tick.TickSet;
 import org.kari.tick.TickDefinition.BlockMode;
@@ -103,7 +104,8 @@ public class TickFrame extends KApplicationFrame {
     private final Action mNewViewAction = new KAction(TickConstants.R_NEW_VIEW) {
         @Override
         public void actionPerformed(ActionContext pCtx) {
-            new TickFrame().setVisible(true);
+            String filename = getEditor().getTextPane().getTickDocument().getFilename();
+            new TickEditorStarter(filename).start();
         }
     };
     

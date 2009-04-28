@@ -1,20 +1,23 @@
 package org.kari.tick.gui.painter;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.awt.geom.Rectangle2D;
 
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.Utilities;
 
 import org.kari.tick.Tick;
 import org.kari.tick.TickLocation;
 import org.kari.tick.gui.TickTextPane;
+import org.kari.tick.gui.TickHighlighter.Highlight;
 
 /**
  * Code block painter. Paints tick around rectangle around whole code block
@@ -25,6 +28,8 @@ import org.kari.tick.gui.TickTextPane;
 public class BlockPainter extends TickPainter {
     public static final int GAP_H = 4;
     public static final int GAP_V = 2;
+    
+    protected final BasicStroke HIGHLIGHT_STROKE = new BasicStroke(2);
 
     @Override
     public void paint(
@@ -32,13 +37,19 @@ public class BlockPainter extends TickPainter {
         TickTextPane pEditor,
         Graphics2D g2d,
         int pYOffset,
-        Tick pTick) 
+        Tick pTick,
+        Highlight pHighlight) 
     {
         Rectangle rect = calculateTickRect(pComponent, pEditor, pTick);
         if (rect != null) {
             String text = pTick.getTickDefinition().getName();
             Color color = pTick.getColor();
             g2d.setColor(color);
+            if (pHighlight == Highlight.DIM) {
+                g2d.setComposite(DIM_COMPOSITE);
+            } else if (pHighlight == Highlight.BRIGHT) {
+                g2d.setStroke(HIGHLIGHT_STROKE);
+            }
             g2d.drawRoundRect(
                     rect.x - GAP_H, 
                     rect.y - GAP_V + pYOffset, 

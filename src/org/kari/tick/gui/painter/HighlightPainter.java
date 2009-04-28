@@ -16,6 +16,7 @@ import javax.swing.text.Document;
 import org.kari.tick.Tick;
 import org.kari.tick.TickLocation;
 import org.kari.tick.gui.TickTextPane;
+import org.kari.tick.gui.TickHighlighter.Highlight;
 
 /**
  * Code word painter. Paints tick around word (or set of words), if necessary,
@@ -35,7 +36,8 @@ public class HighlightPainter extends TickPainter {
         TickTextPane pEditor,
         Graphics2D g2d,
         int pYOffset,
-        Tick pTick) 
+        Tick pTick,
+        Highlight pHighlight) 
     {
         try {
             final Document doc = pEditor.getDocument();

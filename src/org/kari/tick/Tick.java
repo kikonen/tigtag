@@ -1,10 +1,18 @@
 package org.kari.tick;
 
 import java.awt.Color;
+import java.awt.Composite;
+import java.awt.Graphics2D;
+import java.awt.Stroke;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.JComponent;
+
 import org.kari.tick.TickDefinition.BlockMode;
+import org.kari.tick.gui.TickTextPane;
+import org.kari.tick.gui.TickHighlighter.Highlight;
+import org.kari.tick.gui.painter.TickPainter;
 
 /**
  * Tick in the document
@@ -156,4 +164,31 @@ public final class Tick {
         mComment = pProperties.get(P_COMMENT);
     }
 
+
+    /**
+     * Paint this tick
+     */
+    public void paint(
+        JComponent pComponent,
+        TickTextPane pEditor,
+        Graphics2D g2d,
+        int pYOffset,
+        Highlight pHighlight) 
+    {
+        Composite origComposite = g2d.getComposite();
+        Stroke origStroke = g2d.getStroke();
+        Color origColor = g2d.getColor();
+        
+        TickPainter painter = mLocation.mBlockMode.getPainter();
+        painter.paint(
+                pComponent, 
+                pEditor, 
+                g2d, 
+                pYOffset, 
+                this, 
+                pHighlight);
+        g2d.setComposite(origComposite);
+        g2d.setStroke(origStroke);
+        g2d.setColor(origColor);
+    }
 }

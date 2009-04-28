@@ -1,5 +1,6 @@
 package org.kari.tick.gui.painter;
 
+import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 
@@ -11,6 +12,7 @@ import org.apache.log4j.Logger;
 import org.kari.tick.Tick;
 import org.kari.tick.TickLocation;
 import org.kari.tick.gui.TickTextPane;
+import org.kari.tick.gui.TickHighlighter.Highlight;
 
 /**
  * API for tick painters
@@ -20,16 +22,20 @@ import org.kari.tick.gui.TickTextPane;
 public abstract class TickPainter {
     public static final Logger LOG = Logger.getLogger("tick.painter");
 
+    protected final AlphaComposite DIM_COMPOSITE = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.20f);
+
     /**
      * @param pComponent Component on which tick is painted
      * @param pYOffset Offset for sidebar (linenumbers), for text area itself 0.
+     * @param pHighlight If true then tick should be 
      */
     public abstract void paint(
         JComponent pComponent,
         TickTextPane pEditor, 
         Graphics2D g2d, 
         int pYOffset,
-        Tick pTick);
+        Tick pTick,
+        Highlight pHighlight);
 
     /**
      * Calculate painted rectangle for the tick

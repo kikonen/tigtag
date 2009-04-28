@@ -1,7 +1,9 @@
 package org.kari.tick.gui;
 
+import java.util.Collections;
+import java.util.Set;
+
 import javax.swing.Action;
-import javax.swing.JMenu;
 import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -18,7 +20,9 @@ import org.kari.tick.Tick;
  * 
  * @author kari
  */
-public class TickTable extends JTable {
+public class TickTable extends JTable 
+    implements TickHighlighter
+{
     private Action mRemoveAction = new KAction(ActionConstants.R_REMOVE) {
         @Override
         public void actionPerformed(ActionContext pCtx) {
@@ -55,4 +59,38 @@ public class TickTable extends JTable {
     public TickTableModel getTickTableModel() {
         return (TickTableModel)getModel();
     }
+
+    @Override
+    public Highlight getHighlight(Tick pTick) {
+        Highlight result = Highlight.NORMAL;
+        int selectedRow = getSelectedRow();
+        Tick tick = null;
+        if (selectedRow != -1) {
+            tick = getTickTableModel().getRowElement(selectedRow);
+            if (tick == pTick) {
+                result = Highlight.BRIGHT;
+            } else {
+                if (!pTick.getTickDefinition().equals(tick.getTickDefinition())) {
+                    result = Highlight.DIM;
+                }
+            }
+        } else {
+            // NORMAL
+        }
+        return result;
+    }
+    
+    @Override
+    public Set<Tick> getHightlightedTicks() {
+        int selectedRow = getSelectedRow();
+        Tick tick = null;
+        if (selectedRow != -1) {
+            tick = getTickTableModel().getRowElement(selectedRow);
+        }
+        
+        return tick != null
+            ? Collections.singleton(tick)
+            : Collections.<Tick>emptySet();
+    }
+    
 }

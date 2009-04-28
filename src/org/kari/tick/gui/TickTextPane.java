@@ -111,6 +111,7 @@ public class TickTextPane extends JTextPane {
     };
     
     private LineNumberPanel mLineNumberPanel;
+    private TickHighlighter mTickHighlighter;
     
     
     public TickTextPane() {
@@ -334,8 +335,7 @@ public class TickTextPane extends JTextPane {
         for (Tick tick : doc.getTicks()) {
             BlockMode mode = tick.getLocation().mBlockMode;
             if (mode != BlockMode.SIDEBAR) {
-                TickPainter painter = mode.getPainter();
-                painter.paint(this, this, g2d, 0, tick);
+                tick.paint(this, this, g2d, 0, mTickHighlighter.getHighlight(tick));
             }
         }
     }
@@ -448,6 +448,14 @@ public class TickTextPane extends JTextPane {
 
     public void setLineNumberPanel(LineNumberPanel pLineNumberPanel) {
         mLineNumberPanel = pLineNumberPanel;
+    }
+    
+    public TickHighlighter getTickHighlighter() {
+        return mTickHighlighter;
+    }
+
+    public void setTickHighlighter(TickHighlighter pTickHighlighter) {
+        mTickHighlighter = pTickHighlighter;
     }
 
     public int getMaxLineLen() {
