@@ -11,16 +11,26 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 
+import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JViewport;
+import javax.swing.KeyStroke;
 import javax.swing.TransferHandler;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -214,11 +224,36 @@ public class TickEditorPanel
     
     private TickTable mTickTable;
     
+    private Border mFocusedBorder = new MatteBorder(1, 1, 1, 1, Color.BLUE);
+    private Border mUnFocusedBorder = new EmptyBorder(1, 1, 1, 1);
+    
     public TickEditorPanel() {
         super(new BorderLayout());
         add(getSplitPane(), BorderLayout.CENTER);
         getTickTable().getTickTableModel().setDocument(getTextPane().getTickDocument());
         getTextPane().setTickHighlighter(getTickTable());
+        
+        // Draw highlight for focused editor area
+        FocusListener fl = new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent pEvent) {
+                JComponent comp = (JComponent)pEvent.getComponent();
+                if (comp.getParent() instanceof JViewport) {
+                    JScrollPane scrollPane = (JScrollPane)comp.getParent().getParent(); 
+                    scrollPane.setBorder(mFocusedBorder);
+                }
+            }
+            @Override
+            public void focusLost(FocusEvent pEvent) {
+                JComponent comp = (JComponent)pEvent.getComponent();
+                if (comp.getParent() instanceof JViewport) {
+                    JScrollPane scrollPane = (JScrollPane)comp.getParent().getParent(); 
+                    scrollPane.setBorder(mUnFocusedBorder);
+                }
+            }
+        };
+        getTickTable().addFocusListener(fl);
+        getTextPane().addFocusListener(fl);
         
         TransferHandler th = new TickTransferHandler();
         getTickTable().setTransferHandler(th);
@@ -276,6 +311,22 @@ public class TickEditorPanel
             mTextPane = new TickTextPane();
             TickSet set = TickRegistry.getInstance().createSet("Set 1");
             mTextPane.setTickSet(set);
+            
+            // Focus travelsal
+            mTextPane.getInputMap().put(
+                    KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.ALT_DOWN_MASK), 
+                    "activateTable");
+            mTextPane.getInputMap().put(
+                    KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.ALT_GRAPH_DOWN_MASK), 
+                    "activateTable");
+            
+            mTextPane.getActionMap().put(
+                    "activateTable", 
+                    new AbstractAction() {
+                        @Override
+                        public void actionPerformed(ActionEvent pE) {
+                            getTickTable().requestFocus();
+                        }});
         }
         return mTextPane;
     }
@@ -299,6 +350,22 @@ public class TickEditorPanel
                     getTextPane().repaint();
                 }
             });
+            
+            // Focus travelsal
+            mTickTable.getInputMap().put(
+                    KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.ALT_DOWN_MASK), 
+                    "activateEditor");
+            mTickTable.getInputMap().put(
+                    KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.ALT_GRAPH_DOWN_MASK), 
+                    "activateEditor");
+            
+            mTickTable.getActionMap().put(
+                    "activateEditor", 
+                    new AbstractAction() {
+                        @Override
+                        public void actionPerformed(ActionEvent pE) {
+                            getTextPane().requestFocus();
+                        }});
         }
         return mTickTable;
     }
