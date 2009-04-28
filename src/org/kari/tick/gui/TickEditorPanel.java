@@ -8,20 +8,25 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.io.File;
 import java.io.IOException;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.TransferHandler;
 import javax.swing.border.MatteBorder;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 
 import org.kari.tick.Tick;
+import org.kari.tick.TickEditorStarter;
 import org.kari.tick.TickRegistry;
 import org.kari.tick.TickSet;
 import org.kari.tick.TickDefinition.BlockMode;
@@ -150,6 +155,54 @@ public class TickEditorPanel
         }
     }
 
+    /**
+     * Allow DnD of files into editor
+     */
+    public class TickTransferHandler extends TransferHandler {
+        @Override
+        public boolean canImport(JComponent pComp, DataFlavor[] pTransferFlavors)
+        {
+            return true;
+        }
+
+        @Override
+        public boolean importData(JComponent pComp, Transferable pTransferable) {
+            boolean result = false;
+            try {
+                DataFlavor[] flavors = pTransferable.getTransferDataFlavors();
+                TickConstants.LOG.info(flavors);
+                // TODO KI this is *NOT* pretty
+                String wanted = "java.awt.datatransfer.DataFlavor[mimetype=text/uri-list;representationclass=java.lang.String]";
+                DataFlavor flavor = null;//new DataFlavor(String.class, "text/uri-list;");
+                for (DataFlavor tmp : flavors) {
+                    if (wanted.equals(tmp.toString())) {
+                        flavor = tmp;
+                        break;
+                    }
+                }
+//                TickConstants.LOG.info(flavor);
+                if (pTransferable.isDataFlavorSupported(flavor)) {
+                    String value = (String)pTransferable.getTransferData(flavor);
+                    TickConstants.LOG.info(value);
+                    String[] filenames = value.split("\n");
+                    for (String filename : filenames) {
+                        filename = filename.trim();
+                        if (filename.startsWith("file://")) {
+                            filename = filename.substring(7);
+                        } else  if (filename.startsWith("file:")) {
+                            filename = filename.substring(5);
+                        }
+                        new TickEditorStarter(filename).start();
+                    }
+                }
+            } catch (Exception e) {
+                TickConstants.LOG.error("Failed ot insert", e);
+            }
+            return result;
+        }
+    }
+    
+
     private JSplitPane mSplitPane;
 
     private JPanel mTopPanel;
@@ -163,6 +216,11 @@ public class TickEditorPanel
         super(new BorderLayout());
         add(getSplitPane(), BorderLayout.CENTER);
         getTickTable().getTickTableModel().setDocument(getTextPane().getTickDocument());
+        TransferHandler th = new TickTransferHandler();
+        getTickTable().setTransferHandler(th);
+        getTextPane().setTransferHandler(th);
+        getLineNumberPanel().setTransferHandler(th);
+        setTransferHandler(th);
     }
 
     public JPanel getTopPanel() {

@@ -223,21 +223,24 @@ public class TickFrame extends KApplicationFrame {
         
         setSize(new Dimension(700, 600));
         
-        // Just testing
-        if (true) {
-            String DEF_FILE = "/home/kari/data/devel/work/tigtag/src/org/kari/tick/TickRegistry.java";
-            try {
-                mEditor.setFile(new File(DEF_FILE), true);
-                setTitle(mEditor.getTextPane().getTickDocument().getFilename());
-            } catch (IOException e) {
-                LOG.error("Failed to load: " + DEF_FILE, e);
-                mEditor.getTextPane().setText("Failed to load: " + DEF_FILE);
-            }
-        }
-        
         TickSet tickSet = getEditor().getTextPane().getTickSet();
         tickSet.setBlockMode(null);
         tickSet.setCurrent( ((TickAction)tickActions[0]).mDefinition );
+    }
+
+    /**
+     * Show given file in editor
+     * 
+     * @param pFilename
+     */
+    public void setFile(String pFilename) {
+        try {
+            mEditor.setFile(new File(pFilename), true);
+            setTitle(mEditor.getTextPane().getTickDocument().getFilename());
+        } catch (IOException e) {
+            LOG.error("Failed to load: " + pFilename, e);
+            mEditor.getTextPane().setText("Failed to load: \"" + pFilename + "\"");
+        }
     }
 
     @Override

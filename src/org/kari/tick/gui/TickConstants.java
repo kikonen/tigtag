@@ -1,9 +1,12 @@
 package org.kari.tick.gui;
 
+import org.apache.log4j.Logger;
+
 public interface TickConstants {
     String S = "tick.";
     
-    String VERSION = "0.1";
+    String VERSION = "0.2";
+    Logger LOG = Logger.getLogger("tick");
     
     String R_NEW_VIEW = S + "New";
     

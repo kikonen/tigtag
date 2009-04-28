@@ -1,8 +1,12 @@
 package org.kari.tick;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.kari.base.AppUtil;
+import org.kari.base.Application;
+import org.kari.base.CommandLine;
 import org.kari.resources.ResourceAdapter;
-import org.kari.tick.gui.TickFrame;
 import org.kari.tick.gui.TickResources;
 
 /**
@@ -10,7 +14,27 @@ import org.kari.tick.gui.TickResources;
  * 
  * @author kari
  */
-public class TickMain {
+public class TickMain 
+    implements
+        Application
+{
+    @Override
+    public void start(CommandLine pArgs)
+        throws Exception
+    {
+        List<String> filenames = new ArrayList<String>();
+        for (String arg : pArgs.getArgs()) {
+            filenames.add(arg);
+        }
+        
+        if (!filenames.isEmpty()) {
+            for (String filename : filenames) {
+                new TickEditorStarter(filename).start();
+            }
+        } else {
+            new TickEditorStarter(null).start();
+        }
+    }
 
     public static void main(String[] pArgs) {
         try {
@@ -18,7 +42,7 @@ public class TickMain {
             ResourceAdapter.getInstance().addBundle(TickResources.class);
             
             TickRegistry.getInstance().loadDefinitions();
-            AppUtil.start(TickFrame.class, pArgs);
+            AppUtil.start(TickMain.class, pArgs);
         } catch (Exception e) {
             System.exit(-1);
         }
