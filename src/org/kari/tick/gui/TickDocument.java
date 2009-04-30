@@ -9,6 +9,9 @@ import org.kari.tick.FileLoader;
 import org.kari.tick.Tick;
 import org.kari.util.DirectByteArrayOutputStream;
 
+import com.uwyn.jhighlight.renderer.XhtmlRendererFactory;
+import com.uwyn.jhighlight.tools.FileUtils;
+
 /**
  * Document model for tigtag. Maintains program code, and associated ticks
  * 
@@ -113,16 +116,16 @@ public class TickDocument {
         String filename = pLoader.getFile().getAbsolutePath();
         String text = pLoader.getText();
 
-        if (false) {
-//            ByteArrayInputStream inputBuffer = new ByteArrayInputStream(text.getBytes());
-//            DirectByteArrayOutputStream buffer = new DirectByteArrayOutputStream();
-//            XhtmlRendererFactory.getRenderer(FileUtils.getExtension(filename))
-//                .highlight(filename,
-//                       inputBuffer,
-//                       buffer,
-//                       "UTF-8",
-//                       false);
-//            mRenderedText = new String(buffer.toByteArray());
+        if (true) {
+            ByteArrayInputStream inputBuffer = new ByteArrayInputStream(text.getBytes());
+            DirectByteArrayOutputStream buffer = new DirectByteArrayOutputStream();
+            XhtmlRendererFactory.getRenderer(FileUtils.getExtension(filename))
+                .highlight(null,
+                       inputBuffer,
+                       buffer,
+                       "UTF-8",
+                       false);
+            mRenderedText = new String(buffer.toByteArray());
         } else {
             mRenderedText = text;
         }
