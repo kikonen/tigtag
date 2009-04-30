@@ -62,18 +62,11 @@ public final class TickDocumentManager {
         TickDocument doc = getDocument(filename);
         int refCount = 0;
         if (doc == null) {
-            doc = new TickDocument();
-            doc.setFilename(filename);
-            
             FileLoader loader = new FileLoader(pFile, pLoadTicks);
             loader.load();
             
-            try {
-                doc.insertString(0, loader.getText(), null);
-            } catch (BadLocationException e) {
-                // cannot happen
-            }
-            doc.setTicks(loader.getTicks());
+            doc = new TickDocument();
+            doc.setFileContents(loader);
             
             mDocuments.put(filename, doc);
         } else {
@@ -84,27 +77,27 @@ public final class TickDocumentManager {
         return doc;
     }
 
-    /**
-     * Save document associated with pFile as "Tick file". Both ticked file
-     * and ticks are saved into ZIP file
-     * 
-     * <li>NOTE KI ticked file may change on disc, thus original file must
-     * be saved *WITH* ticks
-     */
-    public void saveDocument(File pFile) 
-        throws 
-            IOException
-    {
-        String filename = pFile.getAbsolutePath();
-        
-        TickDocument doc = getDocument(filename);
-        if (doc != null) {
-            try {
-                String text = doc.getText(0, doc.getLength());
-//                new FileSaver(pFile).save();
-            } catch (BadLocationException e) {
-                // cannot happen
-            }
-        }
-    }
+//    /**
+//     * Save document associated with pFile as "Tick file". Both ticked file
+//     * and ticks are saved into ZIP file
+//     * 
+//     * <li>NOTE KI ticked file may change on disc, thus original file must
+//     * be saved *WITH* ticks
+//     */
+//    public void saveDocument(File pFile) 
+//        throws 
+//            IOException
+//    {
+//        String filename = pFile.getAbsolutePath();
+//        
+//        TickDocument doc = getDocument(filename);
+//        if (doc != null) {
+//            try {
+//                String text = doc.getText(0, doc.getLength());
+////                new FileSaver(pFile).save();
+//            } catch (BadLocationException e) {
+//                // cannot happen
+//            }
+//        }
+//    }
 }

@@ -35,11 +35,7 @@ public class FileSaver {
     private File mFile;
     
     public FileSaver(TickDocument pDoc) {
-        try {
-            mText = pDoc.getText(0, pDoc.getLength());
-        } catch (BadLocationException e) {
-            // cannot happen
-        }
+        mText = pDoc.getText();
         mTicks = pDoc.getTicks();
         mFile = new File(pDoc.getFilename());
     }

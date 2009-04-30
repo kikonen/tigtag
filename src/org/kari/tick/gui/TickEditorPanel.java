@@ -11,6 +11,12 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
@@ -20,6 +26,12 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
@@ -38,6 +50,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 
+import org.apache.log4j.Logger;
 import org.kari.tick.Tick;
 import org.kari.tick.TickEditorStarter;
 import org.kari.tick.TickRegistry;
@@ -52,6 +65,8 @@ import org.kari.tick.TickDefinition.BlockMode;
 public class TickEditorPanel
     extends JPanel
 {
+    static final Logger LOG = TickConstants.LOG;
+
     /**
      * Panel painting linenumbers
      */
@@ -168,6 +183,33 @@ public class TickEditorPanel
     }
 
     /**
+     * Drop target
+     */
+    protected final class DropTargetHandler implements DropTargetListener {
+        public void drop(DropTargetDropEvent pEvent) {
+            pEvent.acceptDrop(DnDConstants.ACTION_COPY);
+            TransferHandler handler = getTransferHandler();
+            handler.importData(TickEditorPanel.this, pEvent.getTransferable());
+        }
+        
+        public void dragEnter(DropTargetDragEvent pEvent) {
+            pEvent.acceptDrag(DnDConstants.ACTION_COPY);
+        }
+
+        public void dragExit(DropTargetEvent pDte) {
+            // do nothing
+        }
+
+        public void dragOver(DropTargetDragEvent pEvent) {
+            pEvent.acceptDrag(DnDConstants.ACTION_COPY);
+        }
+
+        public void dropActionChanged(DropTargetDragEvent pDtde) {
+            // do nothing
+        }
+    }
+    
+    /**
      * Allow DnD of files into editor
      */
     public class TickTransferHandler extends TransferHandler {
@@ -178,37 +220,84 @@ public class TickEditorPanel
         }
 
         @Override
-        public boolean importData(JComponent pComp, Transferable pTransferable) {
+        public boolean importData(JComponent pComp, Transferable pData) {
             boolean result = false;
             try {
-                DataFlavor[] flavors = pTransferable.getTransferDataFlavors();
-                TickConstants.LOG.info(flavors);
-                // TODO KI this is *NOT* pretty
-                String wanted = "java.awt.datatransfer.DataFlavor[mimetype=text/uri-list;representationclass=java.lang.String]";
-                DataFlavor flavor = null;//new DataFlavor(String.class, "text/uri-list;");
-                for (DataFlavor tmp : flavors) {
-                    if (wanted.equals(tmp.toString())) {
-                        flavor = tmp;
-                        break;
+                List<String> validURIs = new ArrayList<String>();
+                List<File> validFiles = new ArrayList<File>();
+
+                DataFlavor[] flavors = pData.getTransferDataFlavors();
+
+                for (int flavorIter=0; flavorIter<flavors.length; flavorIter++) {
+                    DataFlavor flavor = flavors[flavorIter];
+                    LOG.debug(flavor.getMimeType());
+                    Class cls = flavor.getRepresentationClass();
+
+                    if (flavor.getMimeType().indexOf("text/uri-list")!=-1 && cls==String.class) {
+                        String data = (String)pData.getTransferData(flavor);
+                        StringTokenizer st = new StringTokenizer(data, "\r\n");
+                        while (st.hasMoreElements()) {
+                            String uri = st.nextToken().trim();
+                            if (!"".equals(uri)) {
+                                validURIs.add(uri);
+                            }
+                        }
+                    } else if (flavor.getMimeType().indexOf("application/x-java-file-list")!=-1) {
+                        List<File> files = (List<File>)pData.getTransferData(flavor);
+                        validFiles.addAll(files);
                     }
                 }
-//                TickConstants.LOG.info(flavor);
-                if (pTransferable.isDataFlavorSupported(flavor)) {
-                    String value = (String)pTransferable.getTransferData(flavor);
-                    TickConstants.LOG.info(value);
-                    String[] filenames = value.split("\n");
-                    for (String filename : filenames) {
-                        filename = filename.trim();
-                        if (filename.startsWith("file://")) {
-                            filename = filename.substring(7);
-                        } else  if (filename.startsWith("file:")) {
-                            filename = filename.substring(5);
+
+                if (!validURIs.isEmpty()) {
+                    Collections.sort(validURIs, new Comparator<String>() {
+                        public int compare(String pO1, String pO2) {
+                            // TODO KI suffix sort
+                            return pO1.compareTo(pO2);
                         }
-                        new TickEditorStarter(filename).start();
+                    });
+                    Collections.reverse(validURIs);
+                    
+                    for (String uri : validURIs) {
+                        try {
+                            if (uri.startsWith("zip:")) {
+                                // TODO KI Nicer approach would be to install "zip:/" URI handler
+                                // KDE support...
+//                                mOpenAction.openZipFile(uri);
+                                LOG.error("NY! " + uri);
+                            } else {
+                                URL url = new URL(uri);
+                                File file = new File(url.getFile());
+                                LOG.info("Opening: " + url);
+                                if (file.exists()) {
+                                    new TickEditorStarter(file).start();
+                                } else {
+                                    LOG.error("File not found: " + url);
+                                }
+                            }
+                        } catch (Exception e1) {
+                            LOG.error("Failed to open: " + uri, e1);
+                        }
+                    }
+                } else {
+                    Collections.sort(validFiles, new Comparator<File>() {
+                        public int compare(File pO1, File pO2) {
+                            // TODO KI suffix sort
+                            return pO1.compareTo(pO2);
+                        }
+                    });
+                    Collections.reverse(validFiles);
+                    
+                    for (File file : validFiles) {
+                        try {
+                            LOG.info("Opening: " + file);
+                            new TickEditorStarter(file.getAbsolutePath()).start();
+                        } catch (Exception e1) {
+                            LOG.error("Failed to open: " + file, e1);
+                        }
                     }
                 }
             } catch (Exception e) {
-                TickConstants.LOG.error("Failed ot insert", e);
+                LOG.error("Failed ot insert", e);
             }
             return result;
         }
@@ -230,8 +319,12 @@ public class TickEditorPanel
     public TickEditorPanel() {
         super(new BorderLayout());
         add(getSplitPane(), BorderLayout.CENTER);
-        getTickTable().getTickTableModel().setDocument(getTextPane().getTickDocument());
-        getTextPane().setTickHighlighter(getTickTable());
+        
+        TickTable tickTable = getTickTable();
+        TickTextPane textPane = getTextPane();
+        
+        tickTable.getTickTableModel().setTickDocument(textPane.getTickDocument());
+        textPane.setTickHighlighter(tickTable);
         
         // Draw highlight for focused editor area
         FocusListener fl = new FocusListener() {
@@ -252,14 +345,23 @@ public class TickEditorPanel
                 }
             }
         };
-        getTickTable().addFocusListener(fl);
-        getTextPane().addFocusListener(fl);
+        tickTable.addFocusListener(fl);
+        textPane.addFocusListener(fl);
         
         TransferHandler th = new TickTransferHandler();
-        getTickTable().setTransferHandler(th);
-        getTextPane().setTransferHandler(th);
-        getLineNumberPanel().setTransferHandler(th);
+        DropTargetHandler dh = new DropTargetHandler();
+        
         setTransferHandler(th);
+        tickTable.setTransferHandler(th);
+        textPane.setTransferHandler(th);
+        
+        // DnD & Clipboard
+//        setDragEnabled(true);
+        tickTable.setDragEnabled(true);
+        textPane.setDragEnabled(true);
+        new DropTarget(this, dh);
+        new DropTarget(tickTable, dh);
+        new DropTarget(textPane, dh);
     }
 
     public JPanel getTopPanel() {
@@ -380,8 +482,8 @@ public class TickEditorPanel
         TickDocument oldDoc = getTextPane().getTickDocument();
         if (doc != oldDoc) {
             docMgr.closeDocument(oldDoc);
-            getTextPane().setDocument(doc);
-            getTickTable().getTickTableModel().setDocument(doc);
+            getTextPane().setTickDocument(doc);
+            getTickTable().getTickTableModel().setTickDocument(doc);
         } else {
             docMgr.closeDocument(doc);
         }

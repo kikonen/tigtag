@@ -1,5 +1,7 @@
 package org.kari.tick;
 
+import java.io.File;
+
 import javax.swing.SwingUtilities;
 
 import org.kari.tick.gui.TickFrame;
@@ -13,10 +15,18 @@ public class TickEditorStarter
     implements
         Runnable
 {
-    private final String mFilename;
+    private String mFilename;
+
+    public TickEditorStarter() {
+        // Nothing
+    }
 
     public TickEditorStarter(String pFilename) {
         mFilename = pFilename;
+    }
+    
+    public TickEditorStarter(File pFile) {
+        mFilename = pFile.getAbsolutePath();
     }
     
     public void start() {

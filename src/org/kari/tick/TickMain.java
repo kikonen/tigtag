@@ -32,7 +32,7 @@ public class TickMain
                 new TickEditorStarter(filename).start();
             }
         } else {
-            new TickEditorStarter(null).start();
+            new TickEditorStarter().start();
         }
     }
 

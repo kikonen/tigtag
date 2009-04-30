@@ -12,6 +12,7 @@ import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -31,7 +32,7 @@ import org.kari.tick.TickLocation;
 import org.kari.tick.TickSet;
 import org.kari.tick.TickDefinition.BlockMode;
 import org.kari.tick.gui.TickEditorPanel.LineNumberPanel;
-import org.kari.tick.gui.painter.TickPainter;
+import org.kari.util.FileUtil;
 
 /**
  * Text pane for tigtag
@@ -112,10 +113,9 @@ public class TickTextPane extends JTextPane {
     
     private LineNumberPanel mLineNumberPanel;
     private TickHighlighter mTickHighlighter;
-    
+    private TickDocument mTickDocument;
     
     public TickTextPane() {
-        super(new TickDocument());
         setEditable(false);
         addCaretListener(mEventHandler);
         addKeyListener(mEventHandler);
@@ -124,6 +124,8 @@ public class TickTextPane extends JTextPane {
         getActionMap().put("caret-forward", mRight);
         
         setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        
+        setTickDocument(new TickDocument());
     }
 
     /**
@@ -146,18 +148,36 @@ public class TickTextPane extends JTextPane {
     }
     
     public TickDocument getTickDocument() {
-        return (TickDocument)super.getDocument();
+        return mTickDocument;
     }
-    
-    @Override
-    public void setDocument(Document pDoc) {
-        Document oldDoc = getDocument();
-        if (oldDoc instanceof TickDocument) {
-            ((TickDocument)oldDoc).removeTickListener(mEventHandler);
+
+    public void setTickDocument(TickDocument pDoc) 
+    {
+        TickDocument oldDoc = mTickDocument;
+        if (oldDoc != null) {
+            oldDoc.removeTickListener(mEventHandler);
         }
-        super.setDocument(pDoc);
-        if (pDoc instanceof TickDocument) {
-            ((TickDocument)pDoc).addTickListener(mEventHandler);
+        mTickDocument = pDoc;
+        
+        try {
+            Document doc = getDocument();
+            doc.remove(0, doc.getLength());
+            
+            if (mTickDocument != null && !mTickDocument.isEmpty()) {
+                mTickDocument.addTickListener(mEventHandler);
+                if (false) {
+                    setContentType("text/html");
+                    String shortFilename = new File(pDoc.getFilename()).getName();
+                    File file = FileUtil.save(
+                            File.createTempFile(shortFilename, ".tigtag"),
+                            mTickDocument.getRenderedText().getBytes());
+                    setPage(file.toURL());
+                } else {
+                    setText(mTickDocument.getText());
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Failed to show: " + pDoc.getFilename(), e);
         }
     }
 
@@ -428,7 +448,7 @@ public class TickTextPane extends JTextPane {
      * Is document empty
      */
     public boolean isEmpty() {
-        return getTickDocument().getLength() == 0;
+        return getDocument().getLength() == 0;
     }
 
     /**

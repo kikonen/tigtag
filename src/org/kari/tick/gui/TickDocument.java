@@ -1,11 +1,13 @@
 package org.kari.tick.gui;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.text.DefaultStyledDocument;
-
+import org.kari.tick.FileLoader;
 import org.kari.tick.Tick;
+import org.kari.util.DirectByteArrayOutputStream;
 
 /**
  * Document model for tigtag. Maintains program code, and associated ticks
@@ -13,13 +15,15 @@ import org.kari.tick.Tick;
  * @author kari
  *
  */
-public class TickDocument extends DefaultStyledDocument {
+public class TickDocument {
     /**
      * File name extension for ticks file
      */
     public static final String EXT_TICKS = ".ticks";
     
     private String mFilename;
+    private String mText;
+    private String mRenderedText;
     private final List<TickListener> mTickListeners = new ArrayList<TickListener>();
     private final List<Tick> mTicks = new ArrayList<Tick>();
     
@@ -66,12 +70,65 @@ public class TickDocument extends DefaultStyledDocument {
         mModified = pModified;
     }
 
+    /**
+     * @return Associated original filename, null if not set 
+     */
     public String getFilename() {
         return mFilename;
     }
 
     public void setFilename(String pFilename) {
         mFilename = pFilename;
+    }
+    
+    /**
+     * @return true if document is currently empty
+     */
+    public boolean isEmpty() {
+        return mText == null;
+    }
+    
+    /**
+     * @return Current loaded text, null if none loaded
+     */
+    public String getText() {
+        return mText;
+    }
+    
+    /**
+     * @return Currently displayed HTML rendered text, null if none loaded
+     */
+    public String getRenderedText() {
+        return mRenderedText;
+    }
+
+    /**
+     * Display pText, and render it according to code highlighter
+     * 
+     * @param pFileLoader Represents file contents
+     */
+    public void setFileContents(FileLoader pLoader) 
+        throws IOException
+    {
+        String filename = pLoader.getFile().getAbsolutePath();
+        String text = pLoader.getText();
+
+        if (false) {
+//            ByteArrayInputStream inputBuffer = new ByteArrayInputStream(text.getBytes());
+//            DirectByteArrayOutputStream buffer = new DirectByteArrayOutputStream();
+//            XhtmlRendererFactory.getRenderer(FileUtils.getExtension(filename))
+//                .highlight(filename,
+//                       inputBuffer,
+//                       buffer,
+//                       "UTF-8",
+//                       false);
+//            mRenderedText = new String(buffer.toByteArray());
+        } else {
+            mRenderedText = text;
+        }
+        mFilename = filename;
+        mText = text;
+        setTicks(pLoader.getTicks());
     }
 
     /**

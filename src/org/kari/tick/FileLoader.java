@@ -39,7 +39,14 @@ public class FileLoader {
         mFile = pFile;
         mLoadTicks = pLoadTicks;
     }
-    
+
+    /**
+     * @return Loaded file
+     */
+    public File getFile() {
+        return mFile;
+    }
+
     /**
      * @return true if ".ticks file already exists
      */

@@ -25,10 +25,10 @@ public class TickTableModel extends AbstractTableModel
         new TableColumn(TickTableModel.IDX_LINE),
         new TableColumn(TickTableModel.IDX_TEXT)};
 
-    private TickDocument mDocument;
+    private TickDocument mTickDocument;
     
     public TickTableModel(TickDocument pDocument) {
-        mDocument = pDocument;
+        mTickDocument = pDocument;
     }
     
     public TableColumn[] getColumns() {
@@ -36,22 +36,22 @@ public class TickTableModel extends AbstractTableModel
     }
 
     public TickDocument getDocument() {
-        return mDocument;
+        return mTickDocument;
     }
 
-    public void setDocument(TickDocument pDocument) {
-        if (mDocument != null) {
-            mDocument.removeTickListener(this);
+    public void setTickDocument(TickDocument pDocument) {
+        if (mTickDocument != null) {
+            mTickDocument.removeTickListener(this);
         }
-        mDocument = pDocument;
-        if (mDocument != null) {
-            mDocument.addTickListener(this);
+        mTickDocument = pDocument;
+        if (mTickDocument != null) {
+            mTickDocument.addTickListener(this);
         }
         fireTableDataChanged();
     }
     
     public Tick getRowElement(int pRow) {
-        return mDocument.getTicks().get(pRow);
+        return mTickDocument.getTicks().get(pRow);
     }
 
     @Override
@@ -86,15 +86,15 @@ public class TickTableModel extends AbstractTableModel
 
     @Override
     public int getRowCount() {
-        return mDocument != null
-            ? mDocument.getTicks().size()
+        return mTickDocument != null
+            ? mTickDocument.getTicks().size()
             : 0;
     }
 
     @Override
     public Object getValueAt(int pRowIndex, int pColumnIndex) {
         Object result = null;
-        Tick tick = mDocument.getTicks().get(pRowIndex);
+        Tick tick = mTickDocument.getTicks().get(pRowIndex);
         TickLocation loc = tick.getLocation();
         switch (pColumnIndex) {
         case IDX_NAME:
