@@ -113,7 +113,9 @@ public class TickFrame extends KApplicationFrame {
         @Override
         public void actionPerformed(ActionContext pCtx) {
             String msg = "<html>"
-                + "<b>TigTag v" + TickConstants.VERSION + "</b><br><br>"
+                + "<b>" 
+                + TickConstants.APP_NAME
+                + " v" + TickConstants.VERSION + "</b><br><br>"
                 + "All copyrights owned by Kari Ikonen<br>"
                 + "(except for the  concept of the 'ticks')<br>"
                 + "<br>"
@@ -146,7 +148,7 @@ public class TickFrame extends KApplicationFrame {
                 if (retVal == JFileChooser.APPROVE_OPTION) {
                     File file = chooser.getSelectedFile();
                     mEditor.setFile(file, true);
-                    setTitle(mEditor.getTextPane().getTickDocument().getFilename());
+                    setAppTitle(file.getAbsolutePath());
                 }
                 mDir = chooser.getCurrentDirectory();
             } catch (Exception e) {
@@ -228,7 +230,20 @@ public class TickFrame extends KApplicationFrame {
         TickSet tickSet = getEditor().getTextPane().getTickSet();
         tickSet.setBlockMode(null);
         tickSet.setCurrent( ((TickAction)tickActions[0]).mDefinition );
+        
+        setAppTitle("");
     }
+    
+    public void setAppTitle(String title) {
+        if (title.length() == 0) {
+            title = "<No name>";
+        }
+        title +=
+            " - " 
+            + TickConstants.APP_NAME;
+        super.setTitle(title);
+    }
+    
 
     /**
      * Show given file in editor
@@ -237,8 +252,9 @@ public class TickFrame extends KApplicationFrame {
      */
     public void setFile(String pFilename) {
         try {
-            mEditor.setFile(new File(pFilename), true);
-            setTitle(mEditor.getTextPane().getTickDocument().getFilename());
+            File file = new File(pFilename);
+            mEditor.setFile(file, true);
+            setAppTitle(file.getAbsolutePath());
         } catch (IOException e) {
             LOG.error("Failed to load: " + pFilename, e);
             mEditor.getTextPane().setText("Failed to load: \"" + pFilename + "\"");

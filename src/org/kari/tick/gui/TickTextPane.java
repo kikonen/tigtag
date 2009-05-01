@@ -12,26 +12,16 @@ import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.StringReader;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.MutableAttributeSet;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
 import javax.swing.text.Utilities;
 
 import org.apache.log4j.Logger;
@@ -41,8 +31,7 @@ import org.kari.tick.TickLocation;
 import org.kari.tick.TickSet;
 import org.kari.tick.TickDefinition.BlockMode;
 import org.kari.tick.gui.TickEditorPanel.LineNumberPanel;
-import org.kari.util.DirectByteArrayOutputStream;
-import org.kari.util.FileUtil;
+import org.kari.tick.gui.syntax.SyntaxRenderer;
 
 /**
  * Text pane for tigtag
@@ -161,218 +150,22 @@ public class TickTextPane extends JTextPane {
         return mTickDocument;
     }
 
-    public void setTickDocument(TickDocument pDoc) 
+    public void setTickDocument(TickDocument pTickDocument) 
     {
         TickDocument oldDoc = mTickDocument;
         if (oldDoc != null) {
             oldDoc.removeTickListener(mEventHandler);
         }
-        mTickDocument = pDoc;
+        mTickDocument = pTickDocument;
         
         try {
             if (mTickDocument != null && !mTickDocument.isEmpty()) {
-                if (false) {
-                    Document doc = getDocument();
-                    doc.remove(0, doc.getLength());
-                    setContentType("text/html");
-                    String shortFilename = new File(pDoc.getFilename()).getName();
-                    File file = FileUtil.save(
-                            File.createTempFile(shortFilename, ".tigtag"),
-                            mTickDocument.getRenderedText().getBytes());
-                    setPage(file.toURL());
-                } else if (true) {
-                    StyledDocument doc = getStyledDocument();
-                    doc.remove(0, doc.getLength());
-                    
-                    MutableAttributeSet plainAttr = new SimpleAttributeSet();
-                    StyleConstants.setForeground(plainAttr, Color.BLACK);
-                    
-                    MutableAttributeSet keywordAttr = new SimpleAttributeSet();
-                    StyleConstants.setForeground(keywordAttr, Color.BLACK);
-                    StyleConstants.setBold(keywordAttr, true);
-                    
-                    MutableAttributeSet separatorAttr = new SimpleAttributeSet();
-                    StyleConstants.setForeground(separatorAttr, new Color(0,33,255));
-
-                    MutableAttributeSet commentAttr = new SimpleAttributeSet();
-                    StyleConstants.setForeground(commentAttr, Color.LIGHT_GRAY);
-
-                    MutableAttributeSet javadocCommentAttr = new SimpleAttributeSet();
-                    StyleConstants.setForeground(javadocCommentAttr, new Color(147,147,147));
-                    StyleConstants.setItalic(javadocCommentAttr, true);
-                    
-                    MutableAttributeSet javadocTagAttr = new SimpleAttributeSet();
-                    StyleConstants.setForeground(javadocTagAttr, new Color(147,147,147));
-                    StyleConstants.setItalic(javadocTagAttr, true);
-                    StyleConstants.setBold(javadocTagAttr, true);
-
-                    MutableAttributeSet operatorAttr = new SimpleAttributeSet();
-                    StyleConstants.setForeground(operatorAttr, new Color(0,124,31));
-
-                    MutableAttributeSet literalAttr = new SimpleAttributeSet();
-                    StyleConstants.setForeground(literalAttr, new Color(188,0,0));
-
-                    MutableAttributeSet typeAttr = new SimpleAttributeSet();
-                    StyleConstants.setForeground(typeAttr, new Color(0,44,221));
-
-                    
-                    Set<String> keywords = new HashSet<String>();
-                    String[] KEYWORDS = {
-                        "package",
-                        "static",
-                        "import",
-                        "public",
-                        "private",
-                        "protected",
-                        "enum",
-                        "interface",
-                        "class",
-                        "for",
-                        "if",
-                        "while",
-                        "final",
-                        "int",
-                        "long",
-                        "float",
-                        "double",
-                        "new",
-                        "null",
-                    };
-                    for (String word : KEYWORDS) {
-                        keywords.add(word);
-                    }
-                    
-                    Set<String> delims = new HashSet<String>();
-                    String[] DELIMS = {
-                        "+",
-                        "-",
-                        "*",
-                        "/",
-                        "=",
-                        "!",
-                        "|",
-                        "&",
-                        "^",
-                        ":",
-                        ";",
-                        ".",
-                        ",",
-                        ")",
-                        "(",
-                        "}",
-                        "{",
-                        "]",
-                        "[",
-                    };
-                    for (String word : DELIMS) {
-                        delims.add(word);
-                    }
-
-                    if (true) {
-                        DirectByteArrayOutputStream out = new DirectByteArrayOutputStream();
-                        String text = mTickDocument.getRenderedText();
-                        BufferedReader input = new BufferedReader(new StringReader(text));
-                        String line;
-                        int offset = 0;
-                        while ((line = input.readLine()) != null) {
-                            if (line.indexOf("<span") == -1) {
-                                continue;
-                            }
-                            line = line.replaceAll("&nbsp;", " ");
-                            line = line.replaceAll("&gt;", ">");
-                            line = line.replaceAll("&lt;", "<");
-                            line = line.replaceAll("&quot;", "\"");
-                            line = line.replaceAll("<br />", "");
-                            line = line.replaceAll("<h1>", "");
-                            line = line.replaceAll("</h1>", "");
-                            line = line.replaceAll("<code>", "");
-                            line = line.replaceAll("</code>", "");
-//                            LOG.info(line);
-                            
-                            int prevIdx = 0;
-                            while (prevIdx < line.length()) {
-                                int startIdx = line.indexOf("<span", prevIdx); 
-                                int endIdx = line.indexOf(">", startIdx + 5);
-                                String beginTag = line.substring(startIdx + 1, endIdx);
-                                
-                                int endTagIdx = line.indexOf("</span>", endIdx); 
-                                String str = line.substring(endIdx + 1, endTagIdx);
-                                
-                                MutableAttributeSet attr = plainAttr;
-                                if (beginTag.indexOf("keyword") != -1) {
-                                    attr = keywordAttr;
-                                } else if (beginTag.indexOf("separator") != -1) {
-                                    attr = separatorAttr;
-                                } else if (beginTag.indexOf("plain") != -1) {
-                                    attr = plainAttr;
-                                } else if (beginTag.indexOf("type") != -1) {
-                                    attr = typeAttr;
-                                } else if (beginTag.indexOf("literal") != -1) {
-                                    attr = literalAttr;
-                                } else if (beginTag.indexOf("operator") != -1) {
-                                    attr = operatorAttr;
-                                } else if (beginTag.indexOf("comment") != -1) {
-                                    attr = commentAttr;
-                                } else if (beginTag.indexOf("javadoc_tag") != -1) {
-                                    attr = javadocTagAttr;
-                                } else if (beginTag.indexOf("javadoc_comment") != -1) {
-                                    attr = javadocCommentAttr;
-                                } else {
-                                    LOG.info("unknown: " + beginTag);
-                                    attr = separatorAttr;
-                                }
-//                                LOG.info(beginTag + ":" + str);
-                                doc.insertString(offset, str, attr);
-                                prevIdx = endTagIdx + 7;
-                                offset = doc.getLength();
-                            }
-                            doc.insertString(offset, "\n", null);
-                            offset = doc.getLength();
-
-                            if (false) {
-                                String[] split = line.split(" ");
-                                for (int i = 0; i < split.length; i++) {
-                                    if (i > 0) {
-                                        doc.insertString(offset, " ", null);
-                                        offset++;
-                                    }
-                                    
-                                    String s = split[i];
-                                    if (s.length() > 0) {
-                                        MutableAttributeSet attr = plainAttr;
-                                        if (keywords.contains(s)) {
-                                            attr = keywordAttr;
-                                        } else if (delims.contains(s)) {
-                                            attr = separatorAttr;
-                                        }
-                                        doc.insertString(offset, s, attr);
-                                    }
-                                    offset = doc.getLength();
-                                }
-                                doc.insertString(offset, "\n", null);
-                                offset = doc.getLength();
-                            }
-                        }
-                    }
-                    
-//                    // EOF
-//                    doc.insertString(doc.getLength(), "\n[EOF]\n", keywordAttr);
-                    final Rectangle start = modelToView(0);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            scrollRectToVisible(start);
-                            setCaretPosition(0);
-                            requestFocus();
-                        }
-                    });
-                } else {
-                    setText(mTickDocument.getText());
-                }
-                
+                SyntaxRenderer sr = SyntaxRenderer.getRenderer(mTickDocument.getFilename());
+                sr.render(this, pTickDocument);
                 mTickDocument.addTickListener(mEventHandler);
             }
         } catch (Exception e) {
-            LOG.error("Failed to show: " + pDoc.getFilename(), e);
+            LOG.error("Failed to show: " + pTickDocument.getFilename(), e);
         }
     }
 
