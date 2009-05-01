@@ -12,6 +12,8 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -27,6 +29,9 @@ import org.kari.action.KToolbar;
 import org.kari.action.std.CloseWindowAction;
 import org.kari.action.std.ExitAction;
 import org.kari.perspective.KApplicationFrame;
+import org.kari.resources.ResKey;
+import org.kari.resources.ResourceAdapter;
+import org.kari.resources.WidgetResources;
 import org.kari.tick.FileSaver;
 import org.kari.tick.TickDefinition;
 import org.kari.tick.TickEditorStarter;
@@ -231,6 +236,13 @@ public class TickFrame extends KApplicationFrame {
         tickSet.setBlockMode(null);
         tickSet.setCurrent( ((TickAction)tickActions[0]).mDefinition );
         
+        WidgetResources wr = ResourceAdapter.getInstance().getWidget(
+                TickConstants.R_APP, 
+                ResKey.MENU);
+        Icon icon = wr.getIcon();
+        if (icon instanceof ImageIcon) {
+            setIconImage( ((ImageIcon)icon).getImage() );
+        }
         setAppTitle("");
     }
     
@@ -241,6 +253,7 @@ public class TickFrame extends KApplicationFrame {
         title +=
             " - " 
             + TickConstants.APP_NAME;
+        
         super.setTitle(title);
     }
     
