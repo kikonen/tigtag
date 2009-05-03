@@ -36,27 +36,31 @@ public class FileSaver extends FileAccessBase {
         throws IOException 
     {
         File tickFile = getTickFile();
-        tickFile.getParentFile().mkdirs();
-        
-        ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(tickFile));
-        try {
-            String basename = mFile.getName();
-            // file
-            {
-                ZipEntry fileEntry = new ZipEntry(basename);
-                zip.putNextEntry(fileEntry);
-                zip.write(mText.getBytes());
-                zip.closeEntry();
-            }        
-            // ticks
-            {
-                ZipEntry tickEntry = new ZipEntry(basename + TickConstants.TICK_ENTRY_EXT);
-                zip.putNextEntry(tickEntry);
-                zip.write(saveTicks());
-                zip.closeEntry();
+        if (!mTicks.isEmpty()) {
+            tickFile.getParentFile().mkdirs();
+            
+            ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(tickFile));
+            try {
+                String basename = mFile.getName();
+                // file
+                {
+                    ZipEntry fileEntry = new ZipEntry(basename);
+                    zip.putNextEntry(fileEntry);
+                    zip.write(mText.getBytes());
+                    zip.closeEntry();
+                }        
+                // ticks
+                {
+                    ZipEntry tickEntry = new ZipEntry(basename + TickConstants.TICK_ENTRY_EXT);
+                    zip.putNextEntry(tickEntry);
+                    zip.write(saveTicks());
+                    zip.closeEntry();
+                }
+            } finally {
+                FileUtil.close(zip);
             }
-        } finally {
-            FileUtil.close(zip);
+        } else {
+            tickFile.delete();
         }
     }
     
