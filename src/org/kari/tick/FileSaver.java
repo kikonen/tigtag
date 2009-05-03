@@ -3,19 +3,14 @@ package org.kari.tick;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import javax.swing.text.BadLocationException;
-
-import org.apache.log4j.Logger;
 import org.kari.tick.gui.TickConstants;
 import org.kari.tick.gui.TickDocument;
 import org.kari.util.DirectByteArrayOutputStream;
@@ -27,13 +22,7 @@ import org.kari.util.FileUtil;
  * @author kari
  *
  */
-public class FileSaver {
-    private static final Logger LOG = Logger.getLogger("tick.fileloader");
-    
-    private String mText;
-    private List<Tick> mTicks;
-    private File mFile;
-    
+public class FileSaver extends FileAccessBase {
     public FileSaver(TickDocument pDoc) {
         mText = pDoc.getText();
         mTicks = pDoc.getTicks();
@@ -41,28 +30,14 @@ public class FileSaver {
     }
     
     /**
-     * @return true if ".ticks file already exists
-     */
-    public boolean isAlreadyTicked() {
-        return getTickFile().exists();
-    }
-
-    /**
-     * Get file containing ticks
-     * 
-     * @return File, may not exist
-     */
-    public File getTickFile() {
-        return new File(mFile.getAbsolutePath() + TickConstants.TICK_FILE_EXT);
-    }
-
-    /**
      * Save ticks into file
      */
     public void save() 
         throws IOException 
     {
         File tickFile = getTickFile();
+        tickFile.getParentFile().mkdirs();
+        
         ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(tickFile));
         try {
             String basename = mFile.getName();

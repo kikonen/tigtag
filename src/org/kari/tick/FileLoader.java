@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.apache.log4j.Logger;
 import org.kari.tick.gui.TickConstants;
 import org.kari.util.FileUtil;
 
@@ -22,13 +21,8 @@ import org.kari.util.FileUtil;
  * @author kari
  *
  */
-public class FileLoader {
-    private static final Logger LOG = Logger.getLogger("tick.fileloader");
-
-    private File mFile;
+public class FileLoader extends FileAccessBase {
     private boolean mLoadTicks;
-    private String mText;
-    private final List<Tick> mTicks = new ArrayList<Tick>();
 
     /**
      * @param pFile Original File which is being ticked
@@ -38,29 +32,6 @@ public class FileLoader {
     public FileLoader(File pFile, boolean pLoadTicks) {
         mFile = pFile;
         mLoadTicks = pLoadTicks;
-    }
-
-    /**
-     * @return Loaded file
-     */
-    public File getFile() {
-        return mFile;
-    }
-
-    /**
-     * @return true if ".ticks file already exists
-     */
-    public boolean isAlreadyTicked() {
-        return getTickFile().exists();
-    }
-
-    /**
-     * Get file containing ticks
-     * 
-     * @return File, may not exist
-     */
-    public File getTickFile() {
-        return new File(mFile.getAbsolutePath() + TickConstants.TICK_FILE_EXT);
     }
 
     /**
@@ -136,21 +107,6 @@ public class FileLoader {
         }
 
         return result;
-    }
-
-
-    /**
-     * @return Loaded text, null if not yet loaded (or load failed)
-     */
-    public String getText() {
-        return mText;
-    }
-
-    /**
-     * @return Loaded ticks, empty if none
-     */
-    public List<Tick> getTicks() {
-        return mTicks;
     }
     
 }
