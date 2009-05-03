@@ -11,9 +11,7 @@ public interface TickConstants {
     Logger LOG = Logger.getLogger("tick");
     
     String R_NEW_VIEW = S + "New";
-
-    String R_APP = S + "app";
-
+    String R_APP = S + "App";
 
     String TICK_FILE_EXT = ".zip";
     /**

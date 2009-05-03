@@ -1,6 +1,7 @@
 package org.kari.tick.gui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.kari.tick.FileLoader;
@@ -103,6 +104,13 @@ public class TickDocument {
         setTicks(pLoader.getTicks());
     }
 
+    /**
+     * Clear all ticks
+     */
+    public void clearTicks() {
+        setTicks(Collections.<Tick>emptyList());
+    }
+    
     /**
      * @return All ticks from the document, empty if none
      */

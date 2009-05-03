@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -51,6 +52,11 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 
 import org.apache.log4j.Logger;
+import org.kari.action.ActionConstants;
+import org.kari.action.ActionContainer;
+import org.kari.action.ActionContext;
+import org.kari.action.ComponentWithActionContainer;
+import org.kari.action.KAction;
 import org.kari.tick.Tick;
 import org.kari.tick.TickEditorStarter;
 import org.kari.tick.TickRegistry;
@@ -64,6 +70,7 @@ import org.kari.tick.TickDefinition.BlockMode;
  */
 public class TickEditorPanel
     extends JPanel
+    implements ComponentWithActionContainer
 {
     static final Logger LOG = TickConstants.LOG;
 
@@ -316,6 +323,17 @@ public class TickEditorPanel
     private Border mFocusedBorder = new MatteBorder(1, 1, 1, 1, Color.BLUE);
     private Border mUnFocusedBorder = new EmptyBorder(1, 1, 1, 1);
     
+    private final ActionContainer mActionContainer = new ActionContainer();
+    {
+        Action clear = new KAction(ActionConstants.R_CLEAR) {
+            @Override
+            public void actionPerformed(ActionContext pCtx) {
+                getTextPane().getTickDocument().clearTicks();
+            }
+        };
+        mActionContainer.addAction(clear);
+    }
+    
     public TickEditorPanel() {
         super(new BorderLayout());
         add(getSplitPane(), BorderLayout.CENTER);
@@ -362,6 +380,11 @@ public class TickEditorPanel
         new DropTarget(this, dh);
         new DropTarget(tickTable, dh);
         new DropTarget(textPane, dh);
+    }
+    
+    @Override
+    public ActionContainer getActionContainer() {
+        return mActionContainer;
     }
 
     public JPanel getTopPanel() {
