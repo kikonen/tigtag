@@ -33,6 +33,7 @@ import org.kari.resources.ResKey;
 import org.kari.resources.ResourceAdapter;
 import org.kari.resources.WidgetResources;
 import org.kari.tick.FileSaver;
+import org.kari.tick.Tick;
 import org.kari.tick.TickDefinition;
 import org.kari.tick.TickEditorStarter;
 import org.kari.tick.TickRegistry;
@@ -44,7 +45,10 @@ import org.kari.tick.TickDefinition.BlockMode;
  * 
  * @author kari
  */
-public class TickFrame extends KApplicationFrame {
+public class TickFrame extends KApplicationFrame 
+    implements
+        TickListener
+{
     public static final String APP_NAME = "TigTag";
 
     private TickEditorPanel mEditor;
@@ -141,8 +145,9 @@ public class TickFrame extends KApplicationFrame {
         @Override
         public void actionPerformed(ActionContext pCtx) {
             try {
+                TickDocument oldDoc = mEditor.getTextPane().getTickDocument();
                 if (mDir == null) {
-                    String currentFilename = mEditor.getTextPane().getTickDocument().getFilename();
+                    String currentFilename = oldDoc.getFilename();
                     if (currentFilename != null) {
                         mDir = new File(currentFilename).getParentFile();
                     }
@@ -152,8 +157,7 @@ public class TickFrame extends KApplicationFrame {
                 int retVal = chooser.showOpenDialog(pCtx.getWindow());
                 if (retVal == JFileChooser.APPROVE_OPTION) {
                     File file = chooser.getSelectedFile();
-                    mEditor.setFile(file, true);
-                    setAppTitle(file.getAbsolutePath());
+                    setFile(file.getAbsolutePath());
                 }
                 mDir = chooser.getCurrentDirectory();
             } catch (Exception e) {
@@ -172,8 +176,7 @@ public class TickFrame extends KApplicationFrame {
                 TickDocument doc = mEditor.getTextPane().getTickDocument();
                 new FileSaver(doc).save();
                 doc.setModified(false);
-                // TODO KI enable save via doc listener
-//                mSaveAction.setEnabled(false);
+                tickAdded(doc, null);
             } catch (Exception e) {
                 LOG.error("Failed to load", e);
             }
@@ -271,8 +274,15 @@ public class TickFrame extends KApplicationFrame {
     public void setFile(String pFilename) {
         try {
             File file = new File(pFilename);
+            
+            TickDocument oldDoc = mEditor.getTextPane().getTickDocument();
             mEditor.setFile(file, true);
             setAppTitle(file.getAbsolutePath());
+            
+            oldDoc.removeTickListener(TickFrame.this);
+            TickDocument newDoc = mEditor.getTextPane().getTickDocument();
+            newDoc.addTickListener(TickFrame.this);
+            tickAdded(newDoc, null);
         } catch (IOException e) {
             LOG.error("Failed to load: " + pFilename, e);
             mEditor.getTextPane().setText("Failed to load: \"" + pFilename + "\"");
@@ -316,5 +326,15 @@ public class TickFrame extends KApplicationFrame {
         
         return result.toArray(new KAction[result.size()]);
     }
-    
+
+    @Override
+    public void tickAdded(TickDocument pDocument, Tick pTick) {
+        mSaveAction.setEnabled(pDocument.isModified());
+    }
+
+    @Override
+    public void tickRemoved(TickDocument pDocument, Tick pTick) {
+        mSaveAction.setEnabled(pDocument.isModified());
+    }
+   
 }

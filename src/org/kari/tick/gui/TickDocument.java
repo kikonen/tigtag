@@ -46,8 +46,8 @@ public class TickDocument {
      */
     public void addTick(Tick pTick) {
         mTicks.add(pTick);
-        fireTickChanged(pTick, true);
         setModified(true);
+        fireTickChanged(pTick, true);
     }
 
     /**
@@ -55,8 +55,8 @@ public class TickDocument {
      */
     public void removeTick(Tick pTick) {
         mTicks.remove(pTick);
-        fireTickChanged(pTick, false);
         setModified(true);
+        fireTickChanged(pTick, false);
     }
 
     public boolean isModified() {
