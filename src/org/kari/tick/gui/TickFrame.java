@@ -202,7 +202,7 @@ public class TickFrame extends KApplicationFrame {
         
         ac.addMenu(new KMenu(
                 ActionConstants.R_MENU_EDIT,
-                getEditor().getActionContainer().getAction(ActionConstants.R_CLEAR)
+                getEditor().getActionMap().get(ActionConstants.R_CLEAR)
             ));
         
         ac.addMenu(new KMenu(

@@ -3,7 +3,6 @@ package org.kari.tick.gui;
 import java.util.Collections;
 import java.util.Set;
 
-import javax.swing.Action;
 import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -23,20 +22,22 @@ import org.kari.tick.Tick;
 public class TickTable extends JTable 
     implements TickHighlighter
 {
-    private Action mRemoveAction = new KAction(ActionConstants.R_REMOVE) {
-        @Override
-        public void actionPerformed(ActionContext pCtx) {
-            int selectedRow = getSelectedRow();
-            Tick tick = getTickTableModel().getRowElement(selectedRow);
-            getTickTableModel().getDocument().removeTick(tick);
-        }
-    };
-
+    {
+        new KAction(ActionConstants.R_REMOVE, this) {
+            @Override
+            public void actionPerformed(ActionContext pCtx) {
+                int selectedRow = getSelectedRow();
+                Tick tick = getTickTableModel().getRowElement(selectedRow);
+                getTickTableModel().getDocument().removeTick(tick);
+            }
+        };
+    }
+    
     public TickTable() {
         super(new TickTableModel(null));
         KMenu menu = new KMenu(
                 ActionConstants.R_MENU_CONTEXT,
-                mRemoveAction);
+                getActionMap().get(ActionConstants.R_REMOVE));
         menu.createContextMenu(this).start();
     }
 

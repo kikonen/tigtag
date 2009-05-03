@@ -53,9 +53,7 @@ import javax.swing.text.Element;
 
 import org.apache.log4j.Logger;
 import org.kari.action.ActionConstants;
-import org.kari.action.ActionContainer;
 import org.kari.action.ActionContext;
-import org.kari.action.ComponentWithActionContainer;
 import org.kari.action.KAction;
 import org.kari.tick.Tick;
 import org.kari.tick.TickEditorStarter;
@@ -70,7 +68,6 @@ import org.kari.tick.TickDefinition.BlockMode;
  */
 public class TickEditorPanel
     extends JPanel
-    implements ComponentWithActionContainer
 {
     static final Logger LOG = TickConstants.LOG;
 
@@ -323,7 +320,6 @@ public class TickEditorPanel
     private Border mFocusedBorder = new MatteBorder(1, 1, 1, 1, Color.BLUE);
     private Border mUnFocusedBorder = new EmptyBorder(1, 1, 1, 1);
     
-    private final ActionContainer mActionContainer = new ActionContainer();
     {
         Action clear = new KAction(ActionConstants.R_CLEAR) {
             @Override
@@ -331,7 +327,7 @@ public class TickEditorPanel
                 getTextPane().getTickDocument().clearTicks();
             }
         };
-        mActionContainer.addAction(clear);
+        getActionMap().put(ActionConstants.R_CLEAR, clear);
     }
     
     public TickEditorPanel() {
@@ -382,11 +378,6 @@ public class TickEditorPanel
         new DropTarget(textPane, dh);
     }
     
-    @Override
-    public ActionContainer getActionContainer() {
-        return mActionContainer;
-    }
-
     public JPanel getTopPanel() {
         if (mTopPanel== null) {
             mTopPanel = new JPanel(new BorderLayout());
