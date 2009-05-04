@@ -355,10 +355,10 @@ public class TickFrame extends KApplicationFrame
                 
                 TickDocument oldDoc = editor.getTextPane().getTickDocument();
                 editor.setFile(file, true);
-                setAppTitle(file.getAbsolutePath());
+                TickDocument newDoc = editor.getTextPane().getTickDocument();
+                setAppTitle(newDoc.getFilename());
                 
                 oldDoc.removeTickListener(TickFrame.this);
-                TickDocument newDoc = editor.getTextPane().getTickDocument();
                 newDoc.addTickListener(TickFrame.this);
             } else {
                 setAppTitle("");

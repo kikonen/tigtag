@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,8 @@ import java.util.zip.ZipFile;
 
 import org.kari.tick.gui.TickConstants;
 import org.kari.util.FileUtil;
+
+import com.sun.org.apache.xml.internal.serialize.BaseMarkupSerializer;
 
 /**
  * Utility for loading file into editor
@@ -46,8 +49,20 @@ public class FileLoader extends FileAccessBase {
         if (mLoadTicks && isAlreadyTicked()) {
             File tickFile = getTickFile();
             ZipFile zip = new ZipFile(tickFile);
+
+            String basename = null;
             
-            String basename = mFile.getName();
+            // Find ticked file name from ZIP
+            Enumeration<? extends ZipEntry> entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                String name = entry.getName();
+                int idx = name.indexOf(TickConstants.TICK_ENTRY_EXT);
+                if (idx != -1) {
+                    basename = name.substring(0, idx); 
+                }
+            }
+            
             // file
             ZipEntry fileEntry = zip.getEntry(basename);
             byte[] data = FileUtil.load(zip.getInputStream(fileEntry));
@@ -56,6 +71,8 @@ public class FileLoader extends FileAccessBase {
             // ticks
             ZipEntry tickEntry = zip.getEntry(basename + TickConstants.TICK_ENTRY_EXT);
             mTicks.addAll(loadTicks(zip.getInputStream(tickEntry)));
+            
+            mBasename = basename;
         } else {
             byte[] data = FileUtil.load(mFile);
             mText = new String(data, "UTF-8");

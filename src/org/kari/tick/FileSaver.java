@@ -15,6 +15,7 @@ import org.kari.tick.gui.TickConstants;
 import org.kari.tick.gui.TickDocument;
 import org.kari.util.DirectByteArrayOutputStream;
 import org.kari.util.FileUtil;
+import org.kari.util.TextUtil;
 
 /**
  * Save logic for ticks
@@ -35,8 +36,13 @@ public class FileSaver extends FileAccessBase {
     public void save() 
         throws IOException 
     {
+        File tickDir = new File(
+            TextUtil.expand(TICKS_DIR + "/" + mFile.getName() + TickConstants.TICK_FILE_EXT));
+
         File tickFile = getTickFile();
-        if (!mTicks.isEmpty()) {
+        if (!mTicks.isEmpty() 
+            || (tickFile.exists() && !tickFile.getParentFile().equals(tickDir))) 
+        {
             tickFile.getParentFile().mkdirs();
             
             ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(tickFile));

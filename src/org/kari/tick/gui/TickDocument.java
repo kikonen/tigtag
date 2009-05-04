@@ -126,7 +126,8 @@ public class TickDocument {
      */
     public void setFileContents(FileLoader pLoader) 
     {
-        mFilename = pLoader.getFile().getAbsolutePath();
+//        mFilename = pLoader.getFile().getAbsolutePath();
+        mFilename = pLoader.getBasename();
         mText = pLoader.getText();
         setTicks(pLoader.getTicks());
     }

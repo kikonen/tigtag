@@ -20,13 +20,24 @@ public abstract class FileAccessBase {
     protected String mText;
     protected List<Tick> mTicks = new ArrayList<Tick>();
     protected File mFile;
+    protected String mBasename;
     
     public FileAccessBase() {
         super();
     }
 
+    /**
+     * @return Original file loaded/saved
+     */
     public File getFile() {
         return mFile;
+    }
+
+    /**
+     * @return Identification name for ticked file
+     */
+    public String getBasename() {
+        return mBasename;
     }
 
     /**
@@ -56,9 +67,15 @@ public abstract class FileAccessBase {
      * @return File, may not exist
      */
     public File getTickFile() {
-        String filename = TICKS_DIR + "/" + mFile.getName() + TickConstants.TICK_FILE_EXT;
-        filename = TextUtil.expand(filename);
-        return new File(filename);
+        File result;
+        if (mFile.getName().endsWith(".zip")) {
+            result = mFile;
+        } else {
+            String filename = TICKS_DIR + "/" + mFile.getName() + TickConstants.TICK_FILE_EXT;
+            filename = TextUtil.expand(filename);
+            result = new File(filename);
+        }
+        return result;
     }
 
 
