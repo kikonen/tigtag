@@ -16,3 +16,6 @@ echo "start javaw -cp log4j-1.2.14.jar;TableLayout.jar;jhighlight-1.0.jar;kui.ja
 chmod ugo+x dist/tigtag.sh
 
 zip -r tigtag_dist.zip dist/*
+
+cp tigtag_dist.zip /home/www/virtual/kari.dy.fi/tigtag
+cp orig/sample.png /home/www/virtual/kari.dy.fi/tigtag
