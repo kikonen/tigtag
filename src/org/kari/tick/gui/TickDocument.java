@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.kari.tick.FileLoader;
 import org.kari.tick.Tick;
+import org.kari.tick.TickRankComparator;
 
 /**
  * Document model for tigtag. Maintains program code, and associated ticks
@@ -14,6 +15,8 @@ import org.kari.tick.Tick;
  *
  */
 public class TickDocument {
+    private static final TickRankComparator TICK_RANK_COMPARATOR = new TickRankComparator();
+
     /**
      * File name extension for ticks file
      */
@@ -68,6 +71,7 @@ public class TickDocument {
         }
         
         mTicks.add(result);
+        Collections.sort(mTicks, TICK_RANK_COMPARATOR);
         setModified(true);
         fireTickChanged(result, true);
         return result;
