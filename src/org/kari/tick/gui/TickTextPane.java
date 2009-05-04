@@ -1,7 +1,9 @@
 package org.kari.tick.gui;
 
+import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -318,15 +320,18 @@ public class TickTextPane extends JTextPane {
                         rect.x,
                         rect.y + rect.height);
             } else {
-                int GAP_H = 4;
-                int GAP_V = 2;
-                g2d.drawRoundRect(
+                Composite origComposite = g2d.getComposite();
+                AlphaComposite COMPOSITE = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.6f);
+                g2d.setComposite(COMPOSITE);
+                
+                int GAP_H = 0;
+                int GAP_V = 0;
+                g2d.drawRect(
                         rect.x - GAP_H, 
                         rect.y - GAP_V, 
                         rect.width + GAP_H * 2, 
-                        rect.height + GAP_V * 2,
-                        10,
-                        10);
+                        rect.height + GAP_V * 2);
+                g2d.setComposite(origComposite);
             }
         }
 

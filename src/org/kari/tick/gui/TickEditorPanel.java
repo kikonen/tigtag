@@ -42,6 +42,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import javax.swing.text.Utilities;
 
 import org.apache.log4j.Logger;
 import org.kari.action.ActionConstants;
@@ -350,6 +351,13 @@ public class TickEditorPanel
                         Tick tick = mTickTable.getTickTableModel().getRowElement(selectedRow);
                         try {
                             Rectangle rect = getTextPane().modelToView(tick.getLocation().mStartPos);
+                            
+                            // Provide limited line context around tick
+                            int lineHeight = rect.height;
+                            int lineCount = 5;
+                            rect.y -= lineHeight * lineCount;
+                            rect.height += lineHeight * lineCount * 2;
+                            
                             getTextPane().scrollRectToVisible(rect);
                         } catch (BadLocationException e) {
                             // Ignore
