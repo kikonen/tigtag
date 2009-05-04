@@ -9,8 +9,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDragEvent;
@@ -26,12 +24,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -56,7 +48,6 @@ import org.kari.action.ActionConstants;
 import org.kari.action.ActionContext;
 import org.kari.action.KAction;
 import org.kari.tick.Tick;
-import org.kari.tick.TickEditorStarter;
 import org.kari.tick.TickRegistry;
 import org.kari.tick.TickSet;
 import org.kari.tick.TickDefinition.BlockMode;
@@ -213,100 +204,6 @@ public class TickEditorPanel
         }
     }
     
-    /**
-     * Allow DnD of files into editor
-     */
-    public class TickTransferHandler extends TransferHandler {
-        @Override
-        public boolean canImport(JComponent pComp, DataFlavor[] pTransferFlavors)
-        {
-            return true;
-        }
-
-        @Override
-        public boolean importData(JComponent pComp, Transferable pData) {
-            boolean result = false;
-            try {
-                List<String> validURIs = new ArrayList<String>();
-                List<File> validFiles = new ArrayList<File>();
-
-                DataFlavor[] flavors = pData.getTransferDataFlavors();
-
-                for (int flavorIter=0; flavorIter<flavors.length; flavorIter++) {
-                    DataFlavor flavor = flavors[flavorIter];
-                    LOG.debug(flavor.getMimeType());
-                    Class cls = flavor.getRepresentationClass();
-
-                    if (flavor.getMimeType().indexOf("text/uri-list")!=-1 && cls==String.class) {
-                        String data = (String)pData.getTransferData(flavor);
-                        StringTokenizer st = new StringTokenizer(data, "\r\n");
-                        while (st.hasMoreElements()) {
-                            String uri = st.nextToken().trim();
-                            if (!"".equals(uri)) {
-                                validURIs.add(uri);
-                            }
-                        }
-                    } else if (flavor.getMimeType().indexOf("application/x-java-file-list")!=-1) {
-                        List<File> files = (List<File>)pData.getTransferData(flavor);
-                        validFiles.addAll(files);
-                    }
-                }
-
-                if (!validURIs.isEmpty()) {
-                    Collections.sort(validURIs, new Comparator<String>() {
-                        public int compare(String pO1, String pO2) {
-                            // TODO KI suffix sort
-                            return pO1.compareTo(pO2);
-                        }
-                    });
-                    Collections.reverse(validURIs);
-                    
-                    for (String uri : validURIs) {
-                        try {
-                            if (uri.startsWith("zip:")) {
-                                // TODO KI Nicer approach would be to install "zip:/" URI handler
-                                // KDE support...
-//                                mOpenAction.openZipFile(uri);
-                                LOG.error("NY! " + uri);
-                            } else {
-                                URL url = new URL(uri);
-                                File file = new File(url.getFile());
-                                LOG.info("Opening: " + url);
-                                if (file.exists()) {
-                                    new TickEditorStarter(file).start();
-                                } else {
-                                    LOG.error("File not found: " + url);
-                                }
-                            }
-                        } catch (Exception e1) {
-                            LOG.error("Failed to open: " + uri, e1);
-                        }
-                    }
-                } else {
-                    Collections.sort(validFiles, new Comparator<File>() {
-                        public int compare(File pO1, File pO2) {
-                            // TODO KI suffix sort
-                            return pO1.compareTo(pO2);
-                        }
-                    });
-                    Collections.reverse(validFiles);
-                    
-                    for (File file : validFiles) {
-                        try {
-                            LOG.info("Opening: " + file);
-                            new TickEditorStarter(file.getAbsolutePath()).start();
-                        } catch (Exception e1) {
-                            LOG.error("Failed to open: " + file, e1);
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                LOG.error("Failed ot insert", e);
-            }
-            return result;
-        }
-    }
-    
 
     private JSplitPane mSplitPane;
 
@@ -362,12 +259,7 @@ public class TickEditorPanel
         tickTable.addFocusListener(fl);
         textPane.addFocusListener(fl);
         
-        TransferHandler th = new TickTransferHandler();
         DropTargetHandler dh = new DropTargetHandler();
-        
-        setTransferHandler(th);
-        tickTable.setTransferHandler(th);
-        textPane.setTransferHandler(th);
         
         // DnD & Clipboard
 //        setDragEnabled(true);

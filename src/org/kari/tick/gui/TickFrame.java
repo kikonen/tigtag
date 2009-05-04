@@ -4,15 +4,20 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -21,6 +26,7 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.TransferHandler;
 
 import org.kari.action.ActionConstants;
 import org.kari.action.ActionContainer;
@@ -41,7 +47,6 @@ import org.kari.tick.TickDefinition;
 import org.kari.tick.TickEditorStarter;
 import org.kari.tick.TickRegistry;
 import org.kari.tick.TickSet;
-import org.kari.tick.TickDefinition.BlockMode;
 
 /**
  * TigTag window
@@ -55,6 +60,108 @@ public class TickFrame extends KApplicationFrame
     public static final String APP_NAME = "TigTag";
 
     private TickEditorPanel mEditor;
+    
+    
+    /**
+     * Allow DnD of files into editor
+     */
+    public class TickTransferHandler extends TransferHandler {
+        @Override
+        public boolean canImport(JComponent pComp, DataFlavor[] pTransferFlavors)
+        {
+            return true;
+        }
+
+        @Override
+        public boolean importData(JComponent pComp, Transferable pData) {
+            boolean result = false;
+            try {
+                List<String> validURIs = new ArrayList<String>();
+                List<File> validFiles = new ArrayList<File>();
+
+                DataFlavor[] flavors = pData.getTransferDataFlavors();
+
+                for (int flavorIter=0; flavorIter<flavors.length; flavorIter++) {
+                    DataFlavor flavor = flavors[flavorIter];
+                    LOG.debug(flavor.getMimeType());
+                    Class cls = flavor.getRepresentationClass();
+
+                    if (flavor.getMimeType().indexOf("text/uri-list")!=-1 && cls==String.class) {
+                        String data = (String)pData.getTransferData(flavor);
+                        StringTokenizer st = new StringTokenizer(data, "\r\n");
+                        while (st.hasMoreElements()) {
+                            String uri = st.nextToken().trim();
+                            if (!"".equals(uri)) {
+                                validURIs.add(uri);
+                            }
+                        }
+                    } else if (flavor.getMimeType().indexOf("application/x-java-file-list")!=-1) {
+                        List<File> files = (List<File>)pData.getTransferData(flavor);
+                        validFiles.addAll(files);
+                    }
+                }
+
+                if (!validURIs.isEmpty()) {
+                    Collections.sort(validURIs, new Comparator<String>() {
+                        public int compare(String pO1, String pO2) {
+                            // TODO KI suffix sort
+                            return pO1.compareTo(pO2);
+                        }
+                    });
+                    Collections.reverse(validURIs);
+
+                    boolean usedCurrent = false;
+                    for (String uri : validURIs) {
+                        try {
+                            if (uri.startsWith("zip:")) {
+                                // TODO KI Nicer approach would be to install "zip:/" URI handler
+                                // KDE support...
+//                                mOpenAction.openZipFile(uri);
+                                LOG.error("NY! " + uri);
+                            } else {
+                                URL url = new URL(uri);
+                                File file = new File(url.getFile());
+                                LOG.info("Opening: " + url);
+                                if (file.exists()) {
+                                    if (!usedCurrent) {
+                                        setFile(file.getAbsolutePath());
+                                        usedCurrent = true;
+                                    } else {
+                                        new TickEditorStarter(file).start();
+                                    }
+                                } else {
+                                    LOG.error("File not found: " + url);
+                                }
+                            }
+                        } catch (Exception e1) {
+                            LOG.error("Failed to open: " + uri, e1);
+                        }
+                    }
+                } else {
+                    Collections.sort(validFiles, new Comparator<File>() {
+                        public int compare(File pO1, File pO2) {
+                            // TODO KI suffix sort
+                            return pO1.compareTo(pO2);
+                        }
+                    });
+                    Collections.reverse(validFiles);
+                    
+                    for (File file : validFiles) {
+                        try {
+                            LOG.info("Opening: " + file);
+                            new TickEditorStarter(file.getAbsolutePath()).start();
+                        } catch (Exception e1) {
+                            LOG.error("Failed to open: " + file, e1);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                LOG.error("Failed ot insert", e);
+            }
+            return result;
+        }
+    }
+    
     
     /**
      * Selects predefine tick 
@@ -169,6 +276,7 @@ public class TickFrame extends KApplicationFrame
         }
     };
     
+    
     public TickFrame() {
         addWindowListener(mWindowListener);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -279,6 +387,11 @@ public class TickFrame extends KApplicationFrame
     public TickEditorPanel getEditor() {
         if (mEditor == null) {
             mEditor = new TickEditorPanel();
+            
+            TransferHandler th = new TickTransferHandler();
+            mEditor.setTransferHandler(th);
+            mEditor.getTextPane().setTransferHandler(th);
+            mEditor.getTickTable().setTransferHandler(th);
         }
         return mEditor;
     }
