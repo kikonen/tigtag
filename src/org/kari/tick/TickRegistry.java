@@ -1,11 +1,17 @@
 package org.kari.tick;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.kari.tick.gui.TickConstants;
+import org.kari.util.TextUtil;
 
 /**
  * Registry for managing tick definitions
@@ -13,6 +19,8 @@ import java.util.Map;
  * @author kari
  */
 public final class TickRegistry {
+    private static final String TICK_DEFINITIONS = "/ticks.properties";
+
     private static TickRegistry mInstance;
     
     private final Map<String, TickDefinition> mDefinitions = new HashMap<String, TickDefinition>();
@@ -44,8 +52,16 @@ public final class TickRegistry {
             IOException
     {
         mDefinitions.clear();
-        BufferedReader reader = new BufferedReader(
-            new InputStreamReader(TickRegistry.class.getResourceAsStream("/ticks.properties")));
+        
+        BufferedReader reader;
+        
+        File defFile = new File(TextUtil.expand(FileAccessBase.TICKS_DIR + TICK_DEFINITIONS));
+        if (defFile.exists()) {
+            reader = new BufferedReader(new FileReader(defFile));
+        } else {
+            reader = new BufferedReader(
+                    new InputStreamReader(TickRegistry.class.getResourceAsStream(TICK_DEFINITIONS)));
+        }
 
         String line;
         TickDefinition tick = null;
