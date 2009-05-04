@@ -347,10 +347,12 @@ public class TickEditorPanel
                 @Override
                 public void valueChanged(ListSelectionEvent pEvent) {
                     int selectedRow = mTickTable.getSelectedRow();
+                    TickTextPane textPane = getTextPane();
                     if (selectedRow != -1) {
                         Tick tick = mTickTable.getTickTableModel().getRowElement(selectedRow);
                         try {
-                            Rectangle rect = getTextPane().modelToView(tick.getLocation().mStartPos);
+                            int pos = tick.getLocation().mStartPos;
+                            Rectangle rect = textPane.modelToView(pos);
                             
                             // Provide limited line context around tick
                             int lineHeight = rect.height;
@@ -358,12 +360,13 @@ public class TickEditorPanel
                             rect.y -= lineHeight * lineCount;
                             rect.height += lineHeight * lineCount * 2;
                             
-                            getTextPane().scrollRectToVisible(rect);
+                            textPane.scrollRectToVisible(rect);
+                            textPane.setCaretPosition(pos);
                         } catch (BadLocationException e) {
                             // Ignore
                         }
                     }
-                    getTextPane().repaint();
+                    textPane.repaint();
                 }
             });
             
