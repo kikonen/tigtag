@@ -212,6 +212,7 @@ public class TickFrame extends KApplicationFrame
                 + "<b>" 
                 + TickConstants.APP_NAME
                 + " v" + TickConstants.VERSION + "</b><br><br>"
+                + "The Code Review Editor.<br><br>"
                 + "All copyrights owned by Kari Ikonen<br>"
                 + "(except for the  concept of the 'ticks')<br>"
                 + "<br>"
