@@ -293,7 +293,7 @@ public class TickEditorPanel
                     JSplitPane.VERTICAL_SPLIT,
                     getTopPanel(),
                     new JScrollPane(getTickTable()));
-            mSplitPane.setDividerLocation(400);
+            mSplitPane.setDividerLocation(TickFrame.HEIGHT - 200);
             mSplitPane.setResizeWeight(1.0);
             mSplitPane.setContinuousLayout(true);
         }

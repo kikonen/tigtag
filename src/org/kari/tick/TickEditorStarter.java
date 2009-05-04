@@ -38,8 +38,6 @@ public class TickEditorStarter
         TickFrame tickFrame = new TickFrame();
         tickFrame.setVisible(true);
         tickFrame.toFront();
-        if (mFilename != null) {
-            tickFrame.setFile(mFilename);
-        }
+        tickFrame.setFile(mFilename);
     }
 }

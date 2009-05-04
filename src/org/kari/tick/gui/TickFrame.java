@@ -11,7 +11,6 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,6 +26,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.TransferHandler;
+import javax.swing.text.Document;
 
 import org.kari.action.ActionConstants;
 import org.kari.action.ActionContainer;
@@ -57,6 +57,8 @@ public class TickFrame extends KApplicationFrame
     implements
         TickListener
 {
+    public static final int HEIGHT = 800;
+
     public static final String APP_NAME = "TigTag";
 
     private TickEditorPanel mEditor;
@@ -238,7 +240,7 @@ public class TickFrame extends KApplicationFrame
         @Override
         public void actionPerformed(ActionContext pCtx) {
             try {
-                TickDocument oldDoc = mEditor.getTextPane().getTickDocument();
+                TickDocument oldDoc = getEditor().getTextPane().getTickDocument();
                 if (mDir == null) {
                     String currentFilename = oldDoc.getFilename();
                     if (currentFilename != null) {
@@ -266,10 +268,10 @@ public class TickFrame extends KApplicationFrame
         @Override
         public void actionPerformed(ActionContext pCtx) {
             try {
-                TickDocument doc = mEditor.getTextPane().getTickDocument();
+                TickDocument doc = getEditor().getTextPane().getTickDocument();
                 new FileSaver(doc).save();
                 doc.setModified(false);
-                tickAdded(doc, null);
+                updateActions();
             } catch (Exception e) {
                 LOG.error("Failed to load", e);
             }
@@ -319,7 +321,7 @@ public class TickFrame extends KApplicationFrame
         
         ac.addToolbar(mainTb);
         
-        setSize(new Dimension(700, 600));
+        setSize(new Dimension(700, HEIGHT));
         
         TickSet tickSet = getEditor().getTextPane().getTickSet();
         tickSet.setBlockMode(null);
@@ -350,23 +352,32 @@ public class TickFrame extends KApplicationFrame
     /**
      * Show given file in editor
      * 
-     * @param pFilename
+     * @param pFilename, null clears current content
      */
     public void setFile(String pFilename) {
+        TickEditorPanel editor = getEditor();
         try {
-            File file = new File(pFilename);
-            
-            TickDocument oldDoc = mEditor.getTextPane().getTickDocument();
-            mEditor.setFile(file, true);
-            setAppTitle(file.getAbsolutePath());
-            
-            oldDoc.removeTickListener(TickFrame.this);
-            TickDocument newDoc = mEditor.getTextPane().getTickDocument();
-            newDoc.addTickListener(TickFrame.this);
-            tickAdded(newDoc, null);
-        } catch (IOException e) {
+            if (pFilename != null) {
+                File file = new File(pFilename);
+                
+                TickDocument oldDoc = editor.getTextPane().getTickDocument();
+                editor.setFile(file, true);
+                setAppTitle(file.getAbsolutePath());
+                
+                oldDoc.removeTickListener(TickFrame.this);
+                TickDocument newDoc = editor.getTextPane().getTickDocument();
+                newDoc.addTickListener(TickFrame.this);
+            } else {
+                setAppTitle("");
+                TickDocument tickDoc = editor.getTextPane().getTickDocument();
+                tickDoc.clearTicks();
+                editor.getTextPane().setText("");
+            }
+        } catch (Exception e) {
             LOG.error("Failed to load: " + pFilename, e);
-            mEditor.getTextPane().setText("Failed to load: \"" + pFilename + "\"");
+            editor.getTextPane().setText("Failed to load:\n \"" + pFilename + "\"");
+        } finally {
+            updateActions();
         }
     }
 
@@ -413,14 +424,22 @@ public class TickFrame extends KApplicationFrame
         return result.toArray(new KAction[result.size()]);
     }
 
+    /**
+     * Update actions
+     */
+    protected void updateActions() {
+        TickDocument doc = getEditor().getTextPane().getTickDocument();
+        mSaveAction.setEnabled(!doc.isEmpty() && doc.isModified());
+    }
+    
     @Override
     public void tickAdded(TickDocument pDocument, Tick pTick) {
-        mSaveAction.setEnabled(pDocument.isModified());
+        updateActions();
     }
 
     @Override
     public void tickRemoved(TickDocument pDocument, Tick pTick) {
-        mSaveAction.setEnabled(pDocument.isModified());
+        updateActions();
     }
    
 }
