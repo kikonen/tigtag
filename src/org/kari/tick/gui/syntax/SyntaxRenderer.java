@@ -19,8 +19,7 @@ import javax.swing.text.StyledDocument;
 import org.apache.log4j.Logger;
 import org.kari.tick.gui.TickDocument;
 import org.kari.util.DirectByteArrayOutputStream;
-
-import sun.awt.motif.MFileDialogPeer;
+import org.kari.util.TextUtil;
 
 import com.uwyn.jhighlight.pcj.CharIterator;
 import com.uwyn.jhighlight.pcj.map.CharKeyOpenHashMap;
@@ -40,16 +39,25 @@ import com.uwyn.jhighlight.tools.StringUtils;
 public abstract class SyntaxRenderer {
     public static final Logger LOG = Logger.getLogger("tick.syntax");
     
+    protected static final String[][] SIMPLE_REPLACES = {
+        {"<br />", ""},
+        {"<h1>", ""},
+        {"</h1>", ""},
+        {"<code>", ""},
+        {"</code>", ""},
+    };
+    
     protected static final Map<String, Class<?>> mSupportedRenderers =
         new HashMap<String, Class<?>>();
         
-    protected final Map<String, String> mPatternReplaces = new HashMap<String, String>();
+    protected final Map<String, String> mEncodingReplaces = new HashMap<String, String>();
     protected final Map<String, MutableAttributeSet> mStyles = new HashMap<String, MutableAttributeSet>();
     
+   
     static {
         mSupportedRenderers.put("java", JavaSyntaxRenderer.class);
         mSupportedRenderers.put("cpp", CPPSyntaxRenderer.class);
-//        mSupportedRenderers.put("xml", XMLSyntaxRenderer.class);
+        mSupportedRenderers.put("xml", XMLSyntaxRenderer.class);
     }
 
     public static final SyntaxRenderer getRenderer(String pFilename) {
@@ -78,9 +86,9 @@ public abstract class SyntaxRenderer {
         ext = ext.toLowerCase();
         if ("c".equals(ext) || "h".equals(ext) || "hpp".equals(ext)) {
             ext = "cpp";
-        } else if ("js".equals(ext)) {
+        } else if ("js".equals(ext) || "bsh".equals(ext)) {
             ext = "java";
-        } else if ("html".equals(ext) ||"htm".equals(ext)) {
+        } else if ("html".equals(ext) || "xhtml".equals(ext) ||"htm".equals(ext)) {
             ext = "xml";
         }
         return ext;
@@ -97,35 +105,37 @@ public abstract class SyntaxRenderer {
     
     
     public SyntaxRenderer() {
-        MutableAttributeSet plainAttr = new SimpleAttributeSet();
-        StyleConstants.setForeground(plainAttr, Color.BLACK);
+        MutableAttributeSet attr;
+
+        attr = new SimpleAttributeSet();
+        StyleConstants.setForeground(attr, Color.BLACK);
+        mStyles.put("plain", attr);
+
+        attr = new SimpleAttributeSet();
+        StyleConstants.setForeground(attr, Color.BLACK);
+        StyleConstants.setBold(attr, true);
+        mStyles.put("keyword", attr);
+
+        attr = new SimpleAttributeSet();
+        StyleConstants.setForeground(attr, new Color(0, 33, 255));
+        mStyles.put("separator", attr);
+
+        attr = new SimpleAttributeSet();
+        StyleConstants.setForeground(attr, Color.LIGHT_GRAY);
+        mStyles.put("comment", attr);
+
+        attr = new SimpleAttributeSet();
+        StyleConstants.setForeground(attr, new Color(0, 124, 31));
+        mStyles.put("operator", attr);
         
-        MutableAttributeSet keywordAttr = new SimpleAttributeSet();
-        StyleConstants.setForeground(keywordAttr, Color.BLACK);
-        StyleConstants.setBold(keywordAttr, true);
-        
-        MutableAttributeSet separatorAttr = new SimpleAttributeSet();
-        StyleConstants.setForeground(separatorAttr, new Color(0,33,255));
+        attr = new SimpleAttributeSet();
+        StyleConstants.setForeground(attr, new Color(188, 0, 0));
+        mStyles.put("literal", attr);
 
-        MutableAttributeSet commentAttr = new SimpleAttributeSet();
-        StyleConstants.setForeground(commentAttr, Color.LIGHT_GRAY);
+        attr = new SimpleAttributeSet();
+        StyleConstants.setForeground(attr, new Color(0, 44, 221));
+        mStyles.put("type", attr);
 
-        MutableAttributeSet operatorAttr = new SimpleAttributeSet();
-        StyleConstants.setForeground(operatorAttr, new Color(0,124,31));
-
-        MutableAttributeSet literalAttr = new SimpleAttributeSet();
-        StyleConstants.setForeground(literalAttr, new Color(188,0,0));
-
-        MutableAttributeSet typeAttr = new SimpleAttributeSet();
-        StyleConstants.setForeground(typeAttr, new Color(0,44,221));
-
-        mStyles.put("comment",          commentAttr);
-        mStyles.put("keyword",          keywordAttr);
-        mStyles.put("literal",          literalAttr);
-        mStyles.put("operator",         operatorAttr);
-        mStyles.put("plain",            plainAttr);
-        mStyles.put("separator",        separatorAttr);
-        mStyles.put("type",             typeAttr);
         
         // http://htmlhelp.com/reference/html40/entities/special.html
         try {
@@ -136,21 +146,10 @@ public abstract class SyntaxRenderer {
             while (iter.hasNext()) {
                 char ch = iter.next();
                 String encoded = (String)map.get(ch);
-                mPatternReplaces.put(encoded, "" + ch);
+                mEncodingReplaces.put(encoded.substring(1, encoded.length() - 1), "" + ch);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
-        }
-        
-        String[][] PATTERNS = {
-            {"<br />", ""},
-            {"<h1>", ""},
-            {"</h1>", ""},
-            {"<code>", ""},
-            {"</code>", ""},
-        };
-        for (String[] str : PATTERNS) {
-            mPatternReplaces.put(str[0], str[1]);
         }
     }
 
@@ -220,45 +219,53 @@ public abstract class SyntaxRenderer {
     protected void internalRender(
         final JTextPane pTextPane, 
         final TickDocument pTickDocument,
-        String pHTML) 
+        final String pHTML) 
         throws Exception
     {
-        StyledDocument doc = pTextPane.getStyledDocument();
-        doc.remove(0, doc.getLength());
+        StyledDocument doc = (StyledDocument)pTextPane.getEditorKit().createDefaultDocument();
+        
         MutableAttributeSet attr = null;
         
-        BufferedReader input = new BufferedReader(new StringReader(pHTML));
+        String decoded = decode(pHTML);
+        BufferedReader input = new BufferedReader(new StringReader(decoded));
         
         String line;
         int offset = 0;
         while ((line = input.readLine()) != null) {
-            if (line.indexOf("<span") == -1) {
+            if (line.indexOf("<span class=") == -1) {
                 continue;
             }
-            line = decode(line);
             
             int prevIdx = 0;
             while (prevIdx < line.length()) {
-                int startIdx = line.indexOf("<span", prevIdx); 
-                int endIdx = line.indexOf(">", startIdx + 5);
-                {
-                    int startParen = line.indexOf('\"', startIdx + 1);
-                    int endParen = line.indexOf('\"', startParen + 1);
-                    String style = line.substring(startParen + 1, endParen);
-                    attr = getAttr(style);
+                int startIdx = line.indexOf("<span class=", prevIdx);
+                if (startIdx != -1) {
+                    int endIdx = line.indexOf(">", startIdx + 12);
+                    {
+                        int startParen = line.indexOf('\"', startIdx + 1);
+                        int endParen = line.indexOf('\"', startParen + 1);
+                        String style = line.substring(startParen + 1, endParen);
+                        attr = getAttr(style);
+                    }
+                    
+                    int endTagIdx = line.indexOf("</span>", endIdx);
+                    if (endTagIdx - endIdx + 1 > 0) {
+                        String str = line.substring(endIdx + 1, endTagIdx);
+                        doc.insertString(offset, str, attr);
+                        offset = doc.getLength();
+                    }
+                    
+                    prevIdx = endTagIdx + 7;
+                } else {
+                    doc.insertString(offset, line.substring(prevIdx), null);
+                    offset = doc.getLength();
+                    prevIdx = line.length();
                 }
-                
-                int endTagIdx = line.indexOf("</span>", endIdx); 
-                String str = line.substring(endIdx + 1, endTagIdx);
-
-                doc.insertString(offset, str, attr);
-                offset = doc.getLength();
-                
-                prevIdx = endTagIdx + 7;
             }
             doc.insertString(offset, "\n", null);
             offset = doc.getLength();
         }
+        pTextPane.setDocument(doc);
     }
 
 
@@ -266,10 +273,12 @@ public abstract class SyntaxRenderer {
      * Unescape all HTML escapes
      */
     protected String decode(String line) {
-        for (String pattern : mPatternReplaces.keySet()) {
-            String str = mPatternReplaces.get(pattern);
-//            line = pattern.matcher(line).replaceAll(str);
-            line = StringUtils.replace(line, pattern, str);
+        int idx = line.indexOf('&');
+        if (idx != -1) {
+            line = TextUtil.expand(line, "&", ";", mEncodingReplaces, false);
+        }
+        for (String[] str : SIMPLE_REPLACES) {
+            line = StringUtils.replace(line, str[0], str[1]);
         }
         return line;
     }

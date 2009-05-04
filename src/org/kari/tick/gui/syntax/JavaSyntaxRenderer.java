@@ -11,18 +11,21 @@ import javax.swing.text.StyleConstants;
  * 
  * @author kari
  */
-public class JavaSyntaxRenderer extends GenericSyntaxRenderer {
+public class JavaSyntaxRenderer
+    extends GenericSyntaxRenderer
+{
     public JavaSyntaxRenderer() {
-        MutableAttributeSet javadocCommentAttr = new SimpleAttributeSet();
-        StyleConstants.setForeground(javadocCommentAttr, new Color(147,147,147));
-        StyleConstants.setItalic(javadocCommentAttr, true);
-        
-        MutableAttributeSet javadocTagAttr = new SimpleAttributeSet();
-        StyleConstants.setForeground(javadocTagAttr, new Color(147,147,147));
-        StyleConstants.setItalic(javadocTagAttr, true);
-        StyleConstants.setBold(javadocTagAttr, true);
+        MutableAttributeSet attr;
 
-        mStyles.put("javadoc_tag",      javadocTagAttr);
-        mStyles.put("javadoc_comment",  javadocCommentAttr);
+        attr = new SimpleAttributeSet();
+        StyleConstants.setForeground(attr, new Color(147, 147, 147));
+        StyleConstants.setItalic(attr, true);
+        mStyles.put("javadoc_comment", attr);
+
+        attr = new SimpleAttributeSet();
+        StyleConstants.setForeground(attr, new Color(147, 147, 147));
+        StyleConstants.setItalic(attr, true);
+        StyleConstants.setBold(attr, true);
+        mStyles.put("javadoc_tag", attr);
     }
 }
