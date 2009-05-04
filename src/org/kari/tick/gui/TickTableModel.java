@@ -1,9 +1,14 @@
 package org.kari.tick.gui;
 
+import java.awt.Component;
+
+import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import org.kari.tick.Tick;
+import org.kari.tick.TickDefinition;
 import org.kari.tick.TickLocation;
 
 /**
@@ -18,17 +23,46 @@ public class TickTableModel extends AbstractTableModel
     public static final int IDX_MODE  = 12;
     public static final int IDX_LINE  = 13;
     public static final int IDX_TEXT = 14;
+
+    /**
+     * Render tick definition name
+     *
+     * @author kari
+     */
+    static final class NameTableCellRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(
+            JTable pTable,
+            Object pValue,
+            boolean pIsSelected,
+            boolean pHasFocus,
+            int pRow,
+            int pColumn)
+        {
+            super.getTableCellRendererComponent(pTable, pValue,
+                    pIsSelected, pHasFocus, pRow, pColumn);
+            
+            TickDefinition def = (TickDefinition)pValue;
+            
+            setIcon(def.getIcon());
+            setText(def.getName());
+            
+            return this;
+        }
+    }
+    
     
     private final TableColumn[] mColumns = {
+        new TableColumn(TickTableModel.IDX_LINE),
         new TableColumn(TickTableModel.IDX_NAME),
         new TableColumn(TickTableModel.IDX_MODE),
-        new TableColumn(TickTableModel.IDX_LINE),
-        new TableColumn(TickTableModel.IDX_TEXT)};
+        };
 
     private TickDocument mTickDocument;
     
     public TickTableModel(TickDocument pDocument) {
         mTickDocument = pDocument;
+        mColumns[1].setCellRenderer(new NameTableCellRenderer());
     }
     
     public TableColumn[] getColumns() {
@@ -73,7 +107,7 @@ public class TickTableModel extends AbstractTableModel
     public String getColumnName(int pColumn) {
         switch (pColumn) {
             case IDX_NAME:
-                return "Name";
+                return "Mark";
             case IDX_MODE:
                 return "Style";
             case IDX_LINE:
@@ -98,7 +132,7 @@ public class TickTableModel extends AbstractTableModel
         TickLocation loc = tick.getLocation();
         switch (pColumnIndex) {
         case IDX_NAME:
-            result = tick.getDefinition().getName();
+            result = tick.getDefinition();
             break;
         case IDX_MODE:
             result = loc.mBlockMode.getName();

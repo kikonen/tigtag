@@ -1,10 +1,14 @@
 package org.kari.tick;
 
 import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 import java.lang.reflect.Field;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.swing.ImageIcon;
 
 import org.apache.log4j.Logger;
 import org.kari.tick.gui.painter.HighlightPainter;
@@ -108,7 +112,8 @@ public class TickDefinition {
     private final Map<String, String> mProperties = new HashMap<String, String>();
     private BlockMode mBlockMode;
     
-    private transient Color mColor;
+    private Color mColor;
+    private ImageIcon mIcon;
     
     public TickDefinition() {
         // Nothing
@@ -195,5 +200,24 @@ public class TickDefinition {
         }
         return mColor;
     }
+
+    /**
+     * @return Identity icon
+     */
+    public ImageIcon getIcon() {
+        if (mIcon == null) {
+            int SIZE = 16;
+            BufferedImage image = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB_PRE);
+            Graphics g = image.getGraphics();
+            g.setColor(getColor());
+            g.fillRoundRect(1, 1, SIZE - 2, SIZE - 2, SIZE, SIZE);
+            g.setColor(Color.BLACK);
+            g.drawRoundRect(1, 1, SIZE - 2, SIZE - 2, SIZE, SIZE);
+            mIcon = new ImageIcon(image);
+        }
+        return mIcon;
+    }
+
+    
 }
  

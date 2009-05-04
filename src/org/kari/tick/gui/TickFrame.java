@@ -174,15 +174,7 @@ public class TickFrame extends KApplicationFrame
         public TickAction(TickDefinition pDefinition, ActionGroup pGroup) {
             super(pDefinition.getName() + " - " + pDefinition.getBlockMode().getName(), pGroup);
             mDefinition = pDefinition;
-            
-            int SIZE = 16;
-            BufferedImage image = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB_PRE);
-            Graphics g = image.getGraphics();
-            g.setColor(mDefinition.getColor());
-            g.fillRoundRect(1, 1, SIZE - 2, SIZE - 2, SIZE, SIZE);
-            g.setColor(Color.BLACK);
-            g.drawRoundRect(1, 1, SIZE - 2, SIZE - 2, SIZE, SIZE);
-            putValue(SMALL_ICON, new ImageIcon(image));
+            putValue(SMALL_ICON, mDefinition.getIcon());
         }
         
         @Override
