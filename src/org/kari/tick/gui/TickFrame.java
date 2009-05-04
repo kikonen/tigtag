@@ -57,23 +57,6 @@ public class TickFrame extends KApplicationFrame
     private TickEditorPanel mEditor;
     
     /**
-     * Selects mode (word/block/...)
-     */
-    final class ModeAction extends KAction {
-        private BlockMode mBlockMode;
-        
-        public ModeAction(BlockMode pBlockMode, ActionGroup pGroup) {
-            super(pBlockMode != null ? pBlockMode.getName() : "&Default", pGroup);
-            mBlockMode = pBlockMode;
-        }
-
-        @Override
-        public void actionPerformed(ActionContext pCtx) {
-            getEditor().getTextPane().getTickSet().setBlockMode(mBlockMode);
-        }
-    }
-    
-    /**
      * Selects predefine tick 
      */
     final class TickAction extends KAction {
@@ -111,18 +94,9 @@ public class TickFrame extends KApplicationFrame
         }
     };
     
-    private final ActionGroup mModeGroup = new ActionGroup();
-    private KAction[] mModeActions = {
-        new ModeAction(null, mModeGroup),
-        new ModeAction(BlockMode.HIGHLIGHT, mModeGroup),
-        new ModeAction(BlockMode.UNDERLINE, mModeGroup),
-        new ModeAction(BlockMode.BLOCK, mModeGroup),
-        new ModeAction(BlockMode.SIDEBAR, mModeGroup),
-    };
-    
     private final ActionGroup mDefinitionGroup = new ActionGroup();
 
-    private final Action mNewViewAction = new KAction(TickConstants.R_NEW_VIEW) {
+    private final Action mNewViewAction = new KAction(ActionConstants.R_NEW) {
         @Override
         public void actionPerformed(ActionContext pCtx) {
             String filename = getEditor().getTextPane().getTickDocument().getFilename();
@@ -202,7 +176,6 @@ public class TickFrame extends KApplicationFrame
         ActionContainer ac = getActionContainer();
         
         KAction[] tickActions = createTickActions();
-        mModeActions[0].setSelected(true);
         tickActions[0].setSelected(true);
         
         ac.addMenu(new KMenu(
@@ -221,15 +194,7 @@ public class TickFrame extends KApplicationFrame
             ));
         
         ac.addMenu(new KMenu(
-                ActionConstants.R_MENU_VIEW,
-                mModeActions[0],
-                mModeActions[1],
-                mModeActions[2],
-                mModeActions[3],
-                mModeActions[4]));
-        
-        ac.addMenu(new KMenu(
-                "&Ticks",
+                "&Mark",
                 tickActions));
         
         ac.addMenu(new KMenu(
@@ -238,14 +203,10 @@ public class TickFrame extends KApplicationFrame
 
         KToolbar mainTb = new KToolbar(
             ActionConstants.R_TB_MAIN,
-            mSaveAction,
+            mNewViewAction,
             mOpenAction,
             KAction.SEPARATOR,
-            mModeActions[0],
-            mModeActions[1],
-            mModeActions[2],
-            mModeActions[3],
-            mModeActions[4]
+            mSaveAction 
             );
         
         ac.addToolbar(mainTb);

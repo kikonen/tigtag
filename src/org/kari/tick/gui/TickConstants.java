@@ -2,6 +2,11 @@ package org.kari.tick.gui;
 
 import org.apache.log4j.Logger;
 
+/**
+ * Constants for tigtag
+ *
+ * @author kari
+ */
 public interface TickConstants {
     String S = "tick.";
     
