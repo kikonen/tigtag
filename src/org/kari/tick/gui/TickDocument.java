@@ -43,11 +43,34 @@ public class TickDocument {
 
     /**
      * Add new tick, if duplicate then existing one is overridden
+     * 
+     * @param pTick or tick into which pTick was merged
      */
-    public void addTick(Tick pTick) {
-        mTicks.add(pTick);
+    public Tick addTick(Tick pTick) {
+        Tick result = pTick;
+        List<Tick> merged = new ArrayList<Tick>();
+        
+        for (Tick tick : mTicks) {
+            if (tick.canMerge(pTick)) {
+                merged.add(tick);
+            }
+        }
+        
+        if (!merged.isEmpty()) {
+            mTicks.removeAll(merged);
+            result = merged.get(0);
+            for (Tick tick : merged) {
+                if (tick != result) {
+                    result.merge(tick);
+                }
+            }
+            result.merge(pTick);
+        }
+        
+        mTicks.add(result);
         setModified(true);
-        fireTickChanged(pTick, true);
+        fireTickChanged(result, true);
+        return result;
     }
 
     /**

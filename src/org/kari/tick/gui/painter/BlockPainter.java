@@ -40,7 +40,7 @@ public class BlockPainter extends TickPainter {
     {
         Rectangle rect = calculateTickRect(pComponent, pEditor, pTick);
         if (rect != null) {
-            String text = pTick.getTickDefinition().getName();
+            String text = pTick.getDefinition().getName();
             Color color = pTick.getColor();
             g2d.setColor(color);
             if (pHighlight == Highlight.DIM) {

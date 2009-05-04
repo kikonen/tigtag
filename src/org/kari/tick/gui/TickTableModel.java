@@ -98,7 +98,7 @@ public class TickTableModel extends AbstractTableModel
         TickLocation loc = tick.getLocation();
         switch (pColumnIndex) {
         case IDX_NAME:
-            result = tick.getTickDefinition().getName();
+            result = tick.getDefinition().getName();
             break;
         case IDX_MODE:
             result = loc.mBlockMode.getName();

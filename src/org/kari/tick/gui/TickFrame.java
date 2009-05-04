@@ -1,10 +1,13 @@
 package org.kari.tick.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -77,8 +80,17 @@ public class TickFrame extends KApplicationFrame
         private TickDefinition mDefinition;
         
         public TickAction(TickDefinition pDefinition, ActionGroup pGroup) {
-            super(pDefinition.getName(), pGroup);
+            super(pDefinition.getName() + " - " + pDefinition.getBlockMode().getName(), pGroup);
             mDefinition = pDefinition;
+            
+            int SIZE = 16;
+            BufferedImage image = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_ARGB_PRE);
+            Graphics g = image.getGraphics();
+            g.setColor(mDefinition.getColor());
+            g.fillRoundRect(1, 1, SIZE - 2, SIZE - 2, SIZE, SIZE);
+            g.setColor(Color.BLACK);
+            g.drawRoundRect(1, 1, SIZE - 2, SIZE - 2, SIZE, SIZE);
+            putValue(SMALL_ICON, new ImageIcon(image));
         }
         
         @Override

@@ -27,7 +27,7 @@ public final class Tick {
     public static final String P_MODE = "mode";
     public static final String P_COLOR = "color";
 
-    private TickDefinition mTickDefinition;
+    private TickDefinition mDefinition;
     private TickLocation mLocation;
     
     private String mLink;
@@ -48,9 +48,9 @@ public final class Tick {
         TickLocation pLocation,
         String pText)
     {
-        mTickDefinition = pTickDefinition;
+        mDefinition = pTickDefinition;
         mLocation = pLocation;
-        mColor = mTickDefinition.getColor();
+        mColor = mDefinition.getColor();
         setText(pText);
     }
     
@@ -61,7 +61,7 @@ public final class Tick {
             result = true;
         } else if (pObj instanceof Tick) {
             Tick tick = (Tick)pObj;
-            result = mTickDefinition.equals(tick.mTickDefinition)
+            result = mDefinition.equals(tick.mDefinition)
                 && mLocation.equals(tick.mLocation);
             
             mLocation.equals(tick.mLocation);
@@ -72,16 +72,16 @@ public final class Tick {
 
     @Override
     public int hashCode() {
-        return mTickDefinition.hashCode() ^ mLocation.hashCode();
+        return mDefinition.hashCode() ^ mLocation.hashCode();
     }
     
     @Override
     public String toString() {
-        return "Tick=" + mTickDefinition + ",loc=" +mLocation;
+        return "Tick=" + mDefinition + ",loc=" +mLocation;
     }
 
-    public TickDefinition getTickDefinition() {
-        return mTickDefinition;
+    public TickDefinition getDefinition() {
+        return mDefinition;
     }
     
     public TickLocation getLocation() {
@@ -139,7 +139,7 @@ public final class Tick {
      */
     public Map<String, String> save() {
         Map<String, String> result = new HashMap<String, String>();
-        result.put(P_TICK, mTickDefinition.getName());
+        result.put(P_TICK, mDefinition.getName());
         if (mComment != null) {
             result.put(P_COMMENT, mComment);
         }
@@ -147,8 +147,8 @@ public final class Tick {
             result.put(P_LINK, mLink);
         }
         result.put(P_LOCATION, mLocation.toString());
-        result.put(P_MODE, mLocation.mBlockMode.getName());
-        result.put(P_COLOR, Integer.toString(mColor.getRGB()));
+//        result.put(P_MODE, mLocation.mBlockMode.getName());
+//        result.put(P_COLOR, Integer.toString(mColor.getRGB()));
         return result;
     }
 
@@ -156,19 +156,19 @@ public final class Tick {
      * Restore tick from persistent form
      */
     public void restore(Map<String, String> pProperties) {
-        mTickDefinition = TickRegistry.getInstance().getDefinition(pProperties.get(P_TICK));
+        mDefinition = TickRegistry.getInstance().getDefinition(pProperties.get(P_TICK));
         mLocation = new TickLocation(pProperties.get(P_LOCATION));
-        mLocation.mBlockMode = BlockMode.getMode(pProperties.get(P_MODE));
+        mLocation.mBlockMode = null;//BlockMode.getMode(pProperties.get(P_MODE));
         if (mLocation.mBlockMode == null) {
-            mLocation.mBlockMode = mTickDefinition.getBlockMode();
+            mLocation.mBlockMode = mDefinition.getBlockMode();
         }
         mLink = pProperties.get(P_LINK);
         mComment = pProperties.get(P_COMMENT);
-        String colorStr = pProperties.get(P_COLOR);
+        String colorStr = null;//pProperties.get(P_COLOR);
         if (colorStr != null) {
             mColor = new Color(Integer.parseInt(colorStr));
         } else {
-            mColor = Color.GREEN;
+            mColor = mDefinition.getColor();
         }
     }
 
@@ -199,4 +199,23 @@ public final class Tick {
         g2d.setStroke(origStroke);
         g2d.setColor(origColor);
     }
+    
+    /**
+     * @return true if this pTick can be merged into this tick
+     */
+    public boolean canMerge(Tick pTick) {
+        return mDefinition == pTick.mDefinition
+            && (mLocation.intersect(pTick.mLocation)
+                || mLocation.adjacent(pTick.mLocation));
+    }
+    
+    /**
+     * Merge pTick into this tick if possible. Merge requires that ticks
+     * either intersect or are adjacent
+     */
+    public void merge(Tick pTick) {
+        TickLocation loc = mLocation.merge(pTick.mLocation);
+        mLocation = loc;
+    }
+
 }

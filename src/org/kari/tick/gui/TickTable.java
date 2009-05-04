@@ -71,7 +71,7 @@ public class TickTable extends JTable
             if (tick == pTick) {
                 result = Highlight.BRIGHT;
             } else {
-                if (!pTick.getTickDefinition().equals(tick.getTickDefinition())) {
+                if (!pTick.getDefinition().equals(tick.getDefinition())) {
                     result = Highlight.DIM;
                 }
             }

@@ -29,8 +29,8 @@ public class HighlightPainter extends TickPainter {
     protected final AlphaComposite PEN_DIM_COMPOSITE = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.10f);
     protected final AlphaComposite NORMAL_COMPOSITE = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.20f);
     protected final AlphaComposite BRIGHT_COMPOSITE = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.40f);
-    protected final int GAP_H = 2;
-    protected final int GAP_V = 1;
+    protected final int GAP_H = 0;
+    protected final int GAP_V = 0;
 
     @Override
     public void paint(
@@ -79,7 +79,7 @@ public class HighlightPainter extends TickPainter {
                 Font font = g2d.getFont().deriveFont(8.0f);
                 g2d.setFont(font);
                 FontMetrics fm = g2d.getFontMetrics();
-                String text = pTick.getTickDefinition().getName();
+                String text = pTick.getDefinition().getName();
                 g2d.setColor(Color.GRAY);
                 Rectangle2D textBounds = font.getStringBounds(text, 0, text.length(), fm.getFontRenderContext());
                 int x = rect.x - GAP_H + rect.width + GAP_H * 2 - (int)textBounds.getWidth();

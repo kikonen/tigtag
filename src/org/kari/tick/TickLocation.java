@@ -9,7 +9,13 @@ import org.kari.tick.TickDefinition.BlockMode;
  * @author kari
  */
 public final class TickLocation {
+    /**
+     * Inclusive
+     */
     public int mStartPos = -1;
+    /**
+     * Exclusive
+     */
     public int mEndPos = -1;
     /**
      * Starts from 0
@@ -20,6 +26,10 @@ public final class TickLocation {
      */
     public int mEndLine = -1;
     public BlockMode mBlockMode;
+
+    public TickLocation() {
+        // Nothing
+    }
     
     public TickLocation(String pStr) {
         fromString(pStr);
@@ -93,4 +103,44 @@ public final class TickLocation {
             mEndLine = Integer.parseInt(split[3]);
         }
     }
+    
+    /**
+     * @return true if this tick intersects with range of pTick
+     */
+    public boolean intersect(TickLocation pLoc) {
+        TickLocation a = this;
+        TickLocation b = pLoc;
+        if (mStartPos > pLoc.mStartPos) {
+            b = this;
+            a = pLoc;
+        }
+        return a.mEndPos > b.mStartPos;
+    }
+
+    /**
+     * @return true if this tick intersects with range of pTick
+     */
+    public boolean adjacent(TickLocation pLoc) {
+        TickLocation a = this;
+        TickLocation b = pLoc;
+        if (mStartPos > pLoc.mStartPos) {
+            b = this;
+            a = pLoc;
+        }
+        return a.mEndPos == b.mStartPos;
+    }
+
+    /**
+     * Merge pTick with this tick and create new location instance.
+     */
+    public TickLocation merge(TickLocation pLoc) {
+        TickLocation loc = new TickLocation();
+        loc.mBlockMode = mBlockMode;
+        loc.mStartLine = Math.min(mStartLine, pLoc.mStartLine);
+        loc.mEndLine = Math.max(mEndLine, pLoc.mEndLine);
+        loc.mStartPos = Math.min(mStartPos, pLoc.mStartPos);
+        loc.mEndPos = Math.max(mEndPos, pLoc.mEndPos);
+        return loc;
+    }
+
 }
