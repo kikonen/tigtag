@@ -2,7 +2,6 @@ package org.kari.tick;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -10,7 +9,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.kari.tick.gui.TickConstants;
 import org.kari.util.TextUtil;
 
 /**
@@ -19,7 +17,8 @@ import org.kari.util.TextUtil;
  * @author kari
  */
 public final class TickRegistry {
-    private static final String TICK_DEFINITIONS = "/ticks.properties";
+    public static final String DEFAULT = "DEFAULT";
+    public static final String TICK_DEFINITIONS = "/ticks.properties";
 
     private static TickRegistry mInstance;
     
@@ -59,6 +58,7 @@ public final class TickRegistry {
         if (defFile.exists()) {
             reader = new BufferedReader(new FileReader(defFile));
         } else {
+            System.out.println("Create: " + defFile + " to redefine markers");
             reader = new BufferedReader(
                     new InputStreamReader(TickRegistry.class.getResourceAsStream(TICK_DEFINITIONS)));
         }

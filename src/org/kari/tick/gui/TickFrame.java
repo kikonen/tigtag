@@ -327,11 +327,14 @@ public class TickFrame extends KApplicationFrame
         if (icon instanceof ImageIcon) {
             setIconImage( ((ImageIcon)icon).getImage() );
         }
-        setAppTitle("");
+        setAppTitle(null);
     }
     
+    /**
+     * @param title Title, null to set empty title
+     */
     public void setAppTitle(String title) {
-        if (title.length() == 0) {
+        if (title == null || title.length() == 0) {
             title = "<No name>";
         }
         title +=
@@ -361,7 +364,7 @@ public class TickFrame extends KApplicationFrame
                 oldDoc.removeTickListener(TickFrame.this);
                 newDoc.addTickListener(TickFrame.this);
             } else {
-                setAppTitle("");
+                setAppTitle(null);
                 TickDocument tickDoc = editor.getTextPane().getTickDocument();
                 tickDoc.clearTicks();
                 editor.getTextPane().setText("");
