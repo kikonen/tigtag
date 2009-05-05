@@ -58,7 +58,7 @@ public final class TickRegistry {
         
         BufferedReader reader;
         
-        File defFile = new File(TextUtil.expand(FileAccessBase.TICKS_DIR + TICK_DEFINITIONS));
+        File defFile = getDefinitionFile();
         if (defFile.exists()) {
             reader = new BufferedReader(new FileReader(defFile));
         } else {
@@ -101,17 +101,24 @@ public final class TickRegistry {
         List<TickDefinition> defs = new ArrayList<TickDefinition>();
         defs.addAll(mDefinitions.values());
         Collections.sort(defs, TickDefinition.NAME_COMPARATOR);
-        
-        sb.append("#\n");
-        sb.append("# FORMAT\n");
-        sb.append("# style=Block | Highlight | Sidebar | Underline\n");
-        sb.append("# color=RED | GREEN | etc. | ff00ee | 127,127,127\n");
-        sb.append("#\n");
+
+        String lineSeparator = System.getProperty("line.separator");
+        sb.append("#");
+        sb.append(lineSeparator);
+        sb.append("# FORMAT");
+        sb.append(lineSeparator);
+        sb.append("# style=Block | Highlight | Sidebar | Underline");
+        sb.append(lineSeparator);
+        sb.append("# color=RED | GREEN | etc. | ff00ee | 127,127,127");
+        sb.append(lineSeparator);
+        sb.append("#");
+        sb.append(lineSeparator);
         
         for (TickDefinition def : defs) {
             sb.append("[");
             sb.append(def.getName());
-            sb.append("]\n");
+            sb.append("]");
+            sb.append(lineSeparator);
             
             List<String> keys = new ArrayList<String>(def.getKeys());
             Collections.sort(keys);
@@ -120,9 +127,9 @@ public final class TickRegistry {
                 sb.append(key);
                 sb.append("=");
                 sb.append(value);
-                sb.append("\n");
+                sb.append(lineSeparator);
             }
-            sb.append("\n");
+            sb.append(lineSeparator);
         }
         return sb.toString();
     }
@@ -133,11 +140,17 @@ public final class TickRegistry {
     public void saveDefinitions(String pText)
         throws IOException
     {
-        File defFile = new File(TextUtil.expand(FileAccessBase.TICKS_DIR + TICK_DEFINITIONS));
+        File defFile = getDefinitionFile();
         defFile.getParentFile().mkdirs();
         FileUtil.save(defFile, pText.getBytes());
     }
-    
+
+    /**
+     * @return persistent file for tick definitions
+     */
+    public File getDefinitionFile() {
+        return new File(TextUtil.expand(FileAccessBase.TICKS_DIR + TICK_DEFINITIONS));
+    }
     
     /**
      * Create new set by collecting ticks belonging into it

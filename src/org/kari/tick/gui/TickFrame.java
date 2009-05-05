@@ -23,8 +23,6 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.TransferHandler;
 
 import org.kari.action.ActionConstants;
@@ -46,6 +44,7 @@ import org.kari.tick.TickDefinition;
 import org.kari.tick.TickEditorStarter;
 import org.kari.tick.TickRegistry;
 import org.kari.tick.TickSet;
+import org.kari.util.SystemUtil;
 
 /**
  * TigTag window
@@ -199,22 +198,16 @@ public class TickFrame extends KApplicationFrame
     private final Action mEditTicksAction = new KAction("&Edit Markers") {
         @Override
         public void actionPerformed(ActionContext pCtx) {
-            String text = TickRegistry.getInstance().formatDefinitions();
-            JTextArea editor = new JTextArea();
-            editor.setText(text);
-            
-            int option = JOptionPane.showConfirmDialog(
-                    pCtx.getWindow(), 
-                    new JScrollPane(editor), 
-                    APP_NAME, 
-                    JOptionPane.YES_NO_OPTION);
-            
-            if (option == JOptionPane.OK_OPTION) {
-                try {
-                    TickRegistry.getInstance().saveDefinitions(editor.getText());
-                } catch (IOException e) {
-                    LOG.error("Failed to save", e);
-                }
+            try {
+                TickRegistry registry = TickRegistry.getInstance();
+                String text = registry.formatDefinitions();
+                registry.saveDefinitions(text);
+                String[] cmd = {
+                    SystemUtil.isLinux() ? "kwrite" : "notepad",
+                    registry.getDefinitionFile().getAbsolutePath()};
+                Runtime.getRuntime().exec(cmd);
+            } catch (IOException e) {
+                LOG.error("Failed to save", e);
             }
         }
     };
