@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp
+    spec="1.0+"
+    codebase="http://kari.dy.fi/tigtag/dist"
+    href="tigtag.jnlp" >
+
+    <information>
+        <title>Tig Tag</title>
+        <vendor>KI - Kari Ikonen</vendor>
+        <homepage href="http://kari.dy.fi"/>
+        <description>Tig Tag - The Code Review Editor</description>
+        <icon href="tigtag_32.png"/>
+        <offline-allowed/>
+    </information>
+
+    <security>
+        <all-permissions/>
+    </security>
+
+    <resources>
+        <j2se version="1.6+" initial-heap-size="10m" max-heap-size="256m"/>
+
+        <jar href="kui.jar"/> 
+        <jar href="jhighlight-1.0.jar"/>
+        <jar href="log4j-1.2.14.jar"/>
+        <jar href="TableLayout.jar"/>
+        <jar href="tigtag.jar"/>
+    </resources>
+
+    <application-desc main-class="org.kari.tick.TickMain"/>
+</jnlp>
+

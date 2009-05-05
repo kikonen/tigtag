@@ -19,7 +19,7 @@ public class TickResources
 {
     private static final Object[][] CONTENTS = {
         { TEXT + R_APP, "TigTag" }, 
-        { ICON + R_APP, "/icon/tigtag.png" }, 
+        { ICON + R_APP, "/icon/tigtag_32.png" }, 
 
         { TEXT + R_NEW_VIEW, "&New View" }, 
         { ACC + R_NEW_VIEW, "ctrl N" }, 
