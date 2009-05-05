@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -150,6 +151,13 @@ public class TickDefinition {
     }
 
     /**
+     * @return All property keys
+     */
+    public Collection<String> getKeys() {
+        return mProperties.keySet();
+    }
+    
+    /**
      * @return Property, pDefault if not found
      */
     public String getString(String pKey, String pDefault) {
@@ -189,8 +197,16 @@ public class TickDefinition {
                 } catch (Exception e) {
                     // not valid color name: try RGB
                     try {
-                        int rgb = Integer.parseInt(colorName, 16);
-                        color = new Color(rgb);
+                        String[] split = colorName.split(",");
+                        if (split.length == 3) {
+                            color = new Color(
+                                Integer.parseInt(split[0]),
+                                Integer.parseInt(split[1]),
+                                Integer.parseInt(split[2]));
+                        } else {
+                            int rgb = Integer.parseInt(colorName, 16);
+                            color = new Color(rgb);
+                        }
                     } catch (Exception e2) {
                         LOG.error("Invalid color:" + colorName, e2);
                     }

@@ -5,10 +5,14 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.kari.util.FileUtil;
 import org.kari.util.TextUtil;
 
 /**
@@ -87,6 +91,53 @@ public final class TickRegistry {
             }
         }
     }
+    
+    /**
+     * Render all definitions as text file for editing/saving
+     */
+    public String formatDefinitions() 
+    {
+        StringBuilder sb = new StringBuilder();
+        List<TickDefinition> defs = new ArrayList<TickDefinition>();
+        defs.addAll(mDefinitions.values());
+        Collections.sort(defs, TickDefinition.NAME_COMPARATOR);
+        
+        sb.append("#\n");
+        sb.append("# FORMAT\n");
+        sb.append("# style=Block | Highlight | Sidebar | Underline\n");
+        sb.append("# color=RED | GREEN | etc. | ff00ee | 127,127,127\n");
+        sb.append("#\n");
+        
+        for (TickDefinition def : defs) {
+            sb.append("[");
+            sb.append(def.getName());
+            sb.append("]\n");
+            
+            List<String> keys = new ArrayList<String>(def.getKeys());
+            Collections.sort(keys);
+            for (String key : keys) {
+                String value = def.getString(key, null);
+                sb.append(key);
+                sb.append("=");
+                sb.append(value);
+                sb.append("\n");
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Save formatted ticks into file
+     */
+    public void saveDefinitions(String pText)
+        throws IOException
+    {
+        File defFile = new File(TextUtil.expand(FileAccessBase.TICKS_DIR + TICK_DEFINITIONS));
+        defFile.getParentFile().mkdirs();
+        FileUtil.save(defFile, pText.getBytes());
+    }
+    
     
     /**
      * Create new set by collecting ticks belonging into it

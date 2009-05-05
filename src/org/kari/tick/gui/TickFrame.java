@@ -1,16 +1,14 @@
 package org.kari.tick.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,8 +23,9 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.TransferHandler;
-import javax.swing.text.Document;
 
 import org.kari.action.ActionConstants;
 import org.kari.action.ActionContainer;
@@ -197,6 +196,29 @@ public class TickFrame extends KApplicationFrame
     
     private final ActionGroup mDefinitionGroup = new ActionGroup();
 
+    private final Action mEditTicksAction = new KAction("&Edit Markers") {
+        @Override
+        public void actionPerformed(ActionContext pCtx) {
+            String text = TickRegistry.getInstance().formatDefinitions();
+            JTextArea editor = new JTextArea();
+            editor.setText(text);
+            
+            int option = JOptionPane.showConfirmDialog(
+                    pCtx.getWindow(), 
+                    new JScrollPane(editor), 
+                    APP_NAME, 
+                    JOptionPane.YES_NO_OPTION);
+            
+            if (option == JOptionPane.OK_OPTION) {
+                try {
+                    TickRegistry.getInstance().saveDefinitions(editor.getText());
+                } catch (IOException e) {
+                    LOG.error("Failed to save", e);
+                }
+            }
+        }
+    };
+
     private final Action mNewViewAction = new KAction(ActionConstants.R_NEW) {
         @Override
         public void actionPerformed(ActionContext pCtx) {
@@ -293,7 +315,9 @@ public class TickFrame extends KApplicationFrame
         
         ac.addMenu(new KMenu(
                 ActionConstants.R_MENU_EDIT,
-                getEditor().getActionMap().get(ActionConstants.R_CLEAR)
+                getEditor().getActionMap().get(ActionConstants.R_CLEAR),
+                KAction.SEPARATOR,
+                mEditTicksAction
             ));
         
         ac.addMenu(new KMenu(
