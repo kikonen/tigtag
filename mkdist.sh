@@ -9,9 +9,8 @@ jar uvf dist/kui.jar -C ../kui/resources .
 
 cp ../kui/lib/*.jar dist
 cp lib/*.jar dist
-
-echo "java -cp log4j-1.2.14.jar:TableLayout.jar:jhighlight-1.0.jar:kui.jar:tigtag.jar org.kari.tick.TickMain \$@" > dist/tigtag.sh
-echo "start javaw -cp log4j-1.2.14.jar;TableLayout.jar;jhighlight-1.0.jar;kui.jar;tigtag.jar org.kari.tick.TickMain %1 %2 %3 %4 %5 %6 %7 %8 %9" > dist/tigtag.bat
+cp script/*.bat dist
+cp script/*.sh dist
 
 chmod ugo+x dist/tigtag.sh
 
