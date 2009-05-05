@@ -5,4 +5,5 @@ bin/*
 dist/*
 test/*
 tmp/*
-tick_dist.zip
+*_dist.zip
+hs_err*
