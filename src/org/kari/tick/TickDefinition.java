@@ -20,7 +20,7 @@ import org.kari.tick.gui.painter.TickPainter;
  * 
  * @author kari
  */
-public class TickDefinition {
+public final class TickDefinition {
     private static final String STYLE = "style";
     private static final String COLOR = "color";
     private static final Logger LOG = Logger.getLogger("tick.definition");
@@ -122,6 +122,9 @@ public class TickDefinition {
     
     @Override
     public boolean equals(Object pObj) {
+        if (pObj == this) {
+            return true;
+        }
         boolean result = false;
         if (pObj instanceof TickDefinition) {
             result = mName.equals( ((TickDefinition)pObj).mName );

@@ -14,7 +14,7 @@ import org.kari.tick.TickRankComparator;
  * @author kari
  *
  */
-public class TickDocument {
+public final class TickDocument {
     private static final TickRankComparator TICK_RANK_COMPARATOR = new TickRankComparator();
 
     /**

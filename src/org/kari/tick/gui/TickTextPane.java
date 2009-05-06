@@ -51,6 +51,11 @@ public class TickTextPane extends JEditorPane {
             new float[]{8f, 8f},
             0);
     
+    private static final int CARET_GAP_H = 0;
+    private static final int CARET_GAP_V = 0;
+    private static final AlphaComposite CARET_COMPOSITE = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.6f);
+
+    
     private class EventHandler 
         implements 
             CaretListener,
@@ -68,6 +73,7 @@ public class TickTextPane extends JEditorPane {
                     + ", mark=" + pEvent.getMark()
                     + ",line=" + line);
             }
+            mCaretRect = calculateCaretRect();
             repaint();
         }
         
@@ -97,7 +103,9 @@ public class TickTextPane extends JEditorPane {
     }
     
     private final EventHandler mEventHandler = new EventHandler();
-    private Rectangle mOldRect = new Rectangle(0, 0, 0 ,0);
+    
+    private Rectangle mCaretRect;
+    
     private TickSet mTickSet;
     private int mMaxLineLen = DEF_MAX_LINELEN;
     
@@ -260,17 +268,16 @@ public class TickTextPane extends JEditorPane {
         if (mLineNumberPanel != null) {
             mLineNumberPanel.repaint();
         }
-    }
-
-    @Override
-    protected void paintComponent(Graphics pG) {
-// -----------------------------------------------------------------------------123-----------------
-        super.paintComponent(pG);
         
         Graphics2D g2d = (Graphics2D)pG;
         paintLineLimit(g2d);
         paintTicks(g2d);
         paintCaret(g2d);
+    }
+
+    @Override
+    protected void paintComponent(Graphics pG) {
+        super.paintComponent(pG);
     }
 
     /**
@@ -295,23 +302,9 @@ public class TickTextPane extends JEditorPane {
     }
 
     private void paintCaret(Graphics2D g2d) {
-        Rectangle rect = null;
-        try {
-            int caretPosition = getCaretPosition();
-            
-            int startPos = findWordStart(caretPosition);
-            int endPos = findWordEnd(caretPosition);
-            
-            Rectangle begin = modelToView(startPos);
-            Rectangle end = modelToView(endPos);
-            int width = end.x - begin.x;
-            rect = new Rectangle(begin.x, begin.y, width, begin.height);
-        } catch (BadLocationException e) {
-            LOG.warn("invalid", e);
-        }
-        
-        // TODO KI Paint current ticks
+        Rectangle rect = mCaretRect;
         if (rect != null) {
+            Color origColor = g2d.getColor();
             g2d.setColor(Color.BLUE);
             if (rect.width == 0) {
                 g2d.drawLine(
@@ -321,28 +314,19 @@ public class TickTextPane extends JEditorPane {
                         rect.y + rect.height);
             } else {
                 Composite origComposite = g2d.getComposite();
-                AlphaComposite COMPOSITE = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.6f);
-                g2d.setComposite(COMPOSITE);
+                g2d.setComposite(CARET_COMPOSITE);
                 
-                int GAP_H = 0;
-                int GAP_V = 0;
                 g2d.drawRect(
-                        rect.x - GAP_H, 
-                        rect.y - GAP_V, 
-                        rect.width + GAP_H * 2, 
-                        rect.height + GAP_V * 2);
+                        rect.x - CARET_GAP_H, 
+                        rect.y - CARET_GAP_V, 
+                        rect.width + CARET_GAP_H * 2, 
+                        rect.height + CARET_GAP_V * 2);
                 g2d.setComposite(origComposite);
             }
-        }
-
-//        if (!mOldRect.equals(rect)) {
-//            repaint();
-//        }
-        if (rect != null) {
-            mOldRect = rect;
+            g2d.setColor(origColor);
         }
     }
-    
+
     private void paintTicks(Graphics2D g2d) {
         TickDocument doc = getTickDocument();
         for (Tick tick : doc.getTicks()) {
@@ -358,6 +342,29 @@ public class TickTextPane extends JEditorPane {
                 }
             }
         }
+    }
+
+    /**
+     * Calculate current "caret" location rectangle for ticking
+     * 
+     * @return Caret rectangle, null if position is invalid
+     */
+    private Rectangle calculateCaretRect() {
+        Rectangle rect = null;
+        try {
+            int caretPosition = getCaretPosition();
+            
+            int startPos = findWordStart(caretPosition);
+            int endPos = findWordEnd(caretPosition);
+            
+            Rectangle begin = modelToView(startPos);
+            Rectangle end = modelToView(endPos);
+            int width = end.x - begin.x;
+            rect = new Rectangle(begin.x, begin.y, width, begin.height);
+        } catch (BadLocationException e) {
+            LOG.warn("invalid", e);
+        }
+        return rect;
     }
     
     /**
@@ -416,7 +423,7 @@ public class TickTextPane extends JEditorPane {
     public int findWordEnd(int pStartPosition) 
         throws BadLocationException
     {
-        if (false) {
+        if (true) {
             Document doc = getDocument();
             int docLen = getDocument().getLength();
             
@@ -447,6 +454,7 @@ public class TickTextPane extends JEditorPane {
             || ch == ']'
             || ch == '{'
             || ch == '}'
+            || ch == '.'
             || ch == ','
             || ch == ';'
             || Character.isWhitespace(ch);

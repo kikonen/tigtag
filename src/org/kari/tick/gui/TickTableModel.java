@@ -16,7 +16,7 @@ import org.kari.tick.TickLocation;
  * 
  * @author kari
  */
-public class TickTableModel extends AbstractTableModel 
+public final class TickTableModel extends AbstractTableModel 
     implements TickListener
 {
     public static final int IDX_NAME = 10;

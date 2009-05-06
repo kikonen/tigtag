@@ -19,7 +19,7 @@ import org.kari.tick.Tick;
  * 
  * @author kari
  */
-public class TickTable extends JTable 
+public final class TickTable extends JTable 
     implements TickHighlighter
 {
     {
