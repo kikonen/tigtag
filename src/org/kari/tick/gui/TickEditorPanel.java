@@ -370,6 +370,12 @@ public class TickEditorPanel
                         try {
                             int pos = tick.getLocation().mStartPos;
                             Rectangle rect = textPane.modelToView(pos);
+                            {
+                                Rectangle endRect = textPane.modelToView(tick.getLocation().mEndPos);
+                                if (endRect.y > rect.y) {
+                                    rect.y = endRect.y;
+                                }
+                            }
                             
                             // Provide limited line context around tick
                             int lineHeight = rect.height;
