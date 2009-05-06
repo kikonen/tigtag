@@ -3,6 +3,8 @@ package org.kari.tick;
 import java.util.ArrayList;
 import java.util.List;
 
+import jsyntaxpane.DefaultSyntaxKit;
+
 import org.kari.base.AppUtil;
 import org.kari.base.Application;
 import org.kari.base.CommandLine;
@@ -22,6 +24,8 @@ public class TickMain
     public void start(CommandLine pArgs)
         throws Exception
     {
+        DefaultSyntaxKit.initKit();
+        
         List<String> filenames = new ArrayList<String>();
         for (String arg : pArgs.getArgs()) {
             filenames.add(arg);

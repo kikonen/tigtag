@@ -9,8 +9,9 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.JTextPane;
+import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -174,7 +175,46 @@ public abstract class SyntaxRenderer {
     }
     
     public void render(
-        final JTextPane pTextPane, 
+        final JEditorPane pTextPane, 
+        final TickDocument pTickDocument) 
+    {
+        if (false) {
+            oldRender(pTextPane, pTickDocument);
+        } else {
+            newRender(pTextPane, pTickDocument);
+        }
+    }
+
+
+    private void newRender(
+        final JEditorPane pTextPane,
+        final TickDocument pTickDocument)
+    {
+        try {
+            String filename = pTickDocument.getFilename();
+            String ext = getExtension(filename);
+            String text = pTickDocument.getText();
+            pTextPane.setContentType("text/" + ext);
+            pTextPane.setText(text);
+            
+
+            // Ensure top of the document is focused after load (otherwise
+            // caret jumps to end)
+            final Rectangle start = pTextPane.modelToView(0);
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    pTextPane.scrollRectToVisible(start);
+                    pTextPane.setCaretPosition(0);
+                    pTextPane.requestFocus();
+                }
+            });
+        } catch (Exception e) {
+            LOG.error("render failed", e);
+        }
+    }
+    
+    public void oldRender(
+        final JEditorPane pTextPane, 
         final TickDocument pTickDocument) 
     {
         try {
@@ -217,7 +257,7 @@ public abstract class SyntaxRenderer {
      * @param pHTML JHighlight formatted HTML
      */
     protected void internalRender(
-        final JTextPane pTextPane, 
+        final JEditorPane pTextPane, 
         final TickDocument pTickDocument,
         final String pHTML) 
         throws Exception

@@ -42,7 +42,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
-import javax.swing.text.Utilities;
 
 import org.apache.log4j.Logger;
 import org.kari.action.ActionConstants;
@@ -70,7 +69,8 @@ public class TickEditorPanel
         extends JPanel
     {
         public LineNumberPanel() {
-            Dimension SIZE = new Dimension(80, 10);
+//            Dimension SIZE = new Dimension(80, 10);
+            Dimension SIZE = new Dimension(40, 10);
             setMinimumSize(SIZE);
             setMaximumSize(SIZE);
             setPreferredSize(SIZE);
@@ -81,7 +81,106 @@ public class TickEditorPanel
         @Override
         public void paint(Graphics g) {
             super.paint(g);
+            if (false) {
+                oldPaint(g);
+            } else {
+                newPaint(g);
+            }
+        }          
+        
+        private void newPaint(Graphics g) {
+            final Graphics2D g2d = (Graphics2D)g;
+            final int width = getWidth();
+
+            final TickTextPane pane = getTextPane();
+            final Document doc = pane.getDocument();
+            final Element rootElement = doc.getDefaultRootElement();
+            final int caretLineNumber = TickTextPane.getLineAtCaret(pane);
             
+            int selStartLine = -1;
+            int selEndLine = -1;
+            Color selectedTextColor = null;
+            Color selectionColor = null;
+            {
+                int selStart = pane.getSelectionStart();
+                int selEnd = pane.getSelectionEnd();
+                if (selStart != selEnd) {
+                    selectedTextColor = pane.getSelectedTextColor();
+                    selectionColor = pane.getSelectionColor();
+                    selStartLine = rootElement.getElementIndex(selStart) + 1;
+                    selEndLine = rootElement.getElementIndex(selEnd) + 1;
+                }
+            }
+            
+            final JScrollPane scrollPane = getScrollPane();
+            final Point viewPosition = scrollPane.getViewport().getViewPosition();
+
+            // We need to properly convert the points to match the viewport
+            // Read docs for viewport
+            
+            // starting pos in document
+            int start = pane.viewToModel(viewPosition);
+            
+            // end pos in doc
+            int end = pane.viewToModel(new Point(
+                    viewPosition.x + pane.getWidth(), 
+                    viewPosition.y + pane.getHeight()));
+
+            // translate offsets to lines
+            int startline = rootElement.getElementIndex(start) + 1;
+            int endline = rootElement.getElementIndex(end) + 1;
+            
+            // font height
+            Font font = pane.getFont();
+            Font boldFont = font.deriveFont(Font.BOLD);
+            g.setFont(font);
+            FontMetrics fm = g.getFontMetrics(font);
+            int fontHeight = fm.getHeight();
+            int fontDesc = fm.getDescent();
+            int starting_y = -1;
+
+            try {
+                starting_y = pane.modelToView(start).y
+                    - viewPosition.y
+                    + fontHeight - fontDesc;
+            } catch (BadLocationException e) {
+                // ignore
+            }
+
+//            // font height
+//            int fontHeight = g.getFontMetrics(pane.getFont()).getHeight();
+            Color color = g.getColor();
+            
+            // draw selection
+            int caretY = -1;
+            for (int line = startline, y = starting_y; line <= endline; line++, y += fontHeight) {
+                if (line >= selStartLine && line <= selEndLine) {
+                    g.setColor(selectionColor);
+                    g.fillRect(2, y - fontHeight + 2, width, fontHeight + 2);
+                    g.setColor(selectedTextColor);
+                } else {
+                    g.setColor(color);
+                }
+                if ((line % 10 == 0)) {
+                    g2d.setFont(boldFont);
+                } else {
+                    g2d.setFont(font);
+                }
+                if (line == caretLineNumber) {
+                    caretY = y;
+                }
+            }
+            
+            // draw caret in top of selection
+            if (caretY != -1) {
+                g.setColor(color);
+                g.drawRect(2, caretY - fontHeight + 2, width - 4, fontHeight + 2);
+            }
+            
+            paintTicks(g2d, -viewPosition.y);
+        }
+        
+        private void oldPaint(Graphics g) {
             final Graphics2D g2d = (Graphics2D)g;
             final int width = getWidth();
 
@@ -169,10 +268,16 @@ public class TickEditorPanel
             TickTextPane pane = getTextPane();
             TickDocument doc = pane.getTickDocument();
             for (Tick tick : doc.getTicks()) {
-                BlockMode mode = tick.getLocation().mBlockMode;
-                if (mode == BlockMode.SIDEBAR) {
-                    tick.paint(this, pane, g2d, pYOffset, getTickTable().getHighlight(tick));
-
+                if (tick.isValid()) {
+                    BlockMode mode = tick.getLocation().mBlockMode;
+                    if (mode == BlockMode.SIDEBAR) {
+                        try {
+                            tick.paint(this, pane, g2d, pYOffset, getTickTable().getHighlight(tick));
+                        } catch (BadLocationException e) {
+                            LOG.error("Invalid tick: " + tick, e);
+                            tick.setValid(false);
+                        }
+                    }
                 }
             }
         }

@@ -5,5 +5,5 @@ bin/*
 dist/*
 test/*
 tmp/*
-*_dist.zip
+tigtag_*.zip
 hs_err*

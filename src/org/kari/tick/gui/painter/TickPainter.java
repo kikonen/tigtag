@@ -33,12 +33,13 @@ public abstract class TickPainter {
      * @param pHighlight If true then tick should be 
      */
     public abstract void paint(
-        JComponent pComponent,
-        TickTextPane pEditor, 
-        Graphics2D g2d, 
-        int pYOffset,
-        Tick pTick,
-        Highlight pHighlight);
+            JComponent pComponent,
+            TickTextPane pEditor, 
+            Graphics2D g2d, 
+            int pYOffset,
+            Tick pTick,
+            Highlight pHighlight)
+        throws BadLocationException;
 
     /**
      * Calculate painted rectangle for the tick
@@ -46,60 +47,37 @@ public abstract class TickPainter {
      * @return null if not valid tick
      */
     protected Rectangle calculateTickRect(
-        JComponent pComponent,
-        TickTextPane pEditor, 
-        Tick pTick) {
+            JComponent pComponent,
+            TickTextPane pEditor, 
+            Tick pTick)
+        throws BadLocationException
+    {
         Rectangle rect = null;
-        try {
-            Document doc = pEditor.getDocument();
-            int docLen = doc.getLength();
-            TickLocation loc = pTick.getLocation();
-            int startPos = loc.mStartPos;
-            int endPos = loc.mEndPos;
-            
-            boolean valid = startPos >= 0
-                && startPos <= docLen
-                && endPos >= 0
-                && endPos <= docLen
-                && startPos <= endPos;
-                
-            if (valid) {
-                Rectangle start = pEditor.modelToView(startPos);
-                Rectangle end = pEditor.modelToView(endPos);
-                int width = end.x - start.x;
-                int height = start.height;
-                int x = start.x;
-                int y = start.y;
-                
-                if (width < 0) {
-                    width = start.x - end.x;
-                    x = end.x;
-                }
-                
-                if (end.y > start.y) {
-                    height = end.y - start.y + end.height;
-                }
-                
-                if (width > 0) {
-                    rect = new Rectangle(x, y, width, height);
-                }
-                
-                if (pTick.isInvalid()) {
-                    LOG.info("tick is now valid:" + pTick);
-                    pTick.setInvalid(false);
-                }
-            } else {
-                if (!pTick.isInvalid()) {
-                    LOG.warn("invalid tick:" + pTick);
-                    pTick.setInvalid(true);
-                }
-            }
-        } catch (BadLocationException e) {
-            if (!pTick.isInvalid()) {
-                LOG.warn("invalid tick:" + pTick, e);
-                pTick.setInvalid(true);
-            }
+        Document doc = pEditor.getDocument();
+        TickLocation loc = pTick.getLocation();
+        int startPos = loc.mStartPos;
+        int endPos = loc.mEndPos;
+        
+        Rectangle start = pEditor.modelToView(startPos);
+        Rectangle end = pEditor.modelToView(endPos);
+        int width = end.x - start.x;
+        int height = start.height;
+        int x = start.x;
+        int y = start.y;
+        
+        if (width < 0) {
+            width = start.x - end.x;
+            x = end.x;
         }
+        
+        if (end.y > start.y) {
+            height = end.y - start.y + end.height;
+        }
+        
+        if (width > 0) {
+            rect = new Rectangle(x, y, width, height);
+        }
+        
         return rect;
     }
 

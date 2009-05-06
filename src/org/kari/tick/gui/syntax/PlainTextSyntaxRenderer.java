@@ -1,6 +1,6 @@
 package org.kari.tick.gui.syntax;
 
-import javax.swing.JTextPane;
+import javax.swing.JEditorPane;
 
 import org.kari.tick.gui.TickDocument;
 
@@ -16,7 +16,7 @@ public class PlainTextSyntaxRenderer extends SyntaxRenderer {
      */
     @Override
     protected void internalRender(
-        JTextPane pTextPane, 
+        JEditorPane pTextPane, 
         TickDocument pTickDocument,
         String pHTML) 
     {

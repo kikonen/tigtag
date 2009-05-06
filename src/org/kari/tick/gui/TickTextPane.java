@@ -17,7 +17,7 @@ import java.awt.event.KeyListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JTextPane;
+import javax.swing.JEditorPane;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.BadLocationException;
@@ -40,7 +40,7 @@ import org.kari.tick.gui.syntax.SyntaxRenderer;
  * 
  * @author kari
  */
-public class TickTextPane extends JTextPane {
+public class TickTextPane extends JEditorPane {
     public static final Logger LOG = Logger.getLogger("tick.editor");
     public static final int DEF_MAX_LINELEN = 80;
     private static final BasicStroke MAX_LINELEN_STROKE = new BasicStroke(
@@ -346,9 +346,16 @@ public class TickTextPane extends JTextPane {
     private void paintTicks(Graphics2D g2d) {
         TickDocument doc = getTickDocument();
         for (Tick tick : doc.getTicks()) {
-            BlockMode mode = tick.getLocation().mBlockMode;
-            if (mode != BlockMode.SIDEBAR) {
-                tick.paint(this, this, g2d, 0, mTickHighlighter.getHighlight(tick));
+            if (tick.isValid()) {
+                BlockMode mode = tick.getLocation().mBlockMode;
+                if (mode != BlockMode.SIDEBAR) {
+                    try {
+                        tick.paint(this, this, g2d, 0, mTickHighlighter.getHighlight(tick));
+                    } catch (BadLocationException e) {
+                        LOG.error("Invalid tick: " + tick, e);
+                        tick.setValid(false);
+                    }
+                }
             }
         }
     }

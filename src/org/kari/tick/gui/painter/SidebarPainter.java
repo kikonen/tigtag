@@ -3,6 +3,7 @@ package org.kari.tick.gui.painter;
 import java.awt.Rectangle;
 
 import javax.swing.JComponent;
+import javax.swing.text.BadLocationException;
 
 import org.kari.tick.Tick;
 import org.kari.tick.gui.TickTextPane;
@@ -20,9 +21,10 @@ public class SidebarPainter extends BlockPainter {
 
     @Override
     protected Rectangle calculateTickRect(
-        JComponent pComponent,
-        TickTextPane pEditor, 
-        Tick pTick) 
+            JComponent pComponent,
+            TickTextPane pEditor, 
+            Tick pTick) 
+        throws BadLocationException
     {
         Rectangle rect = super.calculateTickRect(pComponent, pEditor, pTick);
         if (rect != null) {

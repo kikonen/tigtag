@@ -1,3 +1,14 @@
+DIST_VERSION=$1
+DIST_PUBLIC=$2
+DIST_FILE=tigtag_${DIST_VERSION}.zip
+
+if [ "$DIST_VERSION" == "" ]; then
+    echo "USAGE: mkdist.sh VERSION [public]"
+    echo "Example: mkdist.sh 0.32a public"
+    exit
+fi
+
+rm -f tigtag_*.zip
 rm -fr dist/*
 mkdir dist
 
@@ -28,12 +39,20 @@ for file in $FILES; do
   jarsigner -keystore $KEYSTORE -storepass tigtag -keypass tigtag $file tigtag 
 done
 
-zip -r tigtag_dist.zip dist/*
+zip -r $DIST_FILE dist/*
+mkdir releases
+cp $DIST_FILE releases
 
-WWW=/home/www/virtual/kari.dy.fi/tigtag
-rm -fr $WWW/*
-cp tigtag_dist.zip $WWW
-cp orig/sample.png $WWW
-cd $WWW
-unzip tigtag_dist.zip
+if [ "$DIST_PUBLIC" == "public" ]; then
+    WWW=/home/www/virtual/kari.dy.fi/tigtag
+    rm -fr $WWW/*
+    cp $DIST_FILE $WWW
+    cp orig/sample.png $WWW
+    cd $WWW
+    unzip $DIST_FILE
+else
+    echo "NOTE: NOT PUBLISHED"
+fi
+
+echo "DONE: $DIST_FILE"
 

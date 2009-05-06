@@ -1,13 +1,10 @@
 package org.kari.tick.gui.painter;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Composite;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.Stroke;
 import java.awt.geom.Rectangle2D;
 
 import javax.swing.JComponent;
@@ -26,17 +23,18 @@ import org.kari.tick.gui.TickHighlighter.Highlight;
  * @author kari
  */
 public class BlockPainter extends TickPainter {
-    public static final int GAP_H = 4;
-    public static final int GAP_V = 2;
+    public static final int GAP_H = 1;
+    public static final int GAP_V = 1;
     
     @Override
     public void paint(
-        JComponent pComponent,
-        TickTextPane pEditor,
-        Graphics2D g2d,
-        int pYOffset,
-        Tick pTick,
-        Highlight pHighlight) 
+            JComponent pComponent,
+            TickTextPane pEditor,
+            Graphics2D g2d,
+            int pYOffset,
+            Tick pTick,
+            Highlight pHighlight)
+        throws BadLocationException
     {
         Rectangle rect = calculateTickRect(pComponent, pEditor, pTick);
         if (rect != null) {
@@ -72,67 +70,61 @@ public class BlockPainter extends TickPainter {
 
     @Override
     protected Rectangle calculateTickRect(
-        JComponent pComponent,
-        TickTextPane pEditor, 
-        Tick pTick) 
+            JComponent pComponent,
+            TickTextPane pEditor, 
+            Tick pTick) 
+        throws BadLocationException
     {
         Rectangle rect = null;
-        try {
-            final Document doc = pEditor.getDocument();
-            final TickLocation loc = pTick.getLocation();
+        final Document doc = pEditor.getDocument();
+        final TickLocation loc = pTick.getLocation();
 
-            int minX = Integer.MAX_VALUE;
-            int minY = Integer.MAX_VALUE;
-            int maxY = -1;
-            int maxX = -1;
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+        int maxY = -1;
+        int maxX = -1;
 
-            int pos = loc.mStartPos;
-            while (pos < loc.mEndPos) {
-                int startPos = pEditor.findLineStart(pos);
-                int endPos = pEditor.findLineEnd(pos);
-                pos = endPos + 1;
-                
-                String line = doc.getText(startPos, endPos - startPos);
-                int lineLen = line.length();
-                if (line.endsWith("\n")) {
-                    lineLen--;
-                    endPos--;
-                }
-                int startOffset = 0;
-                int endOffset = 0;
-                while (startOffset < lineLen && Character.isWhitespace(line.charAt(startOffset))) {
-                    startOffset++;
-                }
-                while (endOffset < lineLen - startOffset && Character.isWhitespace(line.charAt(lineLen - endOffset - 1))) {
-                    endOffset++;
-                }
-                startPos += startOffset;
-                endPos -= endOffset;
-                
-                {
-                    Rectangle start = pEditor.modelToView(startPos);
-                    Rectangle end = pEditor.modelToView(endPos);
-                    if (start.x < minX) {
-                        minX = start.x;
-                    }
-                    if (start.y < minY) {
-                        minY = start.y;
-                    }
-                    if (end.x > maxX) {
-                        maxX = end.x;
-                    }
-                    if (end.y + end.height > maxY) {
-                        maxY = end.y + end.height;
-                    }
-                }
+        int pos = loc.mStartPos;
+        while (pos < loc.mEndPos) {
+            int startPos = pEditor.findLineStart(pos);
+            int endPos = pEditor.findLineEnd(pos);
+            pos = endPos + 1;
+            
+            String line = doc.getText(startPos, endPos - startPos);
+            int lineLen = line.length();
+            if (line.endsWith("\n")) {
+                lineLen--;
+                endPos--;
             }
-            rect = new Rectangle(minX, minY, maxX - minX, maxY - minY);
-        } catch (BadLocationException e) {
-            if (!pTick.isInvalid()) {
-                LOG.warn("invalid tick:" + pTick, e);
-                pTick.setInvalid(true);
+            int startOffset = 0;
+            int endOffset = 0;
+            while (startOffset < lineLen && Character.isWhitespace(line.charAt(startOffset))) {
+                startOffset++;
+            }
+            while (endOffset < lineLen - startOffset && Character.isWhitespace(line.charAt(lineLen - endOffset - 1))) {
+                endOffset++;
+            }
+            startPos += startOffset;
+            endPos -= endOffset;
+            
+            {
+                Rectangle start = pEditor.modelToView(startPos);
+                Rectangle end = pEditor.modelToView(endPos);
+                if (start.x < minX) {
+                    minX = start.x;
+                }
+                if (start.y < minY) {
+                    minY = start.y;
+                }
+                if (end.x > maxX) {
+                    maxX = end.x;
+                }
+                if (end.y + end.height > maxY) {
+                    maxY = end.y + end.height;
+                }
             }
         }
+        rect = new Rectangle(minX, minY, maxX - minX, maxY - minY);
         return rect;
     }
 

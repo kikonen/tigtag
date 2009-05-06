@@ -40,63 +40,57 @@ public class HighlightPainter extends TickPainter {
         int pYOffset,
         Tick pTick,
         Highlight pHighlight) 
+        throws BadLocationException
     {
-        try {
-            final Document doc = pEditor.getDocument();
-            final TickLocation loc = pTick.getLocation();
-            int locStartPos = loc.mStartPos;
-            final int len = loc.mEndPos - locStartPos;
-            final String txt = doc.getText(locStartPos, len);
+        final Document doc = pEditor.getDocument();
+        final TickLocation loc = pTick.getLocation();
+        int locStartPos = loc.mStartPos;
+        final int len = loc.mEndPos - locStartPos;
+        final String txt = doc.getText(locStartPos, len);
 
-            Color origColor = g2d.getColor();
-            g2d.setColor(pTick.getColor());
-            
-            // TODO KI cache calculated info into Tick; it WONT change
-            
-            Rectangle rect = null;
-            int startPos = 0;
-            while (startPos < len) {
-                int endPos = startPos;
-                boolean found = false;
-                while (!found && endPos < len) {
-                    found = txt.charAt(endPos) == '\n';
-                    if (!found) {
-                        endPos++;
-                    }
+        Color origColor = g2d.getColor();
+        g2d.setColor(pTick.getColor());
+        
+        // TODO KI cache calculated info into Tick; it WONT change
+        
+        Rectangle rect = null;
+        int startPos = 0;
+        while (startPos < len) {
+            int endPos = startPos;
+            boolean found = false;
+            while (!found && endPos < len) {
+                found = txt.charAt(endPos) == '\n';
+                if (!found) {
+                    endPos++;
                 }
-                {
-                    Rectangle start = pEditor.modelToView(locStartPos + startPos);
-                    Rectangle end = pEditor.modelToView(locStartPos + endPos);
-                    paintLine(g2d, start, end, pHighlight);
-                    if (rect == null) {
-                        rect = start;
-                    }
-                }
-                startPos = endPos + 1;
             }
-            
             {
-                Font font = g2d.getFont().deriveFont(8.0f);
-                g2d.setFont(font);
-                FontMetrics fm = g2d.getFontMetrics();
-                String text = pTick.getDefinition().getName();
-                g2d.setColor(Color.GRAY);
-                Rectangle2D textBounds = font.getStringBounds(text, 0, text.length(), fm.getFontRenderContext());
-                int x = rect.x - GAP_H + rect.width + GAP_H * 2 - (int)textBounds.getWidth();
-                int y = rect.y - GAP_V + (int)textBounds.getHeight()/2 + pYOffset;
-                g2d.drawString(
-                        text,
-                        x, 
-                        y);
+                Rectangle start = pEditor.modelToView(locStartPos + startPos);
+                Rectangle end = pEditor.modelToView(locStartPos + endPos);
+                paintLine(g2d, start, end, pHighlight);
+                if (rect == null) {
+                    rect = start;
+                }
             }
-            
-            g2d.setColor(origColor);
-            
-            pTick.setInvalid(false);
-        } catch (BadLocationException e) {
-            LOG.error("Invalid: " + pTick, e);
-            pTick.setInvalid(true);
+            startPos = endPos + 1;
         }
+        
+        {
+            Font font = g2d.getFont().deriveFont(8.0f);
+            g2d.setFont(font);
+            FontMetrics fm = g2d.getFontMetrics();
+            String text = pTick.getDefinition().getName();
+            g2d.setColor(Color.GRAY);
+            Rectangle2D textBounds = font.getStringBounds(text, 0, text.length(), fm.getFontRenderContext());
+            int x = rect.x - GAP_H + rect.width + GAP_H * 2 - (int)textBounds.getWidth();
+            int y = rect.y - GAP_V + (int)textBounds.getHeight()/2 + pYOffset;
+            g2d.drawString(
+                    text,
+                    x, 
+                    y);
+        }
+        
+        g2d.setColor(origColor);
     }
 
     protected void paintLine(

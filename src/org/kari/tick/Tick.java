@@ -8,8 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.JComponent;
+import javax.swing.text.BadLocationException;
 
-import org.kari.tick.TickDefinition.BlockMode;
 import org.kari.tick.gui.TickTextPane;
 import org.kari.tick.gui.TickHighlighter.Highlight;
 import org.kari.tick.gui.painter.TickPainter;
@@ -32,7 +32,7 @@ public final class Tick {
     
     private String mLink;
     private String mComment;
-    private boolean mInvalid;
+    private boolean mValid;
     private Color mColor;
     private String mText;
     
@@ -52,6 +52,7 @@ public final class Tick {
         mLocation = pLocation;
         mColor = mDefinition.getColor();
         setText(pText);
+        mValid = true;
     }
     
     @Override
@@ -126,12 +127,12 @@ public final class Tick {
         mLink = pLink;
     }
 
-    public boolean isInvalid() {
-        return mInvalid;
+    public boolean isValid() {
+        return mValid;
     }
 
-    public void setInvalid(boolean pInvalid) {
-        mInvalid = pInvalid;
+    public void setValid(boolean pInvalid) {
+        mValid = pInvalid;
     }
     
     /**
@@ -173,6 +174,7 @@ public final class Tick {
         } else {
             mColor = mDefinition.getColor();
         }
+        mValid = true;
     }
 
 
@@ -180,11 +182,12 @@ public final class Tick {
      * Paint this tick
      */
     public void paint(
-        JComponent pComponent,
-        TickTextPane pEditor,
-        Graphics2D g2d,
-        int pYOffset,
-        Highlight pHighlight) 
+            JComponent pComponent,
+            TickTextPane pEditor,
+            Graphics2D g2d,
+            int pYOffset,
+            Highlight pHighlight)
+        throws BadLocationException
     {
         Composite origComposite = g2d.getComposite();
         Stroke origStroke = g2d.getStroke();
