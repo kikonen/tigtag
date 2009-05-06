@@ -36,8 +36,7 @@ public class FileSaver extends FileAccessBase {
     public void save() 
         throws IOException 
     {
-        File tickDir = new File(
-            TextUtil.expand(TICKS_DIR + "/" + mFile.getName() + TickConstants.TICK_FILE_EXT));
+        File tickDir = new File(TextUtil.expand(TICKS_DIR));
 
         File tickFile = getTickFile();
         if (!mTicks.isEmpty() 
