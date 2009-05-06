@@ -5,7 +5,6 @@
 	<classpathentry kind="lib" path="lib/log4j-1.2.14.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/KUI"/>
 	<classpathentry kind="lib" path="resources"/>
-	<classpathentry kind="lib" path="lib/jhighlight-1.0.jar" sourcepath="/home/kari/data/devel/work/tigtag/orig/jhighlight/jhighlight-1.0-src.zip"/>
 	<classpathentry kind="lib" path="lib/jsyntaxpane-0.9.5-b27.jar" sourcepath="/home/kari/data/devel/work/external/jsyntaxpane-read-only/src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
