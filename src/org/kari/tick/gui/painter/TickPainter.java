@@ -2,8 +2,11 @@ package org.kari.tick.gui.painter;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
+import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
@@ -23,10 +26,13 @@ import org.kari.tick.gui.TickHighlighter.Highlight;
 public abstract class TickPainter {
     public static final Logger LOG = Logger.getLogger("tick.painter");
 
-    protected final BasicStroke BRIGHT_STROKE = new BasicStroke(2);
-    protected final AlphaComposite DIM_COMPOSITE = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.20f);
+    protected static final BasicStroke BRIGHT_STROKE = new BasicStroke(2);
+    protected static final AlphaComposite DIM_COMPOSITE = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.20f);
 
-
+    protected List<Rectangle> mRects; 
+    protected Font mFont;
+    protected Point mNameLoc;
+    
     /**
      * @param pComponent Component on which tick is painted
      * @param pYOffset Offset for sidebar (linenumbers), for text area itself 0.

@@ -1,11 +1,12 @@
 package org.kari.tick.gui.painter;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
@@ -36,11 +37,15 @@ public class BlockPainter extends TickPainter {
             Highlight pHighlight)
         throws BadLocationException
     {
-        Rectangle rect = calculateTickRect(pComponent, pEditor, pTick);
+        if (mRects == null) {
+            calculateRects(pComponent, pEditor, pTick);
+        }
+        Rectangle rect = mRects.get(0);
         if (rect != null) {
-            String text = pTick.getDefinition().getName();
             Color color = pTick.getColor();
             g2d.setColor(color);
+
+            // Paint block
             if (pHighlight == Highlight.DIM) {
                 g2d.setComposite(DIM_COMPOSITE);
             } else if (pHighlight == Highlight.BRIGHT) {
@@ -53,21 +58,38 @@ public class BlockPainter extends TickPainter {
                     rect.height + GAP_V * 2,
                     10,
                     10);
-            
-            Font font = g2d.getFont().deriveFont(9.0f);
-            g2d.setFont(font);
-            FontMetrics fm = g2d.getFontMetrics();
-            Rectangle2D textBounds = font.getStringBounds(text, 0, text.length(), fm.getFontRenderContext());
-            int x = rect.x - GAP_H + rect.width + GAP_H * 2 - (int)textBounds.getWidth();
-            int y = rect.y - GAP_V + (int)textBounds.getHeight() + pYOffset;
-            
+
+            // Paint tick name
+            String tickName = pTick.getDefinition().getName();
+            if (mFont == null) {
+                mFont = g2d.getFont().deriveFont(9.0f);
+            }
+            g2d.setFont(mFont);
+            if (mNameLoc == null) {
+                FontMetrics fm = g2d.getFontMetrics();
+                Rectangle2D textBounds = mFont.getStringBounds(tickName, 0, tickName.length(), fm.getFontRenderContext());
+                int x = rect.x - GAP_H + rect.width + GAP_H * 2 - (int)textBounds.getWidth();
+                int y = rect.y - GAP_V + (int)textBounds.getHeight() + pYOffset;
+                mNameLoc = new Point(x, y);
+            }            
             g2d.drawString(
-                    text,
-                    x, 
-                    y);
+                    tickName,
+                    mNameLoc.x, 
+                    mNameLoc.y);
         }
     }
 
+    protected void calculateRects(
+            final JComponent pComponent,
+            final TickTextPane pEditor,
+            final Tick pTick)
+        throws BadLocationException
+    {
+        mRects = new ArrayList<Rectangle>();
+        Rectangle rect = calculateTickRect(pComponent, pEditor, pTick);
+        mRects.add(rect);
+    }
+    
     @Override
     protected Rectangle calculateTickRect(
             JComponent pComponent,

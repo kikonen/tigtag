@@ -24,7 +24,7 @@ public final class TickDefinition {
     private static final String STYLE = "style";
     private static final String COLOR = "color";
     private static final Logger LOG = Logger.getLogger("tick.definition");
-    public static final TickPainter DEF_PAINTER = new HighlightPainter();
+//    public static final TickPainter DEF_PAINTER = new HighlightPainter();
     
     public static final Comparator<TickDefinition> NAME_COMPARATOR = new Comparator<TickDefinition>() {
         @Override
@@ -57,7 +57,7 @@ public final class TickDefinition {
         SIDEBAR("Sidebar");
         
         private final String mName;
-        private TickPainter mPainter;
+        private String mPainterClassName;
 
         private BlockMode(String pName) {
             mName = pName;
@@ -75,18 +75,20 @@ public final class TickDefinition {
                 || this == SIDEBAR;
         }
         
-        public TickPainter getPainter() {
-            if (mPainter == null) {
-                try {
-                    String clsName = "org.kari.tick.gui.painter." + mName + "Painter";
-                    Class cls = Class.forName(clsName);
-                    mPainter = (TickPainter)cls.newInstance();
-                } catch (Exception e) {
-                    LOG.error("Invalid style: " + mName, e);
-                    mPainter = DEF_PAINTER;
-                } 
+        public TickPainter createPainter() {
+            TickPainter painter = null;
+            if (mPainterClassName == null) {
+                mPainterClassName = "org.kari.tick.gui.painter." + mName + "Painter";
             }
-            return mPainter;
+            try {
+                Class cls = Class.forName(mPainterClassName);
+                painter = (TickPainter)cls.newInstance();
+            } catch (Exception e) {
+                LOG.error("Invalid style: " + mName, e);
+                mPainterClassName = HighlightPainter.class.getName();
+                painter = new HighlightPainter();
+            } 
+            return painter;
         }
 
         /**

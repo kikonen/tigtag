@@ -15,8 +15,7 @@ public class UnderlinePainter extends HighlightPainter {
     @Override
     protected void paintLine(
         Graphics2D g2d, 
-        Rectangle start, 
-        Rectangle end,
+        Rectangle rect, 
         Highlight pHighlight)
     {
         if (pHighlight == Highlight.DIM) {
@@ -25,9 +24,9 @@ public class UnderlinePainter extends HighlightPainter {
             g2d.setStroke(BRIGHT_STROKE);
         }
         g2d.drawLine(
-                start.x - GAP_H, 
-                start.y + start.height, 
-                start.x + end.x - start.x, 
-                start.y + start.height);
+                rect.x - GAP_H, 
+                rect.y + rect.height, 
+                rect.x + rect.width, 
+                rect.y + rect.height);
     }
 }

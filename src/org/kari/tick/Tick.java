@@ -35,6 +35,7 @@ public final class Tick {
     private boolean mValid;
     private Color mColor;
     private String mText;
+    private TickPainter mPainter;
     
     /**
      * For persistency
@@ -193,8 +194,7 @@ public final class Tick {
         Stroke origStroke = g2d.getStroke();
         Color origColor = g2d.getColor();
         
-        TickPainter painter = mLocation.mBlockMode.getPainter();
-        painter.paint(
+        getPainter().paint(
                 pComponent, 
                 pEditor, 
                 g2d, 
@@ -205,6 +205,14 @@ public final class Tick {
         g2d.setStroke(origStroke);
         g2d.setColor(origColor);
     }
+
+    public TickPainter getPainter() {
+        if (mPainter == null) {
+            mPainter = mLocation.mBlockMode.createPainter();
+        }
+        return mPainter;
+    }
+
     
     /**
      * @return true if this pTick can be merged into this tick
@@ -222,6 +230,7 @@ public final class Tick {
     public void merge(Tick pTick) {
         TickLocation loc = mLocation.merge(pTick.mLocation);
         mLocation = loc;
+        mPainter = null;
     }
 
 }
