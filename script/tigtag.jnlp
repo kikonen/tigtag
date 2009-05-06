@@ -25,6 +25,7 @@
         <jar href="jsyntaxpane-0.9.5-b27.jar"/>
         <jar href="log4j-1.2.14.jar"/>
         <jar href="TableLayout.jar"/>
+        <jar href="trove-2.0.4.jar"/>
     </resources>
 
     <application-desc main-class="org.kari.tick.TickMain"/>
