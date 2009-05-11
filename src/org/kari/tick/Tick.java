@@ -157,10 +157,10 @@ public final class Tick {
     /**
      * Restore tick from persistent form
      */
-    public void restore(Map<String, String> pProperties) {
-        mDefinition = TickRegistry.getInstance().getDefinition(pProperties.get(P_TICK));
+    public void restore(TickRegistry pRegistry, Map<String, String> pProperties) {
+        mDefinition = pRegistry.getDefinition(pProperties.get(P_TICK));
         if (mDefinition == null) {
-            mDefinition = TickRegistry.getInstance().getDefinition(TickRegistry.DEFAULT);
+            mDefinition = pRegistry.getDefinition(TickDefinition.DEF_NAME);
         }
         mLocation = new TickLocation(pProperties.get(P_LOCATION));
         mLocation.mBlockMode = null;//BlockMode.getMode(pProperties.get(P_MODE));

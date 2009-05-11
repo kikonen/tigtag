@@ -45,8 +45,6 @@ public class TickMain
         try {
             System.setProperty("swing.plaf.metal.controlFont", "Dialog");
             ResourceAdapter.getInstance().addBundle(TickResources.class);
-            
-            TickRegistry.getInstance().loadDefinitions();
             AppUtil.start(TickMain.class, pArgs);
         } catch (Exception e) {
             System.exit(-1);

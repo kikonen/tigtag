@@ -134,7 +134,7 @@ public class TickTextPane extends JEditorPane {
         
         setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
         
-        setTickDocument(new TickDocument());
+        setTickDocument(new TickDocument(true));
     }
 
     /**

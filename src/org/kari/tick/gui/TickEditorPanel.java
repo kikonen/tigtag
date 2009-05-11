@@ -48,8 +48,6 @@ import org.kari.action.ActionConstants;
 import org.kari.action.ActionContext;
 import org.kari.action.KAction;
 import org.kari.tick.Tick;
-import org.kari.tick.TickRegistry;
-import org.kari.tick.TickSet;
 import org.kari.tick.TickDefinition.BlockMode;
 
 /**
@@ -335,8 +333,6 @@ public class TickEditorPanel
     public TickTextPane getTextPane() {
         if (mTextPane == null) {
             mTextPane = new TickTextPane();
-            TickSet set = TickRegistry.getInstance().createSet("Set 1");
-            mTextPane.setTickSet(set);
             
             // Focus travelsal
             mTextPane.getInputMap().put(

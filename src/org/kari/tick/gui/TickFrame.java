@@ -8,7 +8,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,6 +20,8 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.TransferHandler;
@@ -31,6 +32,7 @@ import org.kari.action.ActionContext;
 import org.kari.action.ActionGroup;
 import org.kari.action.KAction;
 import org.kari.action.KMenu;
+import org.kari.action.KMenuImpl;
 import org.kari.action.KToolbar;
 import org.kari.action.std.CloseWindowAction;
 import org.kari.action.std.ExitAction;
@@ -42,9 +44,7 @@ import org.kari.tick.FileSaver;
 import org.kari.tick.Tick;
 import org.kari.tick.TickDefinition;
 import org.kari.tick.TickEditorStarter;
-import org.kari.tick.TickRegistry;
 import org.kari.tick.TickSet;
-import org.kari.util.SystemUtil;
 
 /**
  * TigTag window
@@ -199,14 +199,8 @@ public class TickFrame extends KApplicationFrame
         @Override
         public void actionPerformed(ActionContext pCtx) {
             try {
-                TickRegistry registry = TickRegistry.getInstance();
-                String text = registry.formatDefinitions();
-                registry.saveDefinitions(text);
-                String[] cmd = {
-                    SystemUtil.isLinux() ? "kwrite" : "notepad",
-                    registry.getDefinitionFile().getAbsolutePath()};
-                Runtime.getRuntime().exec(cmd);
-            } catch (IOException e) {
+                new EditDefinitions(TickFrame.this).edit();
+            } catch (Exception e) {
                 LOG.error("Failed to save", e);
             }
         }
@@ -296,9 +290,6 @@ public class TickFrame extends KApplicationFrame
         
         ActionContainer ac = getActionContainer();
         
-        KAction[] tickActions = createTickActions();
-        tickActions[0].setSelected(true);
-        
         ac.addMenu(new KMenu(
                 ActionConstants.R_MENU_FILE,
                 mDuplicateViewAction,
@@ -317,10 +308,6 @@ public class TickFrame extends KApplicationFrame
             ));
         
         ac.addMenu(new KMenu(
-                "Ma&rker",
-                tickActions));
-        
-        ac.addMenu(new KMenu(
                 ActionConstants.R_MENU_HELP,
                 mAboutAction));
 
@@ -335,10 +322,6 @@ public class TickFrame extends KApplicationFrame
         ac.addToolbar(mainTb);
         
         setSize(new Dimension(700, HEIGHT));
-        
-        TickSet tickSet = getEditor().getTextPane().getTickSet();
-        tickSet.setBlockMode(null);
-        tickSet.setCurrent( ((TickAction)tickActions[0]).mDefinition );
         
         WidgetResources wr = ResourceAdapter.getInstance().getWidget(
                 TickConstants.R_APP, 
@@ -391,6 +374,7 @@ public class TickFrame extends KApplicationFrame
             LOG.error("Failed to load: " + pFile, e);
             editor.getTextPane().setText("Failed to load:\n \"" + pFile + "\"");
         } finally {
+            createMarkerMenu();
             updateActions();
         }
     }
@@ -422,13 +406,43 @@ public class TickFrame extends KApplicationFrame
     }
 
     /**
+     * Create/recrete markers menu
+     */
+    public void createMarkerMenu() {
+        TickDocument doc = getEditor().getTextPane().getTickDocument();
+        TickSet set = doc.getRegistry().getSet("Set 1");
+        getEditor().getTextPane().setTickSet(set);
+        
+        KAction[] tickActions = createTickActions();
+        tickActions[0].setSelected(true);
+        set.setCurrent( ((TickAction)tickActions[0]).mDefinition );
+        
+        KMenu markerMenu = new KMenu(
+                TickConstants.R_MARKERS_MENU,
+                tickActions);
+        JMenu menu = markerMenu.create(this);
+        
+        JMenuBar menubar = getJMenuBar();
+        KMenuImpl oldMenu = (KMenuImpl)menubar.getComponent(menubar.getComponentCount() - 2);
+        if (oldMenu != null
+            && TickConstants.R_MARKERS_MENU.equals(oldMenu.getActionMenu().getName())) 
+        {
+            menubar.remove(oldMenu);
+        }
+        menubar.add(menu, menubar.getComponentCount() - 1);
+        menubar.revalidate();
+    }
+    
+    /**
      * Create/Update tick actions
      */
     private KAction[] createTickActions() {
         mDefinitionGroup.clear();
         
         List<KAction> result = new ArrayList<KAction>();
-        List<TickDefinition> definitions = new ArrayList<TickDefinition>(TickRegistry.getInstance().getDefinitions());
+        TickDocument doc = getEditor().getTextPane().getTickDocument();
+        List<TickDefinition> definitions = new ArrayList<TickDefinition>(
+                doc.getRegistry().getDefinitions());
         Collections.sort(definitions, TickDefinition.NAME_COMPARATOR);
         
         for (TickDefinition def : definitions) {

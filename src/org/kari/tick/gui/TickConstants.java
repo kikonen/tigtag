@@ -17,8 +17,10 @@ public interface TickConstants {
     
     String R_DUPLICATE_VIEW = S + "New";
     String R_APP = S + "App";
+    String R_MARKERS_MENU = S + "Markers";
 
     String TICK_FILE_EXT = ".zip";
+    
     /**
      * file entry inside tick file containing ticks
      */

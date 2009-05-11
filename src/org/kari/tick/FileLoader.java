@@ -16,8 +16,6 @@ import java.util.zip.ZipFile;
 import org.kari.tick.gui.TickConstants;
 import org.kari.util.FileUtil;
 
-import com.sun.org.apache.xml.internal.serialize.BaseMarkupSerializer;
-
 /**
  * Utility for loading file into editor
  * 
@@ -67,7 +65,11 @@ public class FileLoader extends FileAccessBase {
             ZipEntry fileEntry = zip.getEntry(basename);
             byte[] data = FileUtil.load(zip.getInputStream(fileEntry));
             mText = new String(data, "UTF-8");
-            
+
+            // registry
+            mRegistry = new TickRegistry();
+            mRegistry.loadDefinitions();
+
             // ticks
             ZipEntry tickEntry = zip.getEntry(basename + TickConstants.TICK_ENTRY_EXT);
             mTicks.addAll(loadTicks(zip.getInputStream(tickEntry)));
@@ -101,7 +103,7 @@ public class FileLoader extends FileAccessBase {
                 // start new tick
                 if (!properties.isEmpty()) {
                     Tick tick = new Tick();
-                    tick.restore(properties);
+                    tick.restore(mRegistry, properties);
                     result.add(tick);
                     properties.clear();
                 }
@@ -120,7 +122,7 @@ public class FileLoader extends FileAccessBase {
         
         if (!properties.isEmpty()) {
             Tick tick = new Tick();
-            tick.restore(properties);
+            tick.restore(mRegistry, properties);
             result.add(tick);
         }
 

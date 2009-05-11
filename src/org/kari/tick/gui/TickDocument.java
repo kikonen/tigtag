@@ -1,6 +1,7 @@
 package org.kari.tick.gui;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.List;
 import org.kari.tick.FileLoader;
 import org.kari.tick.Tick;
 import org.kari.tick.TickRankComparator;
+import org.kari.tick.TickRegistry;
 
 /**
  * Document model for tigtag. Maintains program code, and associated ticks
@@ -32,9 +34,22 @@ public final class TickDocument {
     
     private int mReferenceCount;
 
+    private TickRegistry mRegistry;
+
     
-    public TickDocument() {
+    /**
+     * @param pBlank True if blank new document is created
+     */
+    public TickDocument(boolean pBlank) {
         super();
+        if (pBlank) {
+            try {
+                mRegistry = new TickRegistry();
+                mRegistry.loadDefinitions();
+            } catch (IOException e) {
+                // Ignore
+            }
+        }
     }
     
     public int getReferenceCount() {
@@ -119,7 +134,14 @@ public final class TickDocument {
     public String getText() {
         return mText;
     }
-    
+
+    /**
+     * @return Registry, null if file contents is not set
+     */
+    public TickRegistry getRegistry() {
+        return mRegistry;
+    }
+
     /**
      * Display pText, and render it according to code highlighter
      * 
@@ -129,6 +151,7 @@ public final class TickDocument {
     {
         mFile = pLoader.getFile();
         mText = pLoader.getText();
+        mRegistry = pLoader.getRegistry();
         setTicks(pLoader.getTicks());
     }
 

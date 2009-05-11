@@ -21,22 +21,24 @@ import org.kari.util.TextUtil;
  * @author kari
  */
 public final class TickRegistry {
-    public static final String DEFAULT = "DEFAULT";
-    public static final String TICK_DEFINITIONS = "/ticks.properties";
+    public static final String FILE_EXT = ".properties";
+    public static final String DEF_REGISTRY_NAME = "markers";
 
-    private static TickRegistry mInstance;
-    
+    private final String mRegistryName;
     private final Map<String, TickDefinition> mDefinitions = new HashMap<String, TickDefinition>();
 
-    public static synchronized TickRegistry getInstance() {
-        if (mInstance == null) {
-            mInstance = new TickRegistry();
-        }
-        return mInstance;
+    /**
+     * Default registry
+     */
+    public TickRegistry() {
+        this(DEF_REGISTRY_NAME);
     }
     
-    private TickRegistry() {
-        // Nothing
+    /**
+     * @param pRegistryName Marker registry
+     */
+    public TickRegistry(String pRegistryName) {
+        mRegistryName = pRegistryName;
     }
 
     public synchronized Collection<TickDefinition> getDefinitions() {
@@ -58,35 +60,35 @@ public final class TickRegistry {
         
         BufferedReader reader;
         
-        File defFile = getDefinitionFile();
+        File defFile = getRegistryFile();
         if (defFile.exists()) {
             reader = new BufferedReader(new FileReader(defFile));
         } else {
-            System.out.println("Create: " + defFile + " to redefine markers");
             reader = new BufferedReader(
-                    new InputStreamReader(TickRegistry.class.getResourceAsStream(TICK_DEFINITIONS)));
+                new InputStreamReader(
+                    TickRegistry.class.getResourceAsStream("/" + DEF_REGISTRY_NAME + FILE_EXT)));
         }
 
         String line;
-        TickDefinition tick = null;
+        TickDefinition def = null;
         
         while ( (line = reader.readLine()) != null) {
             String str = line.trim();
             if (str.length() == 0 || str.startsWith("#")) {
                 // Skip comment
             } else if (str.startsWith("[")) {
-                // start new tick
+                // start new definition
                 String name = str.substring(1, str.length() - 1);
-                tick = new TickDefinition();
-                tick.setName(name);
-                mDefinitions.put(tick.getName(), tick);
-            } else if (tick != null) {
-                // tick parameters
+                def = new TickDefinition();
+                def.setName(name);
+                mDefinitions.put(def.getName(), def);
+            } else if (def != null) {
+                // definition parameters
                 int valueSep = str.indexOf('=');
                 if (valueSep != -1) {
                     String key = str.substring(0, valueSep).trim();
                     String value = str.substring(valueSep + 1).trim();
-                    tick.setString(key, value);
+                    def.setString(key, value);
                 }
             }
         }
@@ -135,32 +137,32 @@ public final class TickRegistry {
     }
 
     /**
-     * Save formatted ticks into file
+     * Save definitions into pFile
      */
-    public void saveDefinitions(String pText)
+    public void saveDefinitions(File pFile)
         throws IOException
     {
-        File defFile = getDefinitionFile();
-        defFile.getParentFile().mkdirs();
-        FileUtil.save(defFile, pText.getBytes());
+        pFile.getParentFile().mkdirs();
+        String formatted = formatDefinitions();
+        FileUtil.save(pFile, formatted.getBytes());
     }
 
     /**
      * @return persistent file for tick definitions
      */
-    public File getDefinitionFile() {
-        return new File(TextUtil.expand(FileAccessBase.TICKS_DIR + TICK_DEFINITIONS));
+    public File getRegistryFile() {
+        return new File(TextUtil.expand(FileAccessBase.TICKS_DIR + "/" + mRegistryName + FILE_EXT));
     }
     
     /**
      * Create new set by collecting ticks belonging into it
      * 
-     * @return new tick set, which can be empty
+     * @return definitions for pGroupName
      */
-    public TickSet createSet(String pName) {
-        TickSet set = new TickSet(pName);
+    public TickSet getSet(String pGroupName) {
+        TickSet set = new TickSet(pGroupName);
         for (TickDefinition tick : mDefinitions.values()) {
-            if (pName.equals(tick.getString("group", null))) {
+            if (pGroupName.equals(tick.getString("group", null))) {
                 set.addDefinition(tick);
             }
         }

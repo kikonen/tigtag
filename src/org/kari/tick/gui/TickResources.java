@@ -22,7 +22,10 @@ public class TickResources
         { ICON + R_APP, "/icon/tigtag_32.png" }, 
 
         { TEXT + R_DUPLICATE_VIEW, "&Duplicate View" }, 
-        { ACC + R_DUPLICATE_VIEW, "ctrl N" }, 
+        { ACC + R_DUPLICATE_VIEW, "ctrl N" },
+        
+        { TEXT + R_MARKERS_MENU, "Ma&rker" }, 
+
     };
 
     @Override

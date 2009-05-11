@@ -21,6 +21,7 @@ public abstract class FileAccessBase {
     protected List<Tick> mTicks = new ArrayList<Tick>();
     protected File mFile;
     protected String mBasename;
+    protected TickRegistry mRegistry;
     
     public FileAccessBase() {
         super();
@@ -53,7 +54,14 @@ public abstract class FileAccessBase {
     public List<Tick> getTicks() {
         return mTicks;
     }
-    
+
+    /**
+     * @return Registry, null if not loaded
+     */
+    public TickRegistry getRegistry() {
+        return mRegistry;
+    }
+
     /**
      * @return true if ".ticks file already exists
      */

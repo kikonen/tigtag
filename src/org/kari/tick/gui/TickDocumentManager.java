@@ -61,7 +61,7 @@ public final class TickDocumentManager {
             FileLoader loader = new FileLoader(pFile, pLoadTicks);
             loader.load();
             
-            doc = new TickDocument();
+            doc = new TickDocument(false);
             doc.setFileContents(loader);
             
             mDocuments.put(pFile, doc);

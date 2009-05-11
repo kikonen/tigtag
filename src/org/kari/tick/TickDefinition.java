@@ -21,6 +21,10 @@ import org.kari.tick.gui.painter.TickPainter;
  * @author kari
  */
 public final class TickDefinition {
+    /**
+     * Name of default definition
+     */
+    public static final String DEF_NAME = "DEFAULT";
     private static final String STYLE = "style";
     private static final String COLOR = "color";
     private static final Logger LOG = Logger.getLogger("tick.definition");
