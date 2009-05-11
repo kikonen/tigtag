@@ -124,7 +124,7 @@ public class TickFrame extends KApplicationFrame
                                 LOG.info("Opening: " + url);
                                 if (file.exists()) {
                                     if (!usedCurrent) {
-                                        setFile(file.getAbsolutePath());
+                                        setFile(file);
                                         usedCurrent = true;
                                     } else {
                                         new TickEditorStarter(file).start();
@@ -149,7 +149,7 @@ public class TickFrame extends KApplicationFrame
                     for (File file : validFiles) {
                         try {
                             LOG.info("Opening: " + file);
-                            new TickEditorStarter(file.getAbsolutePath()).start();
+                            new TickEditorStarter(file).start();
                         } catch (Exception e1) {
                             LOG.error("Failed to open: " + file, e1);
                         }
@@ -212,11 +212,11 @@ public class TickFrame extends KApplicationFrame
         }
     };
 
-    private final Action mNewViewAction = new KAction(ActionConstants.R_NEW) {
+    private final Action mDuplicateViewAction = new KAction(TickConstants.R_DUPLICATE_VIEW) {
         @Override
         public void actionPerformed(ActionContext pCtx) {
-            String filename = getEditor().getTextPane().getTickDocument().getFilename();
-            new TickEditorStarter(filename).start();
+            File file = getEditor().getTextPane().getTickDocument().getFile();
+            new TickEditorStarter(file).start();
         }
     };
     
@@ -241,7 +241,10 @@ public class TickFrame extends KApplicationFrame
                     JOptionPane.INFORMATION_MESSAGE);
         }
     };
-    
+
+    /**
+     * Open new file to be ticked or tick file
+     */
     private final Action mOpenAction = new KAction(ActionConstants.R_OPEN) {
         private File mDir;
         
@@ -250,9 +253,9 @@ public class TickFrame extends KApplicationFrame
             try {
                 TickDocument oldDoc = getEditor().getTextPane().getTickDocument();
                 if (mDir == null) {
-                    String currentFilename = oldDoc.getFilename();
-                    if (currentFilename != null) {
-                        mDir = new File(currentFilename).getParentFile();
+                    File currentFile = oldDoc.getFile();
+                    if (currentFile != null) {
+                        mDir = currentFile.getParentFile();
                     }
                 }
                 
@@ -260,7 +263,7 @@ public class TickFrame extends KApplicationFrame
                 int retVal = chooser.showOpenDialog(pCtx.getWindow());
                 if (retVal == JFileChooser.APPROVE_OPTION) {
                     File file = chooser.getSelectedFile();
-                    setFile(file.getAbsolutePath());
+                    setFile(file);
                 }
                 mDir = chooser.getCurrentDirectory();
             } catch (Exception e) {
@@ -298,7 +301,7 @@ public class TickFrame extends KApplicationFrame
         
         ac.addMenu(new KMenu(
                 ActionConstants.R_MENU_FILE,
-                mNewViewAction,
+                mDuplicateViewAction,
                 KAction.SEPARATOR,
                 mOpenAction,
                 mSaveAction,
@@ -314,7 +317,7 @@ public class TickFrame extends KApplicationFrame
             ));
         
         ac.addMenu(new KMenu(
-                "&Mark",
+                "Ma&rker",
                 tickActions));
         
         ac.addMenu(new KMenu(
@@ -323,7 +326,7 @@ public class TickFrame extends KApplicationFrame
 
         KToolbar mainTb = new KToolbar(
             ActionConstants.R_TB_MAIN,
-            mNewViewAction,
+            mDuplicateViewAction,
             mOpenAction,
             KAction.SEPARATOR,
             mSaveAction 
@@ -367,16 +370,14 @@ public class TickFrame extends KApplicationFrame
      * 
      * @param pFilename, null clears current content
      */
-    public void setFile(String pFilename) {
+    public void setFile(File pFile) {
         TickEditorPanel editor = getEditor();
         try {
-            if (pFilename != null) {
-                File file = new File(pFilename);
-                
+            if (pFile != null) {
                 TickDocument oldDoc = editor.getTextPane().getTickDocument();
-                editor.setFile(file, true);
+                editor.setFile(pFile, true);
                 TickDocument newDoc = editor.getTextPane().getTickDocument();
-                setAppTitle(newDoc.getFilename());
+                setAppTitle(newDoc.getFile().getAbsolutePath());
                 
                 oldDoc.removeTickListener(TickFrame.this);
                 newDoc.addTickListener(TickFrame.this);
@@ -387,8 +388,8 @@ public class TickFrame extends KApplicationFrame
                 editor.getTextPane().setText("");
             }
         } catch (Exception e) {
-            LOG.error("Failed to load: " + pFilename, e);
-            editor.getTextPane().setText("Failed to load:\n \"" + pFilename + "\"");
+            LOG.error("Failed to load: " + pFile, e);
+            editor.getTextPane().setText("Failed to load:\n \"" + pFile + "\"");
         } finally {
             updateActions();
         }

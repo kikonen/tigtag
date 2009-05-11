@@ -1,5 +1,6 @@
 package org.kari.tick;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class TickMain
         
         if (!filenames.isEmpty()) {
             for (String filename : filenames) {
-                new TickEditorStarter(filename).start();
+                new TickEditorStarter(new File(filename)).start();
             }
         } else {
             new TickEditorStarter().start();

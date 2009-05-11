@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.text.BadLocationException;
-
 import org.kari.tick.FileLoader;
 
 /**
@@ -16,7 +14,7 @@ import org.kari.tick.FileLoader;
  *
  */
 public final class TickDocumentManager {
-    private Map<String, TickDocument> mDocuments = new HashMap<String, TickDocument>();
+    private Map<File, TickDocument> mDocuments = new HashMap<File, TickDocument>();
     
     private static TickDocumentManager mInstance;
     
@@ -32,8 +30,8 @@ public final class TickDocumentManager {
      * 
      * @return document, null if it wasn't open
      */
-    public TickDocument getDocument(String pFilename) {
-        return mDocuments.get(pFilename);
+    public TickDocument getDocument(File pFile) {
+        return mDocuments.get(pFile);
     }
 
     /**
@@ -45,7 +43,7 @@ public final class TickDocumentManager {
         refCount--;
         pDocument.setReferenceCount(refCount);
         if (refCount <= 0) {
-            mDocuments.remove(pDocument.getFilename());
+            mDocuments.remove(pDocument.getFile());
         }
     }
     
@@ -57,9 +55,7 @@ public final class TickDocumentManager {
         throws 
             IOException
     {
-        String filename = pFile.getAbsolutePath();
-        
-        TickDocument doc = getDocument(filename);
+        TickDocument doc = getDocument(pFile);
         int refCount = 0;
         if (doc == null) {
             FileLoader loader = new FileLoader(pFile, pLoadTicks);
@@ -68,7 +64,7 @@ public final class TickDocumentManager {
             doc = new TickDocument();
             doc.setFileContents(loader);
             
-            mDocuments.put(filename, doc);
+            mDocuments.put(pFile, doc);
         } else {
             refCount = doc.getReferenceCount();
         }

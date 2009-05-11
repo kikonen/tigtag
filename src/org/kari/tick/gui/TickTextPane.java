@@ -170,12 +170,12 @@ public class TickTextPane extends JEditorPane {
         
         try {
             if (mTickDocument != null && !mTickDocument.isEmpty()) {
-                SyntaxRenderer sr = SyntaxRenderer.getRenderer(mTickDocument.getFilename());
+                SyntaxRenderer sr = SyntaxRenderer.getRenderer(mTickDocument.getFile());
                 sr.render(this, pTickDocument);
                 mTickDocument.addTickListener(mEventHandler);
             }
         } catch (Exception e) {
-            LOG.error("Failed to show: " + pTickDocument.getFilename(), e);
+            LOG.error("Failed to show: " + pTickDocument.getFile(), e);
         }
     }
 

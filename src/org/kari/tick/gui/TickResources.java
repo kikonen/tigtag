@@ -21,8 +21,8 @@ public class TickResources
         { TEXT + R_APP, "TigTag" }, 
         { ICON + R_APP, "/icon/tigtag_32.png" }, 
 
-        { TEXT + R_NEW_VIEW, "&New View" }, 
-        { ACC + R_NEW_VIEW, "ctrl N" }, 
+        { TEXT + R_DUPLICATE_VIEW, "&Duplicate View" }, 
+        { ACC + R_DUPLICATE_VIEW, "ctrl N" }, 
     };
 
     @Override

@@ -15,18 +15,14 @@ public class TickEditorStarter
     implements
         Runnable
 {
-    private String mFilename;
+    private File mFile;
 
     public TickEditorStarter() {
         // Nothing
     }
 
-    public TickEditorStarter(String pFilename) {
-        mFilename = pFilename;
-    }
-    
     public TickEditorStarter(File pFile) {
-        mFilename = pFile.getAbsolutePath();
+        mFile = pFile;
     }
     
     public void start() {
@@ -38,6 +34,6 @@ public class TickEditorStarter
         TickFrame tickFrame = new TickFrame();
         tickFrame.setVisible(true);
         tickFrame.toFront();
-        tickFrame.setFile(mFilename);
+        tickFrame.setFile(mFile);
     }
 }

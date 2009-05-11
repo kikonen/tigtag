@@ -1,5 +1,6 @@
 package org.kari.tick.gui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -22,7 +23,7 @@ public final class TickDocument {
      */
     public static final String EXT_TICKS = ".ticks";
     
-    private String mFilename;
+    private File mFile;
     private String mText;
     private final List<TickListener> mTickListeners = new ArrayList<TickListener>();
     private final List<Tick> mTicks = new ArrayList<Tick>();
@@ -95,14 +96,14 @@ public final class TickDocument {
     }
 
     /**
-     * @return Associated original filename, null if not set 
+     * @return Associated original file, null if not set 
      */
-    public String getFilename() {
-        return mFilename;
+    public File getFile() {
+        return mFile;
     }
 
-    public void setFilename(String pFilename) {
-        mFilename = pFilename;
+    public void setFile(File pFile) {
+        mFile = pFile;
     }
     
     /**
@@ -126,8 +127,7 @@ public final class TickDocument {
      */
     public void setFileContents(FileLoader pLoader) 
     {
-//        mFilename = pLoader.getFile().getAbsolutePath();
-        mFilename = pLoader.getBasename();
+        mFile = pLoader.getFile();
         mText = pLoader.getText();
         setTicks(pLoader.getTicks());
     }

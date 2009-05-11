@@ -26,8 +26,8 @@ import org.kari.util.TextUtil;
 public class FileSaver extends FileAccessBase {
     public FileSaver(TickDocument pDoc) {
         mText = pDoc.getText();
-        mTicks = pDoc.getTicks();
-        mFile = new File(pDoc.getFilename());
+        mTicks = new ArrayList<Tick>(pDoc.getTicks());
+        mFile = pDoc.getFile();
     }
     
     /**

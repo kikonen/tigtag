@@ -1,6 +1,7 @@
 package org.kari.tick.gui.syntax;
 
 import java.awt.Rectangle;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -79,7 +80,7 @@ public final class SyntaxRenderer {
         mMimes.put("xml", "xml");
     }
     
-    public static final SyntaxRenderer getRenderer(String pFilename) {
+    public static final SyntaxRenderer getRenderer(File pFile) {
         return new SyntaxRenderer();
     }
     
@@ -100,7 +101,7 @@ public final class SyntaxRenderer {
         final TickDocument pTickDocument) 
     {
         try {
-            String filename = pTickDocument.getFilename();
+            String filename = pTickDocument.getFile().getName();
             pTextPane.setContentType(getMimeType(filename));
             pTextPane.setText(pTickDocument.getText());
 
