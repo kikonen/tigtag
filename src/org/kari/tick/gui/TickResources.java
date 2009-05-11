@@ -21,8 +21,10 @@ public class TickResources
         { TEXT + R_APP, "TigTag" }, 
         { ICON + R_APP, "/icon/tigtag_32.png" }, 
 
-        { TEXT + R_DUPLICATE_VIEW, "&Duplicate View" }, 
-        { ACC + R_DUPLICATE_VIEW, "ctrl N" },
+        { TEXT + R_DUPLICATE, "&Duplicate View" }, 
+        { ICON + R_DUPLICATE, "/icon/sun/New16.gif" },
+        { T_ICON + R_DUPLICATE, "/icon/sun/New24.gif" },
+        { ACC + R_DUPLICATE, "ctrl N" },
         
         { TEXT + R_MARKERS_MENU, "Ma&rker" }, 
 

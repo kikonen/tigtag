@@ -15,7 +15,7 @@ public interface TickConstants {
     
     Logger LOG = Logger.getLogger("tick");
     
-    String R_DUPLICATE_VIEW = S + "New";
+    String R_DUPLICATE = S + "New";
     String R_APP = S + "App";
     String R_MARKERS_MENU = S + "Markers";
 

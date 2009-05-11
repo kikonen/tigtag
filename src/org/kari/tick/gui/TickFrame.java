@@ -206,7 +206,7 @@ public class TickFrame extends KApplicationFrame
         }
     };
 
-    private final Action mDuplicateViewAction = new KAction(TickConstants.R_DUPLICATE_VIEW) {
+    private final Action mDuplicateViewAction = new KAction(TickConstants.R_DUPLICATE) {
         @Override
         public void actionPerformed(ActionContext pCtx) {
             File file = getEditor().getTextPane().getTickDocument().getFile();
