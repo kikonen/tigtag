@@ -79,6 +79,10 @@ public class FileLoader extends FileAccessBase {
             byte[] data = FileUtil.load(mFile);
             mText = new String(data, "UTF-8");
             mBasename = mFile.getName();
+            
+            // registry
+            mRegistry = new TickRegistry();
+            mRegistry.loadDefinitions();
         }
     }
     
