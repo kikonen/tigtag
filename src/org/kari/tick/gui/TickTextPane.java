@@ -540,7 +540,7 @@ public class TickTextPane extends JEditorPane {
         if (mTickSet != null) {
             TickDefinition current = mTickSet.getCurrent();
             if (current != null) {
-                TickLocation loc = getTickLocation(mTickSet.getCurrentMode());
+                TickLocation loc = getTickLocation(mTickSet.getCurrentMode(), false);
                 
                 if (loc != null) {
                     Tick tick = new Tick(current, loc, getText(loc));
@@ -594,7 +594,7 @@ public class TickTextPane extends JEditorPane {
      * 
      * @return location, null if current location is invalid for ticking
      */
-    public TickLocation getTickLocation(BlockMode pBlockMode) {
+    public TickLocation getTickLocation(BlockMode pBlockMode, boolean pAllowEmpty) {
         TickLocation result = null;
         try {
             int caretLocation = getCaretPosition();
@@ -620,7 +620,7 @@ public class TickTextPane extends JEditorPane {
             // BLOCK/SIDEBAR = lines
             // WORD = word boundaries
             // POINT = exact selection range (or word from caret)
-            if (startPos != endPos) {
+            if (startPos != endPos || pAllowEmpty) {
                 final Document doc = getDocument();
                 final Element rootElement = doc.getDefaultRootElement();
                 int startLine = rootElement.getElementIndex(startPos);

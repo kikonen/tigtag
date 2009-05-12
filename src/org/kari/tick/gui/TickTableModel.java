@@ -1,6 +1,7 @@
 package org.kari.tick.gui;
 
 import java.awt.Component;
+import java.awt.Font;
 
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
@@ -30,7 +31,7 @@ public final class TickTableModel extends AbstractTableModel
      *
      * @author kari
      */
-    static final class NameTableCellRenderer extends DefaultTableCellRenderer {
+    final class NameTableCellRenderer extends DefaultTableCellRenderer {
         @Override
         public Component getTableCellRendererComponent(
             JTable pTable,
@@ -54,6 +55,14 @@ public final class TickTableModel extends AbstractTableModel
                 sb.append(loc.mEndLine + 1);
             } else {
                 sb.append(loc.mStartLine + 1);
+            }
+            
+            if (TickLocation.intersect(
+                    loc.mStartLine, 
+                    loc.mEndLine, 
+                    mHighlightStartLine, 
+                    mHighlightEndLine)) {
+                setFont(getFont().deriveFont(Font.BOLD));
             }
 
             sb.append(" - ");
@@ -80,11 +89,43 @@ public final class TickTableModel extends AbstractTableModel
 
     private TickDocument mTickDocument;
     
+    private int mHighlightStartLine = -1;
+    private int mHighlightEndLine = -1;
+    
+    
     public TickTableModel(TickDocument pDocument) {
         mTickDocument = pDocument;
         mColumns[0].setCellRenderer(new NameTableCellRenderer());
     }
     
+    /**
+     * Get first highlighted document row (not table row)
+     */
+    public int getHighlightStartLine() {
+        return mHighlightStartLine;
+    }
+
+    /**
+     * Set first highlighted document row (not table row)
+     */
+    public void setHighlightStartLine(int pHighlightStartRow) {
+        mHighlightStartLine = pHighlightStartRow;
+    }
+    
+    /**
+     * Get last highlighted document row (not table row)
+     */
+    public int getHighlightEndLine() {
+        return mHighlightEndLine;
+    }
+
+    /**
+     * Get last highlighted document row (not table row)
+     */
+    public void setHighlightEndLine(int pHighlightEndRow) {
+        mHighlightEndLine = pHighlightEndRow;
+    }
+
     public TableColumn[] getColumns() {
         return mColumns;
     }

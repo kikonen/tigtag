@@ -39,6 +39,8 @@ import javax.swing.TransferHandler;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
@@ -51,6 +53,8 @@ import org.kari.action.ActionContext;
 import org.kari.action.KAction;
 import org.kari.tick.Tick;
 import org.kari.tick.TickDefinition;
+import org.kari.tick.TickLocation;
+import org.kari.tick.TickSet;
 import org.kari.tick.TickDefinition.BlockMode;
 
 /**
@@ -368,6 +372,23 @@ public class TickEditorPanel
                         public void actionPerformed(ActionEvent pE) {
                             getTickTable().requestFocus();
                         }});
+            
+            mTextPane.addCaretListener(new CaretListener() {
+                @Override
+                public void caretUpdate(CaretEvent pEvent) {
+                    TickSet tickSet = getTextPane().getTickSet();
+                    if (tickSet != null) {
+                        BlockMode mode = tickSet.getCurrentMode();
+                        TickLocation loc = getTextPane().getTickLocation(mode, true);
+                        if (loc != null) {
+                            TickTableModel tableModel = getTickTable().getTickTableModel();
+                            tableModel.setHighlightStartLine(loc.mStartLine);
+                            tableModel.setHighlightEndLine(loc.mEndLine);
+                            getTickTable().repaint();
+                        }
+                    }
+                }
+            });
         }
         return mTextPane;
     }

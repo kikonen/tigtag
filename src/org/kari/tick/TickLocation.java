@@ -143,4 +143,22 @@ public final class TickLocation {
         return loc;
     }
 
+    
+    /**
+     * @return true if this tick intersects with range of pTick
+     */
+    public static boolean intersect(int x1, int y1, int x2, int y2) {
+        if (x1 > x2) {
+            int tmp = x2;
+            x2 = x1;
+            x1 = tmp;
+            
+            tmp = y2;
+            y2 = y1;
+            y1 = tmp;
+
+        }
+        return y1 >= x2;
+    }
+
 }
