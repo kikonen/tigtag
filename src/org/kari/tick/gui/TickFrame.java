@@ -215,19 +215,6 @@ public class TickFrame extends KApplicationFrame
         }
     }
     
-    
-    private WindowListener mWindowListener = new WindowAdapter() {
-        @Override
-        public void windowClosing(WindowEvent pE) {
-            dispose();
-        }
-
-        @Override
-        public void windowClosed(WindowEvent pE) {
-            // Nothing
-        }
-    };
-    
     private final ActionGroup mDefinitionGroup = new ActionGroup();
 
     private final Action mEditTicksAction = new KAction("&Edit Markers") {
@@ -320,9 +307,6 @@ public class TickFrame extends KApplicationFrame
     
     
     public TickFrame() {
-        addWindowListener(mWindowListener);
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        
         ActionContainer ac = getActionContainer();
         
         ac.addMenu(new KMenu(
@@ -363,14 +347,8 @@ public class TickFrame extends KApplicationFrame
         ac.addToolbar(mainTb);
         
         setSize(new Dimension(700, HEIGHT));
-        
-        WidgetResources wr = ResourceAdapter.getInstance().getWidget(
-                TickConstants.R_APP, 
-                ResKey.MENU);
-        Icon icon = wr.getIcon();
-        if (icon instanceof ImageIcon) {
-            setIconImage( ((ImageIcon)icon).getImage() );
-        }
+
+        setIcon(TickConstants.R_APP); 
         setAppTitle(null);
     }
     

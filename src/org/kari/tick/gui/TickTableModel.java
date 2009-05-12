@@ -23,6 +23,7 @@ public final class TickTableModel extends AbstractTableModel
     public static final int IDX_MODE  = 12;
     public static final int IDX_LINE  = 13;
     public static final int IDX_TEXT = 14;
+    public static final int IDX_COMMENT = 15;
 
     /**
      * Render tick definition name
@@ -56,6 +57,7 @@ public final class TickTableModel extends AbstractTableModel
         new TableColumn(TickTableModel.IDX_LINE),
         new TableColumn(TickTableModel.IDX_NAME),
         new TableColumn(TickTableModel.IDX_MODE),
+        new TableColumn(TickTableModel.IDX_COMMENT),
         };
 
     private TickDocument mTickDocument;
@@ -114,6 +116,8 @@ public final class TickTableModel extends AbstractTableModel
                 return "Line";
             case IDX_TEXT:
                 return "Text";
+            case IDX_COMMENT:
+                return "Comment";
         }
         return null;
    }
@@ -146,6 +150,9 @@ public final class TickTableModel extends AbstractTableModel
             break;
         case IDX_TEXT:
             result = tick.getText();
+            break;
+        case IDX_COMMENT:
+            result = tick.getComment();
             break;
         default:
             break;

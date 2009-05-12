@@ -9,7 +9,9 @@ import jsyntaxpane.DefaultSyntaxKit;
 import org.kari.base.AppUtil;
 import org.kari.base.Application;
 import org.kari.base.CommandLine;
+import org.kari.properties.PropertiesRegistry;
 import org.kari.resources.ResourceAdapter;
+import org.kari.tick.gui.TickPropertiesFrame;
 import org.kari.tick.gui.TickResources;
 
 /**
@@ -45,6 +47,7 @@ public class TickMain
         try {
             System.setProperty("swing.plaf.metal.controlFont", "Dialog");
             ResourceAdapter.getInstance().addBundle(TickResources.class);
+            PropertiesRegistry.getInstance().register(Tick.class, TickPropertiesFrame.class);
             AppUtil.start(TickMain.class, pArgs);
         } catch (Exception e) {
             System.exit(-1);

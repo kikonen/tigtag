@@ -22,7 +22,6 @@ import org.kari.tick.gui.painter.TickPainter;
 public final class Tick {
     public static final String P_LOCATION = "location";
     public static final String P_TICK = "tick";
-    public static final String P_LINK = "link";
     public static final String P_COMMENT = "comment";
     public static final String P_MODE = "mode";
     public static final String P_COLOR = "color";
@@ -30,7 +29,6 @@ public final class Tick {
     private TickDefinition mDefinition;
     private TickLocation mLocation;
     
-    private String mLink;
     private String mComment;
     private boolean mValid;
     private Color mColor;
@@ -117,17 +115,6 @@ public final class Tick {
         mColor = pColor;
     }
 
-    /**
-     * @return Link identification name, null if none
-     */
-    public String getLink() {
-        return mLink;
-    }
-
-    public void setLink(String pLink) {
-        mLink = pLink;
-    }
-
     public boolean isValid() {
         return mValid;
     }
@@ -145,12 +132,7 @@ public final class Tick {
         if (mComment != null) {
             result.put(P_COMMENT, mComment);
         }
-        if (mLink != null) {
-            result.put(P_LINK, mLink);
-        }
         result.put(P_LOCATION, mLocation.toString());
-//        result.put(P_MODE, mLocation.mBlockMode.getName());
-//        result.put(P_COLOR, Integer.toString(mColor.getRGB()));
         return result;
     }
 
@@ -167,7 +149,6 @@ public final class Tick {
         if (mLocation.mBlockMode == null) {
             mLocation.mBlockMode = mDefinition.getBlockMode();
         }
-        mLink = pProperties.get(P_LINK);
         mComment = pProperties.get(P_COMMENT);
         String colorStr = null;//pProperties.get(P_COLOR);
         if (colorStr != null) {
