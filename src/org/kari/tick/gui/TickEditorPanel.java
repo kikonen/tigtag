@@ -70,8 +70,7 @@ public class TickEditorPanel
         extends JPanel
     {
         public LineNumberPanel() {
-//            Dimension SIZE = new Dimension(80, 10);
-            Dimension SIZE = new Dimension(40, 10);
+            Dimension SIZE = new Dimension(30, 10);
             setMinimumSize(SIZE);
             setMaximumSize(SIZE);
             setPreferredSize(SIZE);

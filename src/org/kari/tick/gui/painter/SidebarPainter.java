@@ -2,6 +2,7 @@ package org.kari.tick.gui.painter;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
 
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
@@ -25,14 +26,14 @@ public class SidebarPainter extends BlockPainter {
     public void paint(
         JComponent pComponent,
         TickTextPane pEditor,
-        Graphics2D pG2d,
+        Graphics2D g2d,
         int pYOffset,
         Tick pTick,
         Highlight pHighlight)
         throws BadLocationException
     {
         mNameLoc = null;
-        super.paint(pComponent, pEditor, pG2d, pYOffset, pTick, pHighlight);
+        super.paint(pComponent, pEditor, g2d, pYOffset, pTick, pHighlight);
     }
 
 

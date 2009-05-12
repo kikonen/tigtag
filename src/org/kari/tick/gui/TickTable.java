@@ -71,6 +71,8 @@ public final class TickTable extends JTable
                 actionMap.get(ActionConstants.R_REMOVE),
                 actionMap.get(ActionConstants.R_PROPERTIES));
         menu.createContextMenu(this).start();
+        
+        setRowHeight(20);
     }
 
     @Override

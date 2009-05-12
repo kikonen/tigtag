@@ -346,7 +346,7 @@ public class TickFrame extends KApplicationFrame
         
         ac.addToolbar(mainTb);
         
-        setSize(new Dimension(700, HEIGHT));
+        setSize(new Dimension(800, HEIGHT));
 
         setIcon(TickConstants.R_APP); 
         setAppTitle(null);
