@@ -81,14 +81,23 @@ public class TickTextPane extends JEditorPane {
             repaint();
         }
         
-        public void keyPressed(KeyEvent pE) {
+        public void keyPressed(KeyEvent pEvent) {
             // TODO KI add TICK
-            int keyCode = pE.getKeyCode();
-            char ch = pE.getKeyChar();
-            if (keyCode == KeyEvent.VK_SPACE 
-                || Character.isLetter(ch)
-                || Character.isDigit(ch)) 
-            {
+            int keyCode = pEvent.getKeyCode();
+            char ch = pEvent.getKeyChar();
+            boolean canTick = false;
+            if (keyCode == KeyEvent.VK_SPACE) {
+                canTick = true;
+            } else {
+                canTick = (Character.isLetter(ch) || Character.isDigit(ch))
+                    && !(pEvent.isAltDown()
+                        || pEvent.isAltGraphDown()
+                        || pEvent.isControlDown() 
+                        || pEvent.isMetaDown()
+                        || pEvent.isActionKey()
+                        );
+            }
+            if (canTick) {
                 tick(keyCode, ch);
             }
         }

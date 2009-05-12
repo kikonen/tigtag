@@ -234,8 +234,8 @@ public class TickEditorPanel
     
     private TickTable mTickTable;
     
-    private Border mFocusedBorder = new MatteBorder(1, 1, 1, 1, Color.BLUE);
-    private Border mUnFocusedBorder = new EmptyBorder(1, 1, 1, 1);
+    private final Border mFocusedBorder = new MatteBorder(1, 1, 1, 1, Color.BLUE);
+    private final Border mUnFocusedBorder = new EmptyBorder(1, 1, 1, 1);
     
     {
         Action clear = new KAction(ActionConstants.R_CLEAR) {
@@ -283,21 +283,15 @@ public class TickEditorPanel
         FocusListener fl = new FocusListener() {
             @Override
             public void focusGained(FocusEvent pEvent) {
-                JComponent comp = (JComponent)pEvent.getComponent();
-                if (comp.getParent() instanceof JViewport) {
-                    JScrollPane scrollPane = (JScrollPane)comp.getParent().getParent(); 
-                    scrollPane.setBorder(mFocusedBorder);
-                }
+                setFocusBorder((JComponent)pEvent.getComponent(), true);
             }
             @Override
             public void focusLost(FocusEvent pEvent) {
-                JComponent comp = (JComponent)pEvent.getComponent();
-                if (comp.getParent() instanceof JViewport) {
-                    JScrollPane scrollPane = (JScrollPane)comp.getParent().getParent(); 
-                    scrollPane.setBorder(mUnFocusedBorder);
-                }
+                setFocusBorder((JComponent)pEvent.getComponent(), false);
             }
         };
+        setFocusBorder(textPane, false);
+        setFocusBorder(tickTable, false);
         tickTable.addFocusListener(fl);
         textPane.addFocusListener(fl);
         
@@ -448,6 +442,14 @@ public class TickEditorPanel
             getTickTable().getTickTableModel().setTickDocument(doc);
         } else {
             docMgr.closeDocument(doc);
+        }
+    }
+
+    private void setFocusBorder(JComponent pComp, boolean pFocused) {
+        
+        if (pComp.getParent() instanceof JViewport) {
+            JScrollPane scrollPane = (JScrollPane)pComp.getParent().getParent(); 
+            scrollPane.setBorder(pFocused ? mFocusedBorder : mUnFocusedBorder);
         }
     }
 
