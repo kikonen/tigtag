@@ -177,6 +177,7 @@ public class TickTextPane extends JEditorPane {
         } catch (Exception e) {
             LOG.error("Failed to show: " + pTickDocument.getFile(), e);
         }
+        refresh();
     }
 
     public void moveCaret(int pKeyCode) {
@@ -262,6 +263,14 @@ public class TickTextPane extends JEditorPane {
         return root.getElementIndex( caretPosition ) + 1;
     }
     
+    /**
+     * Refresh view
+     */
+    public void refresh() {
+        mCaretRect = null;
+        getTickDocument().refresh();
+    }
+    
     @Override
     public void paint(Graphics pG) {
         super.paint(pG);
@@ -302,7 +311,11 @@ public class TickTextPane extends JEditorPane {
     }
 
     private void paintCaret(Graphics2D g2d) {
+        if (mCaretRect == null) {
+            mCaretRect = calculateCaretRect();
+        }
         Rectangle rect = mCaretRect;
+        
         if (rect != null) {
             Color origColor = g2d.getColor();
             g2d.setColor(Color.BLUE);

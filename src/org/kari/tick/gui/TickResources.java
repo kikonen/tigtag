@@ -25,7 +25,13 @@ public class TickResources
         { ICON + R_DUPLICATE, "/icon/sun/New16.gif" },
         { T_ICON + R_DUPLICATE, "/icon/sun/New24.gif" },
         { ACC + R_DUPLICATE, "ctrl N" },
+
+        { TEXT + R_GROW_FONT, "&Increase Font" }, 
+        { ACC + R_GROW_FONT, "ctrl PLUS" },
         
+        { TEXT + R_SHRINK_FONT, "&Decrease Font" }, 
+        { ACC + R_SHRINK_FONT, "ctrl MINUS" },
+
         { TEXT + R_MARKERS_MENU, "Ma&rker" }, 
 
     };

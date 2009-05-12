@@ -2,6 +2,7 @@ package org.kari.tick.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.WindowAdapter;
@@ -180,6 +181,40 @@ public class TickFrame extends KApplicationFrame
             getEditor().getTextPane().getTickSet().setCurrent(mDefinition);
         }
     }
+
+    /**
+     * Adjust editor font size
+     * 
+     * @author kari
+     */
+    final class FontSizeAction extends KAction {
+        private final int mAdjustment;
+        
+        private FontSizeAction(int pAdjustment) {
+            super(pAdjustment > 0 ? TickConstants.R_GROW_FONT : TickConstants.R_SHRINK_FONT);
+            mAdjustment = pAdjustment;
+        }
+
+        @Override
+        public void actionPerformed(ActionContext pCtx) {
+            TickTextPane textPane = getEditor().getTextPane();
+            Font font = textPane.getFont();
+            int size = font.getSize();
+            size += mAdjustment;
+            if (size < 8) {
+                size = 8;
+            } else if (size > 20) {
+                size = 20;
+            }
+            
+            if (size != font.getSize()) {
+                textPane.refresh();
+                Font newFont = font.deriveFont((float)size);
+                textPane.setFont(newFont);
+            }
+        }
+    }
+    
     
     private WindowListener mWindowListener = new WindowAdapter() {
         @Override
@@ -299,6 +334,12 @@ public class TickFrame extends KApplicationFrame
                 KAction.SEPARATOR,
                 new CloseWindowAction(),
                 new ExitAction()));
+        
+        ac.addMenu(new KMenu(
+                ActionConstants.R_MENU_VIEW,
+                new FontSizeAction(1),
+                new FontSizeAction(-1)));
+
         
         ac.addMenu(new KMenu(
                 ActionConstants.R_MENU_EDIT,

@@ -105,6 +105,8 @@ public final class SyntaxRenderer {
             pTextPane.setContentType(getMimeType(filename));
             pTextPane.setText(pTickDocument.getText());
 
+            pTextPane.setFont(pTextPane.getFont().deriveFont(13.0f));
+            
             // Ensure top of the document is focused after load (otherwise
             // caret jumps to end)
             final Rectangle start = pTextPane.modelToView(0);

@@ -19,6 +19,9 @@ public interface TickConstants {
     String R_APP = S + "App";
     String R_MARKERS_MENU = S + "Markers";
 
+    String R_GROW_FONT = S + "GrowFont";
+    String R_SHRINK_FONT = S + "ShrinkFont";
+
     String TICK_FILE_EXT = ".zip";
     
     /**

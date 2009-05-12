@@ -230,6 +230,10 @@ public final class Tick {
     public void merge(Tick pTick) {
         TickLocation loc = mLocation.merge(pTick.mLocation);
         mLocation = loc;
+        refresh();
+    }
+
+    public void refresh() {
         mPainter = null;
     }
 

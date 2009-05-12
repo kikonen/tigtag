@@ -156,6 +156,15 @@ public final class TickDocument {
     }
 
     /**
+     * Ensure ticks are repainting correctly
+     */
+    public void refresh() {
+        for (Tick tick : mTicks) {
+            tick.refresh();
+        }
+    }
+    
+    /**
      * Clear all ticks
      */
     public void clearTicks() {
@@ -168,7 +177,7 @@ public final class TickDocument {
     public List<Tick> getTicks() {
         return mTicks;
     }
-
+    
     /**
      * Set ticks, clearing old ticks
      */
