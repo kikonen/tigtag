@@ -27,7 +27,7 @@ public abstract class TickPainter {
     public static final Logger LOG = Logger.getLogger("tick.painter");
 
     protected static final BasicStroke BRIGHT_STROKE = new BasicStroke(2);
-    protected static final AlphaComposite DIM_COMPOSITE = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.20f);
+    protected static final AlphaComposite DIM_COMPOSITE = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.60f);
 
     protected List<Rectangle> mRects; 
     protected Font mFont;

@@ -24,6 +24,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -48,6 +50,7 @@ import org.kari.action.ActionConstants;
 import org.kari.action.ActionContext;
 import org.kari.action.KAction;
 import org.kari.tick.Tick;
+import org.kari.tick.TickDefinition;
 import org.kari.tick.TickDefinition.BlockMode;
 
 /**
@@ -177,12 +180,13 @@ public class TickEditorPanel
         private void paintTicks(Graphics2D g2d, int pYOffset) {
             TickTextPane pane = getTextPane();
             TickDocument doc = pane.getTickDocument();
+            TickHighlighter highlighter = getTextPane().getTickHighlighter();
             for (Tick tick : doc.getTicks()) {
                 if (tick.isValid()) {
                     BlockMode mode = tick.getLocation().mBlockMode;
                     if (mode == BlockMode.SIDEBAR) {
                         try {
-                            tick.paint(this, pane, g2d, pYOffset, getTickTable().getHighlight(tick));
+                            tick.paint(this, pane, g2d, pYOffset, highlighter.getHighlight(tick));
                         } catch (BadLocationException e) {
                             LOG.error("Invalid tick: " + tick, e);
                             tick.setValid(false);
@@ -243,6 +247,28 @@ public class TickEditorPanel
         getActionMap().put(ActionConstants.R_CLEAR, clear);
     }
     
+    private final TickHighlighter mTickHighlighter = new TickHighlighter() {
+        @Override
+        public Highlight getHighlight(Tick pTick) {
+            Highlight result = Highlight.NORMAL;
+            if (getTickTable().isFocusOwner()) {
+                result = getTickTable().getHighlight(pTick);
+            } else {
+                TickDefinition current = getTextPane().getTickSet().getCurrent();
+                if (!pTick.getDefinition().equals(current)) {
+                    result = Highlight.DIM;
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public Set<Tick> getHightlightedTicks() {
+            return Collections.<Tick>emptySet();
+        }
+    };
+    
+    
     public TickEditorPanel() {
         super(new BorderLayout());
         add(getSplitPane(), BorderLayout.CENTER);
@@ -251,7 +277,7 @@ public class TickEditorPanel
         TickTextPane textPane = getTextPane();
         
         tickTable.getTickTableModel().setTickDocument(textPane.getTickDocument());
-        textPane.setTickHighlighter(tickTable);
+        textPane.setTickHighlighter(mTickHighlighter);
         
         // Draw highlight for focused editor area
         FocusListener fl = new FocusListener() {

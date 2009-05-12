@@ -14,6 +14,7 @@ import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -27,6 +28,9 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Utilities;
 
 import org.apache.log4j.Logger;
+import org.kari.properties.Apply;
+import org.kari.properties.KPropertiesFrame;
+import org.kari.properties.PropertiesViewer;
 import org.kari.tick.Tick;
 import org.kari.tick.TickDefinition;
 import org.kari.tick.TickLocation;
@@ -80,8 +84,12 @@ public class TickTextPane extends JEditorPane {
         public void keyPressed(KeyEvent pE) {
             // TODO KI add TICK
             int keyCode = pE.getKeyCode();
-            if (keyCode == KeyEvent.VK_SPACE) {
-                tick();
+            char ch = pE.getKeyChar();
+            if (keyCode == KeyEvent.VK_SPACE 
+                || Character.isLetter(ch)
+                || Character.isDigit(ch)) 
+            {
+                tick(keyCode, ch);
             }
         }
 
@@ -519,7 +527,7 @@ public class TickTextPane extends JEditorPane {
      * Toggle tick at current caret/selection. If there is already tick, then
      * it's removed, otherwise new tick is created.
      */
-    public void tick() {
+    public void tick(int pKeyCode, char pChar) {
         if (mTickSet != null) {
             TickDefinition current = mTickSet.getCurrent();
             if (current != null) {
@@ -527,13 +535,45 @@ public class TickTextPane extends JEditorPane {
                 
                 if (loc != null) {
                     Tick tick = new Tick(current, loc, getText(loc));
-                    TickDocument doc = getTickDocument();
-                    if (doc.getTicks().contains(tick)) {
-                        doc.removeTick(tick);
+                    final TickDocument doc = getTickDocument();
+                    final List<Tick> ticks = doc.getTicks();
+                    final int idx = ticks.indexOf(tick);
+                    
+                    if (pKeyCode == KeyEvent.VK_SPACE) {
+                        if (idx != -1) {
+                            doc.removeTick(tick);
+                        } else {
+                            doc.addTick(tick);
+                        }
+                        repaint();
                     } else {
-                        doc.addTick(tick);
+                        String comment = null;
+                        if (idx != -1) {
+                            tick = ticks.get(idx);
+                            comment = tick.getComment();
+                        }
+                        if (comment == null) {
+                            tick.setComment(new String(new char[]{pChar}));
+                        }
+                    
+                        final Tick origTick = tick;
+                        Apply apply = new Apply() {
+                            @Override
+                            public void apply(KPropertiesFrame pDialog)
+                                throws Exception
+                            {
+                                Tick newTick = (Tick)pDialog.getContent();
+                                doc.removeTick(origTick);
+                                doc.addTick(newTick);
+                            }
+                        };
+
+                        try {
+                            new PropertiesViewer(tick, apply).show();
+                        } catch (Exception e) {
+                            LOG.error("Failed to edit");
+                        }
                     }
-                    repaint();
                 }
             }
         }

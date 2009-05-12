@@ -99,6 +99,9 @@ public final class Tick {
         }
     }
 
+    /**
+     * @return Empty string if not set
+     */
     public String getComment() {
         return mComment;
     }
