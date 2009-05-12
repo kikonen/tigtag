@@ -98,7 +98,7 @@ public final class TickTable extends JTable
         Highlight result = Highlight.NORMAL;
         int selectedRow = getSelectedRow();
         Tick tick = null;
-        if (selectedRow != -1) {
+        if (selectedRow != -1 && isFocusOwner()) {
             tick = getTickTableModel().getRowElement(selectedRow);
             if (tick == pTick) {
                 result = Highlight.BRIGHT;

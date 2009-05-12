@@ -1,5 +1,6 @@
 package org.kari.tick.gui.painter;
 
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 
 import javax.swing.JComponent;
@@ -7,6 +8,7 @@ import javax.swing.text.BadLocationException;
 
 import org.kari.tick.Tick;
 import org.kari.tick.gui.TickTextPane;
+import org.kari.tick.gui.TickHighlighter.Highlight;
 
 /**
  * Same logic than in BlockPAinter, except this painter is used
@@ -18,6 +20,21 @@ public class SidebarPainter extends BlockPainter {
     public SidebarPainter() {
         super();
     }
+
+    @Override
+    public void paint(
+        JComponent pComponent,
+        TickTextPane pEditor,
+        Graphics2D pG2d,
+        int pYOffset,
+        Tick pTick,
+        Highlight pHighlight)
+        throws BadLocationException
+    {
+        mNameLoc = null;
+        super.paint(pComponent, pEditor, pG2d, pYOffset, pTick, pHighlight);
+    }
+
 
     @Override
     protected Rectangle calculateTickRect(
