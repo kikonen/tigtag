@@ -43,10 +43,28 @@ public final class TickTableModel extends AbstractTableModel
             super.getTableCellRendererComponent(pTable, pValue,
                     pIsSelected, pHasFocus, pRow, pColumn);
             
-            TickDefinition def = (TickDefinition)pValue;
+            Tick tick = (Tick)pValue;
+            TickLocation loc = tick.getLocation();
+            TickDefinition def = tick.getDefinition();
+
+            StringBuilder sb = new StringBuilder(100);
+            if (loc.mStartLine != loc.mEndLine) {
+                sb.append(loc.mStartLine + 1);
+                sb.append(" ... ");
+                sb.append(loc.mEndLine + 1);
+            } else {
+                sb.append(loc.mStartLine + 1);
+            }
+
+            sb.append(" - ");
+            sb.append(def.getName());
+            sb.append("(");
+            sb.append(def.getBlockMode().getName());
+            sb.append(")");
+            String name = sb.toString();
             
             setIcon(def.getIcon());
-            setText(def.getName());
+            setText(name);
             
             return this;
         }
@@ -54,9 +72,9 @@ public final class TickTableModel extends AbstractTableModel
     
     
     private final TableColumn[] mColumns = {
-        new TableColumn(TickTableModel.IDX_LINE),
+//        new TableColumn(TickTableModel.IDX_LINE),
         new TableColumn(TickTableModel.IDX_NAME),
-        new TableColumn(TickTableModel.IDX_MODE),
+//        new TableColumn(TickTableModel.IDX_MODE),
         new TableColumn(TickTableModel.IDX_COMMENT),
         };
 
@@ -64,7 +82,7 @@ public final class TickTableModel extends AbstractTableModel
     
     public TickTableModel(TickDocument pDocument) {
         mTickDocument = pDocument;
-        mColumns[1].setCellRenderer(new NameTableCellRenderer());
+        mColumns[0].setCellRenderer(new NameTableCellRenderer());
     }
     
     public TableColumn[] getColumns() {
@@ -136,7 +154,7 @@ public final class TickTableModel extends AbstractTableModel
         TickLocation loc = tick.getLocation();
         switch (pColumnIndex) {
         case IDX_NAME:
-            result = tick.getDefinition();
+            result = tick;
             break;
         case IDX_MODE:
             result = loc.mBlockMode.getName();
