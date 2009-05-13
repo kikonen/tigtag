@@ -66,9 +66,9 @@ public final class TickTableModel extends AbstractTableModel
 
             sb.append(" - ");
             sb.append(def.getName());
-            sb.append(" (");
-            sb.append(def.getBlockMode().getName());
-            sb.append(")");
+//            sb.append(" (");
+//            sb.append(def.getBlockMode().getName());
+//            sb.append(")");
             String name = sb.toString();
             
             setIcon(def.getIcon());
@@ -94,7 +94,13 @@ public final class TickTableModel extends AbstractTableModel
     
     public TickTableModel(TickDocument pDocument) {
         mTickDocument = pDocument;
-        mColumns[0].setCellRenderer(new NameTableCellRenderer());
+        TableColumn nameColumn = mColumns[0];
+        TableColumn commentColumn = mColumns[1];
+        nameColumn.setCellRenderer(new NameTableCellRenderer());
+        nameColumn.setPreferredWidth(300);
+//        nameColumn.setMaxWidth(300);
+        
+        commentColumn.setPreferredWidth(800);
     }
     
     /**

@@ -5,9 +5,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import javax.swing.ActionMap;
-import javax.swing.JFrame;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
@@ -87,6 +85,7 @@ public final class TickTable extends JTable
                 actionMap.get(ActionConstants.R_PROPERTIES));
         menu.createContextMenu(this).start();
         
+        setAutoResizeMode(AUTO_RESIZE_LAST_COLUMN);
         setRowHeight(20);
     }
 
