@@ -170,8 +170,8 @@ public class TickFrame extends KApplicationFrame
     final class TickAction extends KAction {
         private TickDefinition mDefinition;
         
-        public TickAction(TickDefinition pDefinition, ActionGroup pGroup) {
-            super(pDefinition.getName() + " - " + pDefinition.getBlockMode().getName(), pGroup);
+        public TickAction(String pTitle, TickDefinition pDefinition, ActionGroup pGroup) {
+            super(pTitle, pGroup);
             mDefinition = pDefinition;
             putValue(SMALL_ICON, mDefinition.getIcon());
         }
@@ -464,8 +464,14 @@ public class TickFrame extends KApplicationFrame
                 doc.getRegistry().getDefinitions());
         Collections.sort(definitions, TickDefinition.NAME_COMPARATOR);
         
+        int idx = 0;
         for (TickDefinition def : definitions) {
-            result.add(new TickAction(def, mDefinitionGroup));
+            String title = def.getName() + " - " + def.getBlockMode().getName();
+            if (idx < 10) {
+                title = "&" + idx + " - " + title;
+            }
+            result.add(new TickAction(title, def, mDefinitionGroup));
+            idx++;
         }
         
         return result.toArray(new KAction[result.size()]);

@@ -35,7 +35,7 @@ public final class TickTable extends JTable
                 Tick tick = getTickTableModel().getRowElement(selectedRow);
                 getTickTableModel().getTickDocument().removeTick(tick);
             }
-        };
+        }.bind(this);
         
         new KAction(ActionConstants.R_PROPERTIES, this) {
             @Override
@@ -61,7 +61,7 @@ public final class TickTable extends JTable
                     TickConstants.LOG.error("Failed to edit tick", e);
                 }
             }
-        };
+        }.bind(this);
     }
     
     public TickTable() {
@@ -102,7 +102,8 @@ public final class TickTable extends JTable
         int selectedRow = getSelectedRow();
         Tick tick = null;
         if (selectedRow != -1 && isFocusOwner()) {
-            tick = getTickTableModel().getRowElement(selectedRow);
+            TickTableModel model = getTickTableModel();
+            tick = model.getRowElement(selectedRow);
             if (tick == pTick) {
                 result = Highlight.BRIGHT;
             } else {
@@ -157,8 +158,8 @@ public final class TickTable extends JTable
                         firstRect.y,
                         0,
                         (lastRect.y + lastRect.height) - firstRect.y));
-                repaint();
             }
+            repaint();
         }
     }
 

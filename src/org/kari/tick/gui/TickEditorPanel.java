@@ -56,6 +56,7 @@ import org.kari.tick.TickDefinition;
 import org.kari.tick.TickLocation;
 import org.kari.tick.TickSet;
 import org.kari.tick.TickDefinition.BlockMode;
+import org.kari.tick.gui.TickHighlighter.Highlight;
 
 /**
  * Tick editor
@@ -258,7 +259,13 @@ public class TickEditorPanel
                 result = getTickTable().getHighlight(pTick);
             } else {
                 TickDefinition current = getTextPane().getTickSet().getCurrent();
-                if (!pTick.getDefinition().equals(current)) {
+                
+                TickTableModel model = getTickTable().getTickTableModel();
+                if (pTick.getLocation().intersectLines(
+                        model.getHighlightStartLine(),
+                        model.getHighlightEndLine())) {
+                    result = Highlight.BRIGHT;
+                } else if (!pTick.getDefinition().equals(current)) {
                     result = Highlight.DIM;
                 }
             }
