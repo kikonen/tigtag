@@ -5,7 +5,9 @@ import java.util.Collections;
 import java.util.Set;
 
 import javax.swing.ActionMap;
+import javax.swing.JFrame;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
@@ -14,6 +16,7 @@ import org.kari.action.ActionConstants;
 import org.kari.action.ActionContext;
 import org.kari.action.KAction;
 import org.kari.action.KMenu;
+import org.kari.perspective.ViewUtil;
 import org.kari.properties.Apply;
 import org.kari.properties.KPropertiesFrame;
 import org.kari.properties.PropertiesViewer;
@@ -67,7 +70,7 @@ public final class TickTable extends JTable
                         }
                     };
                     
-                    new PropertiesViewer(origTick, apply).show();
+                    new PropertiesViewer(ViewUtil.getFrame(TickTable.this), origTick, apply).show();
                 } catch (Exception e) {
                     TickConstants.LOG.error("Failed to edit tick", e);
                 }

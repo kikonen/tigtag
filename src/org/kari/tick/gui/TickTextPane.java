@@ -30,6 +30,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Utilities;
 
 import org.apache.log4j.Logger;
+import org.kari.perspective.ViewUtil;
 import org.kari.properties.Apply;
 import org.kari.properties.KPropertiesFrame;
 import org.kari.properties.PropertiesViewer;
@@ -595,7 +596,7 @@ public class TickTextPane extends JEditorPane {
                         };
 
                         try {
-                            new PropertiesViewer(tick, apply).show();
+                            new PropertiesViewer(ViewUtil.getFrame(this), tick, apply).show();
                         } catch (Exception e) {
                             LOG.error("Failed to edit");
                         }
