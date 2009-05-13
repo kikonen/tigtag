@@ -31,9 +31,16 @@ public final class TickTable extends JTable
         new KAction(ActionConstants.R_REMOVE, this) {
             @Override
             public void actionPerformed(ActionContext pCtx) {
+                TickTableModel model = getTickTableModel();
                 int selectedRow = getSelectedRow();
-                Tick tick = getTickTableModel().getRowElement(selectedRow);
-                getTickTableModel().getTickDocument().removeTick(tick);
+                Tick tick = model.getRowElement(selectedRow);
+                model.getTickDocument().removeTick(tick);
+                if (selectedRow > getRowCount()) {
+                    selectedRow--;
+                }
+                if (selectedRow >= 0) {
+                    setRowSelectionInterval(selectedRow, selectedRow);
+                }
             }
         }.bind(this);
         
@@ -51,8 +58,12 @@ public final class TickTable extends JTable
                         {
                             Tick tick = (Tick)pDialog.getContent();
                             TickDocument doc = getTickTableModel().getTickDocument();
+                            int row = getTickTableModel().getTickDocument().getTicks().indexOf(origTick);
                             doc.removeTick(origTick);
                             doc.addTick(tick);
+                            if (row != -1) {
+                                setRowSelectionInterval(row, row);
+                            }
                         }
                     };
                     
