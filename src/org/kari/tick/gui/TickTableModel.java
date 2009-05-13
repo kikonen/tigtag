@@ -57,17 +57,16 @@ public final class TickTableModel extends AbstractTableModel
                 sb.append(loc.mStartLine + 1);
             }
             
-            if (TickLocation.intersect(
-                    loc.mStartLine, 
-                    loc.mEndLine, 
+            if (loc.intersectLines(
                     mHighlightStartLine, 
-                    mHighlightEndLine)) {
+                    mHighlightEndLine)) 
+            {
                 setFont(getFont().deriveFont(Font.BOLD));
             }
 
             sb.append(" - ");
             sb.append(def.getName());
-            sb.append("(");
+            sb.append(" (");
             sb.append(def.getBlockMode().getName());
             sb.append(")");
             String name = sb.toString();
@@ -99,6 +98,21 @@ public final class TickTableModel extends AbstractTableModel
     }
     
     /**
+     * Set highlighted document row range (not table row)
+     * 
+     * @return true if changed
+     */
+    public boolean setHighlight(int pStartLine, int pEndLine) {
+        boolean changed = false;
+        if (mHighlightStartLine != pStartLine || mHighlightEndLine != pEndLine) {
+            mHighlightStartLine = pStartLine;
+            mHighlightEndLine = pEndLine;
+            changed = true;
+        }
+        return changed;
+    }
+    
+    /**
      * Get first highlighted document row (not table row)
      */
     public int getHighlightStartLine() {
@@ -106,31 +120,17 @@ public final class TickTableModel extends AbstractTableModel
     }
 
     /**
-     * Set first highlighted document row (not table row)
-     */
-    public void setHighlightStartLine(int pHighlightStartRow) {
-        mHighlightStartLine = pHighlightStartRow;
-    }
-    
-    /**
      * Get last highlighted document row (not table row)
      */
     public int getHighlightEndLine() {
         return mHighlightEndLine;
     }
 
-    /**
-     * Get last highlighted document row (not table row)
-     */
-    public void setHighlightEndLine(int pHighlightEndRow) {
-        mHighlightEndLine = pHighlightEndRow;
-    }
-
     public TableColumn[] getColumns() {
         return mColumns;
     }
 
-    public TickDocument getDocument() {
+    public TickDocument getTickDocument() {
         return mTickDocument;
     }
 

@@ -109,7 +109,7 @@ public final class TickRegistry {
         sb.append(lineSeparator);
         sb.append("# FORMAT");
         sb.append(lineSeparator);
-        sb.append("# style=Block | Highlight | Sidebar | Underline");
+        sb.append("# style=Block | Sidebar | Feltpen | Underline | Rubberband");
         sb.append(lineSeparator);
         sb.append("# color=RED | GREEN | etc. | ff00ee | 127,127,127");
         sb.append(lineSeparator);

@@ -381,10 +381,7 @@ public class TickEditorPanel
                         BlockMode mode = tickSet.getCurrentMode();
                         TickLocation loc = getTextPane().getTickLocation(mode, true);
                         if (loc != null) {
-                            TickTableModel tableModel = getTickTable().getTickTableModel();
-                            tableModel.setHighlightStartLine(loc.mStartLine);
-                            tableModel.setHighlightEndLine(loc.mEndLine);
-                            getTickTable().repaint();
+                            getTickTable().setHighlight(loc.mStartLine, loc.mEndLine);
                         }
                     }
                 }

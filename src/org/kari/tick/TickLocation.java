@@ -116,6 +116,17 @@ public final class TickLocation {
         }
         return a.mEndPos > b.mStartPos;
     }
+    
+    /**
+     * Does this location intersect given line range
+     */
+    public boolean intersectLines(int pStartLine, int pEndLine) {
+        return intersect(
+                mStartLine, 
+                mEndLine, 
+                pStartLine, 
+                pEndLine);
+    }
 
     /**
      * @return true if this tick intersects with range of pTick

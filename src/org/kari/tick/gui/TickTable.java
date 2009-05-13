@@ -1,5 +1,6 @@
 package org.kari.tick.gui;
 
+import java.awt.Rectangle;
 import java.util.Collections;
 import java.util.Set;
 
@@ -32,7 +33,7 @@ public final class TickTable extends JTable
             public void actionPerformed(ActionContext pCtx) {
                 int selectedRow = getSelectedRow();
                 Tick tick = getTickTableModel().getRowElement(selectedRow);
-                getTickTableModel().getDocument().removeTick(tick);
+                getTickTableModel().getTickDocument().removeTick(tick);
             }
         };
         
@@ -49,7 +50,7 @@ public final class TickTable extends JTable
                             throws Exception
                         {
                             Tick tick = (Tick)pDialog.getContent();
-                            TickDocument doc = getTickTableModel().getDocument();
+                            TickDocument doc = getTickTableModel().getTickDocument();
                             doc.removeTick(origTick);
                             doc.addTick(tick);
                         }
@@ -127,5 +128,38 @@ public final class TickTable extends JTable
             ? Collections.singleton(tick)
             : Collections.<Tick>emptySet();
     }
+
     
+    /**
+     * Set highlighted document row range (not table row)
+     */
+    public void setHighlight(int pStartLine, int pEndLine) {
+        TickTableModel model = getTickTableModel();
+        if (model.setHighlight(pStartLine, pEndLine)) {
+            int firstRow = -1;
+            int lastRow = -1;
+            int row = 0;
+            for (Tick tick : model.getTickDocument().getTicks()) {
+                if (tick.getLocation().intersectLines(pStartLine, pEndLine)) {
+                    if (firstRow == -1) {
+                        firstRow = row;
+                    }
+                    lastRow = row;
+                }
+                row++;
+            }
+            
+            if (firstRow != -1) {
+                Rectangle firstRect = getCellRect(firstRow, 0, true);
+                Rectangle lastRect = getCellRect(lastRow, 0, true);
+                scrollRectToVisible(new Rectangle(
+                        0,
+                        firstRect.y,
+                        0,
+                        (lastRect.y + lastRect.height) - firstRect.y));
+                repaint();
+            }
+        }
+    }
+
 }

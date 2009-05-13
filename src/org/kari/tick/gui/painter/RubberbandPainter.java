@@ -8,11 +8,11 @@ import java.util.List;
 import org.kari.tick.gui.TickHighlighter.Highlight;
 
 /**
- * Underline for text
+ * Paint rubberband around text
  * 
  * @author kari
  */
-public class UnderlinePainter extends HighlightPainter {
+public class RubberbandPainter extends HighlightPainter {
     @Override
     protected void paintLines(
         Graphics2D g2d,
@@ -27,13 +27,14 @@ public class UnderlinePainter extends HighlightPainter {
         }
         
         for (Rectangle rect : pLines) {
-            g2d.drawLine(
+            g2d.drawRect(
                     rect.x - GAP_H, 
-                    rect.y + rect.height, 
-                    rect.x + rect.width, 
-                    rect.y + rect.height);
+                    rect.y, 
+                    rect.width, 
+                    rect.height);
         }
         
         g2d.setComposite(origComposite);
     }
+
 }

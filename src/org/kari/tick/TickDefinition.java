@@ -12,6 +12,7 @@ import java.util.Map;
 import javax.swing.ImageIcon;
 
 import org.apache.log4j.Logger;
+import org.kari.tick.gui.painter.FeltpenPainter;
 import org.kari.tick.gui.painter.HighlightPainter;
 import org.kari.tick.gui.painter.TickPainter;
 
@@ -25,10 +26,13 @@ public final class TickDefinition {
      * Name of default definition
      */
     public static final String DEF_NAME = "DEFAULT";
+    public static final Color DEF_COLOR = Color.GREEN;
+    public static final BlockMode DEF_BLOCK = BlockMode.FELT_PEN;
+    
     private static final String STYLE = "style";
     private static final String COLOR = "color";
     private static final Logger LOG = Logger.getLogger("tick.definition");
-//    public static final TickPainter DEF_PAINTER = new HighlightPainter();
+
     
     public static final Comparator<TickDefinition> NAME_COMPARATOR = new Comparator<TickDefinition>() {
         @Override
@@ -48,13 +52,17 @@ public final class TickDefinition {
          */
         BLOCK("Block"),
         /**
-         * Use hightlight pen on area
+         * Use feltpen for selected text 
          */
-        HIGHLIGHT("Highlight"),
+        FELT_PEN("Feltpen"),
         /**
          * Show underline for selected text
          */
         UNDERLINE("Underline"),
+        /**
+         * Show rubberband for selected text
+         */
+        RUBBERBAND("Rubberband"),
         /**
          * Lines highlighted in sidebar
          */
@@ -90,7 +98,7 @@ public final class TickDefinition {
             } catch (Exception e) {
                 LOG.error("Invalid style: " + mName, e);
                 mPainterClassName = HighlightPainter.class.getName();
-                painter = new HighlightPainter();
+                painter = new FeltpenPainter();
             } 
             return painter;
         }
@@ -110,7 +118,7 @@ public final class TickDefinition {
                     }
                 }
             }
-            return null;
+            return FELT_PEN;
         }
     }
     
@@ -189,14 +197,18 @@ public final class TickDefinition {
 
     public BlockMode getBlockMode() {
         if (mBlockMode == null) {
-            mBlockMode = BlockMode.getMode(getString(STYLE, BlockMode.BLOCK.getName()));
+            BlockMode def = DEF_BLOCK;
+            mBlockMode = BlockMode.getMode(getString(STYLE, def.getName()));
+            if (mBlockMode == null) {
+                mBlockMode = def;
+            }
         }
         return mBlockMode;
     }
     
     public Color getColor() {
         if (mColor == null) {
-            Color color = Color.GREEN;
+            Color color = DEF_COLOR;
             String colorName = mProperties.get(COLOR);
             if (colorName != null) {
                 colorName = colorName.toUpperCase();

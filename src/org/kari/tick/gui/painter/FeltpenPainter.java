@@ -8,11 +8,11 @@ import java.util.List;
 import org.kari.tick.gui.TickHighlighter.Highlight;
 
 /**
- * Underline for text
+ * Felt pen over text
  * 
  * @author kari
  */
-public class UnderlinePainter extends HighlightPainter {
+public class FeltpenPainter extends HighlightPainter {
     @Override
     protected void paintLines(
         Graphics2D g2d,
@@ -21,19 +21,22 @@ public class UnderlinePainter extends HighlightPainter {
     {
         Composite origComposite = g2d.getComposite();
         if (pHighlight == Highlight.DIM) {
-            g2d.setComposite(DIM_COMPOSITE);
+            g2d.setComposite(PEN_DIM_COMPOSITE);
         } else if (pHighlight == Highlight.BRIGHT) {
-            g2d.setStroke(BRIGHT_STROKE);
+            g2d.setComposite(BRIGHT_COMPOSITE);
+        } else{
+            g2d.setComposite(NORMAL_COMPOSITE);
         }
         
         for (Rectangle rect : pLines) {
-            g2d.drawLine(
+            g2d.fillRect(
                     rect.x - GAP_H, 
-                    rect.y + rect.height, 
-                    rect.x + rect.width, 
-                    rect.y + rect.height);
+                    rect.y - GAP_V, 
+                    rect.width + GAP_H * 2, 
+                    rect.height + GAP_V * 2);
         }
         
         g2d.setComposite(origComposite);
     }
+
 }

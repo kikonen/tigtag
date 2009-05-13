@@ -2,13 +2,13 @@ package org.kari.tick.gui.painter;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
-import java.awt.Composite;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
@@ -26,7 +26,7 @@ import org.kari.tick.gui.TickHighlighter.Highlight;
  * 
  * @author kari
  */
-public class HighlightPainter extends TickPainter {
+public abstract class HighlightPainter extends TickPainter {
     protected static final AlphaComposite PEN_DIM_COMPOSITE = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.10f);
     protected static final AlphaComposite NORMAL_COMPOSITE = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.20f);
     protected static final AlphaComposite BRIGHT_COMPOSITE = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.40f);
@@ -50,11 +50,9 @@ public class HighlightPainter extends TickPainter {
             calculateRects(pComponent, pEditor, pTick);
         }
         
-        for (Rectangle lineRect : mRects) {
-            paintLine(g2d, lineRect, pHighlight);
-        }
+        paintLines(g2d, pHighlight, mRects);
         
-        if (!mRects.isEmpty()) {
+        if (false && !mRects.isEmpty()) {
             Rectangle rect = mRects.get(0);
             
             String tickName = pTick.getDefinition().getName();
@@ -117,28 +115,9 @@ public class HighlightPainter extends TickPainter {
             startPos = endPos + 1;
         }
     }
-
-    protected void paintLine(
+    
+    protected abstract void paintLines(
         Graphics2D g2d, 
-        Rectangle rect, 
-        Highlight pHighlight)
-    {
-        Composite origComposite = g2d.getComposite();
-        if (pHighlight == Highlight.DIM) {
-            g2d.setComposite(PEN_DIM_COMPOSITE);
-        } else if (pHighlight == Highlight.BRIGHT) {
-            g2d.setComposite(BRIGHT_COMPOSITE);
-        } else{
-            g2d.setComposite(NORMAL_COMPOSITE);
-        }
-        g2d.fillRect(
-                rect.x - GAP_H, 
-                rect.y - GAP_V, 
-                rect.width + GAP_H * 2, 
-                rect.height + GAP_V * 2);
-        if (pHighlight != Highlight.DIM) {
-            g2d.setComposite(origComposite);
-        }
-    }
-
+        Highlight pHighlight,
+        List<Rectangle> pLines); 
 }
