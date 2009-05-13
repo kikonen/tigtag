@@ -11,6 +11,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Stroke;
+import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -82,23 +84,35 @@ public class TickTextPane extends JEditorPane {
         }
         
         public void keyPressed(KeyEvent pEvent) {
-            // TODO KI add TICK
             int keyCode = pEvent.getKeyCode();
             char ch = pEvent.getKeyChar();
             boolean canTick = false;
+            String str = null;
             if (keyCode == KeyEvent.VK_SPACE) {
                 canTick = true;
             } else {
-                canTick = (Character.isLetter(ch) || Character.isDigit(ch))
-                    && !(pEvent.isAltDown()
-                        || pEvent.isAltGraphDown()
-                        || pEvent.isControlDown() 
-                        || pEvent.isMetaDown()
-                        || pEvent.isActionKey()
-                        );
+                if (keyCode == KeyEvent.VK_V && pEvent.isControlDown()) {
+                    canTick = true;
+                    try {
+                        str = (String)Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+                    } catch (Exception e) {
+                        LOG.error("Failed to access clipboard");
+                    }
+                } else {
+                    canTick = (Character.isLetter(ch) || Character.isDigit(ch))
+                        && !(pEvent.isAltDown()
+                            || pEvent.isAltGraphDown()
+                            || pEvent.isControlDown() 
+                            || pEvent.isMetaDown()
+                            || pEvent.isActionKey()
+                            );
+                    if (canTick) {
+                        str = new String(new char[]{ch});
+                    }
+                }
             }
             if (canTick) {
-                tick(keyCode, ch);
+                tick(keyCode, str);
             }
         }
 
@@ -535,8 +549,11 @@ public class TickTextPane extends JEditorPane {
     /**
      * Toggle tick at current caret/selection. If there is already tick, then
      * it's removed, otherwise new tick is created.
+     * 
+     * @param pKeyCode key triggering tick
+     * @param pText Initial text for tick
      */
-    public void tick(int pKeyCode, char pChar) {
+    public void tick(int pKeyCode, String pText) {
         if (mTickSet != null) {
             TickDefinition current = mTickSet.getCurrent();
             if (current != null) {
@@ -562,7 +579,7 @@ public class TickTextPane extends JEditorPane {
                             comment = tick.getComment();
                         }
                         if (comment == null) {
-                            tick.setComment(new String(new char[]{pChar}));
+                            tick.setComment(pText);
                         }
                     
                         final Tick origTick = tick;
