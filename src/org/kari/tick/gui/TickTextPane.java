@@ -39,7 +39,6 @@ import org.kari.tick.TickDefinition;
 import org.kari.tick.TickLocation;
 import org.kari.tick.TickSet;
 import org.kari.tick.TickDefinition.BlockMode;
-import org.kari.tick.gui.TickEditorPanel.LineNumberPanel;
 import org.kari.tick.gui.syntax.SyntaxRenderer;
 
 /**
@@ -81,7 +80,7 @@ public class TickTextPane extends JEditorPane {
                     + ",line=" + line);
             }
             mCaretRect = calculateCaretRect();
-            repaint();
+            repaintFull();
         }
         
         public void keyPressed(KeyEvent pEvent) {
@@ -126,11 +125,11 @@ public class TickTextPane extends JEditorPane {
         }
 
         public void tickAdded(TickDocument pDocument, Tick pTick) {
-            repaint();
+            repaintFull();
         }
 
         public void tickRemoved(TickDocument pDocument, Tick pTick) {
-            repaint();
+            repaintFull();
         }
     }
     
@@ -306,9 +305,6 @@ public class TickTextPane extends JEditorPane {
     @Override
     public void paint(Graphics pG) {
         super.paint(pG);
-        if (mLineNumberPanel != null) {
-            mLineNumberPanel.repaint();
-        }
         
         Graphics2D g2d = (Graphics2D)pG;
         paintLineLimit(g2d);
@@ -572,7 +568,6 @@ public class TickTextPane extends JEditorPane {
                         } else {
                             doc.addTick(tick);
                         }
-                        repaint();
                     } else {
                         String comment = null;
                         if (idx != -1) {
@@ -674,6 +669,16 @@ public class TickTextPane extends JEditorPane {
             // ignore
         }
         return text;
+    }
+
+    /**
+     * Repaint both text area & line numbers
+     */
+    public void repaintFull() {
+        repaint();
+        if (mLineNumberPanel != null) {
+            mLineNumberPanel.repaint();
+        }
     }
     
 }

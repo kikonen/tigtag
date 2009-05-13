@@ -2,7 +2,7 @@ package org.kari.tick.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -16,8 +16,6 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.InputEvent;
@@ -56,7 +54,6 @@ import org.kari.tick.TickDefinition;
 import org.kari.tick.TickLocation;
 import org.kari.tick.TickSet;
 import org.kari.tick.TickDefinition.BlockMode;
-import org.kari.tick.gui.TickHighlighter.Highlight;
 
 /**
  * Tick editor
@@ -69,27 +66,22 @@ public class TickEditorPanel
     static final Logger LOG = TickConstants.LOG;
 
     /**
-     * Panel painting linenumbers
+     * Viewport for linenumbers
+     * 
+     * <li>Paint sidebar ticks
+     * <li>Paint caret location
+     * 
+     * @author kari
      */
-    public class LineNumberPanel
-        extends JPanel
-    {
-        public LineNumberPanel() {
-            Dimension SIZE = new Dimension(30, 10);
-            setMinimumSize(SIZE);
-            setMaximumSize(SIZE);
-            setPreferredSize(SIZE);
-            setBackground(Color.WHITE);
-            setBorder(new MatteBorder(1, 1, 1, 0, Color.GRAY    ));
-        }
-
+    public class TickLineViewport extends JViewport {
         @Override
         public void paint(Graphics g) {
             super.paint(g);
             paintExtra(g);
-        }          
-        
+        }
+
         private void paintExtra(Graphics g) {
+            boolean PAINT_SELECTION = false;
             final Graphics2D g2d = (Graphics2D)g;
             final int width = getWidth();
 
@@ -102,7 +94,7 @@ public class TickEditorPanel
             int selEndLine = -1;
             Color selectedTextColor = null;
             Color selectionColor = null;
-            {
+            if (PAINT_SELECTION) {
                 int selStart = pane.getSelectionStart();
                 int selEnd = pane.getSelectionEnd();
                 if (selStart != selEnd) {
@@ -180,7 +172,7 @@ public class TickEditorPanel
             
             paintTicks(g2d, -viewPosition.y);
         }
-        
+
         private void paintTicks(Graphics2D g2d, int pYOffset) {
             TickTextPane pane = getTextPane();
             TickDocument doc = pane.getTickDocument();
@@ -200,6 +192,35 @@ public class TickEditorPanel
             }
         }
     }
+
+    /**
+     * Scrollpane allowing own custom tick painting
+     */
+    public class TickScrollPane extends JScrollPane {
+        private boolean mIsRowHeader;
+
+        public TickScrollPane(Component pView) {
+            super(pView);
+        }
+
+        @Override
+        protected JViewport createViewport() {
+            return mIsRowHeader
+                ? new TickLineViewport()
+                : super.createViewport();
+        }
+        
+        @Override
+        public void setRowHeaderView(Component view) {
+            mIsRowHeader = true;
+            try {
+                super.setRowHeaderView(view);
+            } finally {
+                mIsRowHeader = false;
+            }
+        }
+    }
+    
 
     /**
      * Drop target
@@ -234,7 +255,15 @@ public class TickEditorPanel
     private JPanel mTopPanel;
     private JScrollPane mScrollPane;
     private TickTextPane mTextPane;
-    private LineNumberPanel mLineNumberPanel;
+    private LineNumberPanel mLineNumberPanel = new LineNumberPanel() {
+        @Override
+        public void repaint() {
+            JViewport rowHeader = mScrollPane.getRowHeader();
+            if (rowHeader != null) {
+                rowHeader.repaint();
+            }
+        }
+    };
     
     private TickTable mTickTable;
     
@@ -319,18 +348,10 @@ public class TickEditorPanel
     public JPanel getTopPanel() {
         if (mTopPanel== null) {
             mTopPanel = new JPanel(new BorderLayout());
-            mTopPanel.add(getLineNumberPanel(), BorderLayout.WEST);
             mTopPanel.add(getScrollPane(), BorderLayout.CENTER);
-            getTextPane().setLineNumberPanel(getLineNumberPanel());
+            getTextPane().setLineNumberPanel(mLineNumberPanel);
         }
         return mTopPanel;
-    }
-
-    public LineNumberPanel getLineNumberPanel() {
-        if (mLineNumberPanel == null) {
-            mLineNumberPanel = new LineNumberPanel();
-        }
-        return mLineNumberPanel;
     }
 
     protected JSplitPane getSplitPane() {
@@ -348,14 +369,7 @@ public class TickEditorPanel
 
     protected JScrollPane getScrollPane() {
         if (mScrollPane == null) {
-            mScrollPane = new JScrollPane(getTextPane());
-            AdjustmentListener al = new AdjustmentListener() {
-                public void adjustmentValueChanged(AdjustmentEvent pE) {
-                    getLineNumberPanel().repaint();
-                }
-            };
-            mScrollPane.getHorizontalScrollBar().addAdjustmentListener(al);
-            mScrollPane.getVerticalScrollBar().addAdjustmentListener(al);
+            mScrollPane = new TickScrollPane(getTextPane());
         }
         return mScrollPane;
     }
