@@ -9,6 +9,7 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
+import org.kari.tick.gui.TickConstants;
 import org.kari.tick.gui.TickDocument;
 import org.kari.util.FileUtil;
 
@@ -85,6 +86,10 @@ public final class SyntaxRenderer {
     }
     
     public static String getMimeType(String pFilename) {
+        int zipIdx = pFilename.lastIndexOf(TickConstants.TICK_FILE_EXT);
+        if (zipIdx != -1) {
+            pFilename = pFilename.substring(0, zipIdx);
+        }
         String ext = FileUtil.getExtension(pFilename);
         String mime = mMimes.get(ext);
         return mime != null

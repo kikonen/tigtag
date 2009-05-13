@@ -76,7 +76,7 @@ public abstract class FileAccessBase {
      */
     public File getTickFile() {
         File result;
-        if (mFile.getName().endsWith(".zip")) {
+        if (mFile.getName().endsWith(TickConstants.TICK_FILE_EXT)) {
             result = mFile;
         } else {
             String filename = TICKS_DIR + "/" + mFile.getName() + TickConstants.TICK_FILE_EXT;
