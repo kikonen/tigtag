@@ -5,9 +5,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -17,8 +14,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
@@ -38,9 +33,6 @@ import org.kari.action.KToolbar;
 import org.kari.action.std.CloseWindowAction;
 import org.kari.action.std.ExitAction;
 import org.kari.perspective.KApplicationFrame;
-import org.kari.resources.ResKey;
-import org.kari.resources.ResourceAdapter;
-import org.kari.resources.WidgetResources;
 import org.kari.tick.FileSaver;
 import org.kari.tick.Tick;
 import org.kari.tick.TickDefinition;
@@ -56,8 +48,6 @@ public class TickFrame extends KApplicationFrame
     implements
         TickListener
 {
-    public static final int HEIGHT = 800;
-
     public static final String APP_NAME = "TigTag";
 
     private TickEditorPanel mEditor;
@@ -346,7 +336,7 @@ public class TickFrame extends KApplicationFrame
         
         ac.addToolbar(mainTb);
         
-        setSize(new Dimension(800, HEIGHT));
+        setSize(new Dimension(TickConstants.FRAME_WIDTH, TickConstants.FRAME_HEIGHT));
 
         setIcon(TickConstants.R_APP); 
         setAppTitle(null);

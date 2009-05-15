@@ -1,9 +1,7 @@
 package org.kari.tick.gui;
 
-import java.awt.Component;
 import java.awt.Font;
 
-import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -33,30 +31,11 @@ public final class TickTableModel extends AbstractTableModel
      */
     final class NameTableCellRenderer extends DefaultTableCellRenderer {
         @Override
-        public Component getTableCellRendererComponent(
-            JTable pTable,
-            Object pValue,
-            boolean pIsSelected,
-            boolean pHasFocus,
-            int pRow,
-            int pColumn)
-        {
-            super.getTableCellRendererComponent(pTable, pValue,
-                    pIsSelected, pHasFocus, pRow, pColumn);
-            
+        protected void setValue(Object pValue) {
             Tick tick = (Tick)pValue;
             TickLocation loc = tick.getLocation();
             TickDefinition def = tick.getDefinition();
 
-            StringBuilder sb = new StringBuilder(100);
-            if (loc.mStartLine != loc.mEndLine) {
-                sb.append(loc.mStartLine + 1);
-                sb.append(" ... ");
-                sb.append(loc.mEndLine + 1);
-            } else {
-                sb.append(loc.mStartLine + 1);
-            }
-            
             if (loc.intersectLines(
                     mHighlightStartLine, 
                     mHighlightEndLine)) 
@@ -64,20 +43,35 @@ public final class TickTableModel extends AbstractTableModel
                 setFont(getFont().deriveFont(Font.BOLD));
             }
 
-            sb.append(" - ");
-            sb.append(def.getName());
-//            sb.append(" (");
-//            sb.append(def.getBlockMode().getName());
-//            sb.append(")");
-            String name = sb.toString();
-            
-            setIcon(def.getIcon());
-            setText(name);
-            
-            return this;
+            setText(def.getName());
+            setBackground(def.getColor());
         }
     }
-    
+
+    /**
+     * Render tick comment
+     *
+     * @author kari
+     */
+    final class CommentTableCellRenderer extends DefaultTableCellRenderer {
+        @Override
+        protected void setValue(Object pValue) {
+            Tick tick = (Tick)pValue;
+            TickLocation loc = tick.getLocation();
+            TickDefinition def = tick.getDefinition();
+
+            if (loc.intersectLines(
+                    mHighlightStartLine, 
+                    mHighlightEndLine)) 
+            {
+                setFont(getFont().deriveFont(Font.BOLD));
+            }
+            
+            setText(tick.getComment());
+//            setBackground(def.getColor());
+        }
+    }
+
     
     private final TableColumn[] mColumns = {
 //        new TableColumn(TickTableModel.IDX_LINE),
@@ -97,10 +91,12 @@ public final class TickTableModel extends AbstractTableModel
         TableColumn nameColumn = mColumns[0];
         TableColumn commentColumn = mColumns[1];
         nameColumn.setCellRenderer(new NameTableCellRenderer());
-        nameColumn.setPreferredWidth(300);
+        nameColumn.setMinWidth(60);
+        nameColumn.setPreferredWidth(160);
 //        nameColumn.setMaxWidth(300);
         
         commentColumn.setPreferredWidth(800);
+        commentColumn.setCellRenderer(new CommentTableCellRenderer());
     }
     
     /**
@@ -217,7 +213,7 @@ public final class TickTableModel extends AbstractTableModel
             result = tick.getText();
             break;
         case IDX_COMMENT:
-            result = tick.getComment();
+            result = tick;
             break;
         default:
             break;

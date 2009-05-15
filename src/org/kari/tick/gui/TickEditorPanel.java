@@ -27,6 +27,7 @@ import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -63,6 +64,20 @@ import org.kari.tick.TickDefinition.BlockMode;
 public class TickEditorPanel
     extends JPanel
 {
+    private static final KeyStroke[] TO_DETAILS_KEY = {
+        KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.ALT_DOWN_MASK),
+        KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.ALT_DOWN_MASK),
+        KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.ALT_GRAPH_DOWN_MASK),
+        KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.ALT_GRAPH_DOWN_MASK)
+    };
+
+    private static final KeyStroke[] TO_EDITOR_KEY = {
+        KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.ALT_DOWN_MASK),
+        KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.ALT_DOWN_MASK),
+        KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.ALT_GRAPH_DOWN_MASK),
+        KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.ALT_GRAPH_DOWN_MASK),
+    };
+
     static final Logger LOG = TickConstants.LOG;
 
     /**
@@ -357,10 +372,10 @@ public class TickEditorPanel
     protected JSplitPane getSplitPane() {
         if (mSplitPane == null) {
             mSplitPane = new JSplitPane(
-                    JSplitPane.VERTICAL_SPLIT,
+                    JSplitPane.HORIZONTAL_SPLIT,
                     getTopPanel(),
                     new JScrollPane(getTickTable()));
-            mSplitPane.setDividerLocation(TickFrame.HEIGHT - 200);
+            mSplitPane.setDividerLocation(TickConstants.FRAME_WIDTH - 200);
             mSplitPane.setResizeWeight(1.0);
             mSplitPane.setContinuousLayout(true);
         }
@@ -379,12 +394,10 @@ public class TickEditorPanel
             mTextPane = new TickTextPane();
             
             // Focus travelsal
-            mTextPane.getInputMap().put(
-                    KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.ALT_DOWN_MASK), 
-                    "activateTable");
-            mTextPane.getInputMap().put(
-                    KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.ALT_GRAPH_DOWN_MASK), 
-                    "activateTable");
+            InputMap inputMap = mTextPane.getInputMap();
+            for (KeyStroke keyStoke : TO_DETAILS_KEY) {
+                inputMap.put(keyStoke, "activateTable");
+            }
             
             mTextPane.getActionMap().put(
                     "activateTable", 
@@ -448,13 +461,11 @@ public class TickEditorPanel
             });
             
             // Focus travelsal
-            mTickTable.getInputMap().put(
-                    KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.ALT_DOWN_MASK), 
-                    "activateEditor");
-            mTickTable.getInputMap().put(
-                    KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.ALT_GRAPH_DOWN_MASK), 
-                    "activateEditor");
-            
+            InputMap inputMap = mTickTable.getInputMap();
+            for (KeyStroke keyStoke : TO_EDITOR_KEY) {
+                inputMap.put(keyStoke, "activateEditor");
+            }
+
             mTickTable.getActionMap().put(
                     "activateEditor", 
                     new AbstractAction() {

@@ -32,7 +32,12 @@ public class TickResources
         { TEXT + R_SHRINK_FONT, "&Decrease Font" }, 
         { ACC + R_SHRINK_FONT, "ctrl MINUS" },
 
-        { TEXT + R_MARKERS_MENU, "Ma&rker" }, 
+        { TEXT + R_MARKERS_MENU, "Ma&rker" },
+        
+        { TEXT + R_TICK_PROPERTIES, "&Properties" },
+        { ICON + R_TICK_PROPERTIES, "/icon/sun/Properties16.gif" },
+        { T_ICON + R_TICK_PROPERTIES, "/icon/sun/Properties24.gif" },
+        { ACC + R_TICK_PROPERTIES, "SPACE" },
 
     };
 

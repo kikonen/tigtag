@@ -45,7 +45,7 @@ public final class TickTable extends JTable
             }
         }.bind(this);
         
-        new KAction(ActionConstants.R_PROPERTIES, this) {
+        new KAction(TickConstants.R_TICK_PROPERTIES, this) {
             @Override
             public void actionPerformed(ActionContext pCtx) {
                 try {
@@ -82,7 +82,7 @@ public final class TickTable extends JTable
         KMenu menu = new KMenu(
                 ActionConstants.R_MENU_CONTEXT,
                 actionMap.get(ActionConstants.R_REMOVE),
-                actionMap.get(ActionConstants.R_PROPERTIES));
+                actionMap.get(TickConstants.R_TICK_PROPERTIES));
         menu.createContextMenu(this).start();
         
         setAutoResizeMode(AUTO_RESIZE_LAST_COLUMN);
