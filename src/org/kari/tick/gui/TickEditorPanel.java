@@ -417,6 +417,7 @@ public class TickEditorPanel
                         if (loc != null) {
                             getTickTable().setHighlight(loc.mStartLine, loc.mEndLine);
                         }
+                        ensureContextVisibility(pEvent.getDot(), pEvent.getDot());
                     }
                 }
             });
@@ -433,28 +434,14 @@ public class TickEditorPanel
                     int selectedRow = mTickTable.getSelectedRow();
                     TickTextPane textPane = getTextPane();
                     if (selectedRow != -1) {
-                        Tick tick = mTickTable.getTickTableModel().getRowElement(selectedRow);
-                        try {
-                            int pos = tick.getLocation().mStartPos;
-                            Rectangle rect = textPane.modelToView(pos);
-                            {
-                                Rectangle endRect = textPane.modelToView(tick.getLocation().mEndPos);
-                                if (endRect.y > rect.y) {
-                                    rect.y = endRect.y;
-                                }
-                            }
-                            
-                            // Provide limited line context around tick
-                            int lineHeight = rect.height;
-                            int lineCount = 5;
-                            rect.y -= lineHeight * lineCount;
-                            rect.height += lineHeight * lineCount * 2;
-                            
-                            textPane.scrollRectToVisible(rect);
-                            textPane.setCaretPosition(pos);
-                        } catch (BadLocationException e) {
-                            // Ignore
-                        }
+                        TickLocation loc = mTickTable
+                            .getTickTableModel()
+                            .getRowElement(selectedRow)
+                            .getLocation();
+                        ensureContextVisibility(
+                                loc.mStartPos, 
+                                loc.mEndPos);
+                        textPane.setCaretPosition(loc.mStartPos);
                     }
                     textPane.repaint();
                 }
@@ -499,6 +486,34 @@ public class TickEditorPanel
         if (pComp.getParent() instanceof JViewport) {
             JScrollPane scrollPane = (JScrollPane)pComp.getParent().getParent(); 
             scrollPane.setBorder(pFocused ? mFocusedBorder : mUnFocusedBorder);
+        }
+    }
+
+    /**
+     * Ensure that given start .. end position area has enough context visible
+     * around them
+     */
+    public void ensureContextVisibility(int pStartPos, int pEndPos)
+    {
+        try {
+            TickTextPane textPane = getTextPane();
+            Rectangle rect = textPane.modelToView(pStartPos);
+            {
+                Rectangle endRect = textPane.modelToView(pEndPos);
+                if (endRect.y > rect.y) {
+                    rect.y = endRect.y;
+                }
+            }
+            
+            // Provide limited line context around tick
+            int lineHeight = rect.height;
+            int lineCount = 5;
+            rect.y -= lineHeight * lineCount;
+            rect.height += lineHeight * lineCount * 2;
+            
+            textPane.scrollRectToVisible(rect);
+        } catch (BadLocationException e) {
+            // Ignore
         }
     }
 
