@@ -29,7 +29,7 @@ public final class TickTable extends JTable
     implements TickHighlighter
 {
     {
-        new KAction(ActionConstants.R_REMOVE, this) {
+        new KAction(ActionConstants.R_REMOVE) {
             @Override
             public void actionPerformed(ActionContext pCtx) {
                 TickTableModel model = getTickTableModel();
@@ -45,7 +45,7 @@ public final class TickTable extends JTable
             }
         }.bind(this);
         
-        new KAction(TickConstants.R_TICK_PROPERTIES, this) {
+        new KAction(TickConstants.R_TICK_PROPERTIES) {
             @Override
             public void actionPerformed(ActionContext pCtx) {
                 try {

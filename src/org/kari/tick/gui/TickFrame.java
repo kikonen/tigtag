@@ -16,6 +16,7 @@ import java.util.StringTokenizer;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
@@ -27,6 +28,7 @@ import org.kari.action.ActionContainer;
 import org.kari.action.ActionContext;
 import org.kari.action.ActionGroup;
 import org.kari.action.KAction;
+import org.kari.action.KComponentAction;
 import org.kari.action.KMenu;
 import org.kari.action.KMenuImpl;
 import org.kari.action.KToolbar;
@@ -51,7 +53,7 @@ public class TickFrame extends KApplicationFrame
     public static final String APP_NAME = "TigTag";
 
     private TickEditorPanel mEditor;
-    
+    private JLabel mCurrentTickField = new JLabel();
     
     /**
      * Allow DnD of files into editor
@@ -168,7 +170,7 @@ public class TickFrame extends KApplicationFrame
         
         @Override
         public void actionPerformed(ActionContext pCtx) {
-            getEditor().getTextPane().getTickSet().setCurrent(mDefinition);
+            setCurrentTick(mDefinition);
         }
     }
 
@@ -331,7 +333,9 @@ public class TickFrame extends KApplicationFrame
             mDuplicateViewAction,
             mOpenAction,
             KAction.SEPARATOR,
-            mSaveAction 
+            mSaveAction,
+            KAction.SEPARATOR,
+            new KComponentAction(mCurrentTickField)
             );
         
         ac.addToolbar(mainTb);
@@ -414,6 +418,18 @@ public class TickFrame extends KApplicationFrame
         return mEditor;
     }
 
+    public void setCurrentTick(TickDefinition pDefinition) {
+        getEditor().getTextPane().getTickSet().setCurrent(pDefinition);
+        String title = "<html>Current: "
+            + "<b>"
+            + pDefinition.getName() 
+            + " - " 
+            + pDefinition.getBlockMode().getName()
+            + "</b></html>";
+        mCurrentTickField.setIcon(pDefinition.getIcon());
+        mCurrentTickField.setText(title);
+    }
+    
     /**
      * Create/recrete markers menu
      */
@@ -424,7 +440,7 @@ public class TickFrame extends KApplicationFrame
         
         KAction[] tickActions = createTickActions();
         tickActions[0].setSelected(true);
-        set.setCurrent( ((TickAction)tickActions[0]).mDefinition );
+        setCurrentTick( ((TickAction)tickActions[0]).mDefinition );
         
         KMenu markerMenu = new KMenu(
                 TickConstants.R_MARKERS_MENU,
@@ -484,5 +500,6 @@ public class TickFrame extends KApplicationFrame
     public void tickRemoved(TickDocument pDocument, Tick pTick) {
         updateActions();
     }
+
    
 }
