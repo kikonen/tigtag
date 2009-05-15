@@ -417,7 +417,7 @@ public class TickEditorPanel
                         if (loc != null) {
                             getTickTable().setHighlight(loc.mStartLine, loc.mEndLine);
                         }
-                        ensureContextVisibility(pEvent.getDot(), pEvent.getDot());
+                        ensureRangeVisibility(pEvent.getDot(), pEvent.getDot(), 10);
                     }
                 }
             });
@@ -438,9 +438,10 @@ public class TickEditorPanel
                             .getTickTableModel()
                             .getRowElement(selectedRow)
                             .getLocation();
-                        ensureContextVisibility(
+                        ensureRangeVisibility(
                                 loc.mStartPos, 
-                                loc.mEndPos);
+                                loc.mEndPos,
+                                5);
                         textPane.setCaretPosition(loc.mStartPos);
                     }
                     textPane.repaint();
@@ -492,8 +493,13 @@ public class TickEditorPanel
     /**
      * Ensure that given start .. end position area has enough context visible
      * around them
+     * 
+     * @param pLineCount Line count of extra lines before and after range
      */
-    public void ensureContextVisibility(int pStartPos, int pEndPos)
+    public void ensureRangeVisibility(
+        int pStartPos, 
+        int pEndPos,
+        int pLineCount)
     {
         try {
             TickTextPane textPane = getTextPane();
@@ -507,7 +513,7 @@ public class TickEditorPanel
             
             // Provide limited line context around tick
             int lineHeight = rect.height;
-            int lineCount = 5;
+            int lineCount = pLineCount;
             rect.y -= lineHeight * lineCount;
             rect.height += lineHeight * lineCount * 2;
             
