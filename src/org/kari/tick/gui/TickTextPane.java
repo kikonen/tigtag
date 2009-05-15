@@ -53,7 +53,7 @@ public class TickTextPane extends JEditorPane {
             1.0f, 
             BasicStroke.CAP_SQUARE, 
             BasicStroke.JOIN_BEVEL, 
-            0, 
+            1.0f, 
             new float[]{8f, 8f},
             0);
     
@@ -135,6 +135,7 @@ public class TickTextPane extends JEditorPane {
     
     private final EventHandler mEventHandler = new EventHandler();
     
+    private int mCharWidth;
     private Rectangle mCaretRect;
     
     private TickSet mTickSet;
@@ -298,6 +299,7 @@ public class TickTextPane extends JEditorPane {
      * Refresh view
      */
     public void refresh() {
+        mCharWidth = 0;
         mCaretRect = null;
         getTickDocument().refresh();
     }
@@ -307,7 +309,10 @@ public class TickTextPane extends JEditorPane {
         super.paint(pG);
         
         Graphics2D g2d = (Graphics2D)pG;
-        paintLineLimit(g2d);
+        // max line limit and acceptable 20% exceeding of it
+        paintLineLimit(g2d, mMaxLineLen, Color.LIGHT_GRAY);
+        paintLineLimit(g2d, mMaxLineLen + 20, Color.ORANGE);
+        paintLineLimit(g2d, mMaxLineLen + 40, Color.RED);
         paintTicks(g2d);
         paintCaret(g2d);
     }
@@ -319,18 +324,26 @@ public class TickTextPane extends JEditorPane {
 
     /**
      * Paint maximum line length limit
+     * 
+     * @param pLimit Limit in characters
      */
-    private void paintLineLimit(Graphics2D g2d) {
+    private void paintLineLimit(
+        Graphics2D g2d, 
+        int pLimit,
+        Color pColor) 
+    {
         Color origColor = g2d.getColor();
         Stroke origStroke = g2d.getStroke();
+
+        if (mCharWidth == 0) {
+            Font font = getFont();
+            g2d.setFont(font);
+            FontMetrics fm = g2d.getFontMetrics(font);
+            mCharWidth = fm.getWidths()[0];
+        }
+        int x = mCharWidth * pLimit;
         
-        Font font = getFont();
-        g2d.setFont(font);
-        FontMetrics fm = g2d.getFontMetrics(font);
-        int fontWidth = fm.getWidths()[0];
-        int x = fontWidth * mMaxLineLen;
-        
-        g2d.setColor(Color.LIGHT_GRAY);
+        g2d.setColor(pColor);
         g2d.setStroke(MAX_LINELEN_STROKE);
         g2d.drawLine(x, 0, x, getHeight());
         
