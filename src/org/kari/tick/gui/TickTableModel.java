@@ -31,7 +31,9 @@ public final class TickTableModel extends EventTableModel<Tick>
      */
     public static TickTableModel create() {
         EventList<Tick> tickList = new BasicEventList<Tick>();
-        SortedList<Tick> sortedList = new SortedList<Tick>(tickList, null);
+        SortedList<Tick> sortedList = new SortedList<Tick>(
+                tickList, 
+                TickDocument.TICK_RANK_COMPARATOR);
         SeparatorList<Tick> groupList = new SeparatorList<Tick>(
                 sortedList, 
                 new TickTableFormat.DefinitionGroupComparator(),
