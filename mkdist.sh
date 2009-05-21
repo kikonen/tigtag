@@ -47,7 +47,7 @@ if [ "$DIST_PUBLIC" == "public" ]; then
     WWW=/home/www/virtual/kari.dy.fi/tigtag
     rm -fr $WWW/*
     cp $DIST_FILE $WWW
-    cp orig/sample.png $WWW
+    cp orig/sample_*.png $WWW
     cd $WWW
     unzip $DIST_FILE
 else

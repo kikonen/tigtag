@@ -86,6 +86,7 @@ public final class TickTableModel extends EventTableModel<Tick>
         }
         
         mWriteLock.lock();
+        mTickList.clear();
         mTickList.addAll(pDocument.getTicks());
         mWriteLock.unlock();
     }
