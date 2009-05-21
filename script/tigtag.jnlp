@@ -23,6 +23,7 @@
         <jar href="tigtag.jar"/>
         <jar href="kui.jar"/> 
         <jar href="jsyntaxpane-0.9.5-b27.jar"/>
+        <jar href="glazedlists-1.8.0_java15.jar"/>
         <jar href="log4j-1.2.14.jar"/>
         <jar href="TableLayout.jar"/>
         <jar href="trove-2.0.4.jar"/>

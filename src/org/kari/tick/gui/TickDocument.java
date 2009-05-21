@@ -18,7 +18,7 @@ import org.kari.tick.TickRegistry;
  *
  */
 public final class TickDocument {
-    private static final TickRankComparator TICK_RANK_COMPARATOR = new TickRankComparator();
+    public static final TickRankComparator TICK_RANK_COMPARATOR = new TickRankComparator();
 
     /**
      * File name extension for ticks file

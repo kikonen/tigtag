@@ -20,6 +20,9 @@ import org.kari.properties.KPropertiesFrame;
 import org.kari.properties.PropertiesViewer;
 import org.kari.tick.Tick;
 
+import ca.odell.glazedlists.gui.AbstractTableComparatorChooser;
+import ca.odell.glazedlists.swing.TableComparatorChooser;
+
 /**
  * Table listing all existing ticks in model
  * 
@@ -36,7 +39,7 @@ public final class TickTable extends JTable
                 int selectedRow = getSelectedRow();
                 Tick tick = model.getRowElement(selectedRow);
                 model.getTickDocument().removeTick(tick);
-                if (selectedRow > getRowCount()) {
+                if (selectedRow >= getRowCount()) {
                     selectedRow--;
                 }
                 if (selectedRow >= 0) {
@@ -59,9 +62,10 @@ public final class TickTable extends JTable
                         {
                             Tick tick = (Tick)pDialog.getContent();
                             TickDocument doc = getTickTableModel().getTickDocument();
-                            int row = getTickTableModel().getTickDocument().getTicks().indexOf(origTick);
                             doc.removeTick(origTick);
                             doc.addTick(tick);
+                            
+                            int row = getTickTableModel().getSortedList().indexOf(tick);
                             if (row != -1) {
                                 setRowSelectionInterval(row, row);
                             }
@@ -76,8 +80,12 @@ public final class TickTable extends JTable
         }.bind(this);
     }
     
+    private int mHighlightStartLine = -1;
+    private int mHighlightEndLine = -1;
+    
+    
     public TickTable() {
-        super(new TickTableModel(null));
+        super(TickTableModel.create());
         ActionMap actionMap = getActionMap();
         KMenu menu = new KMenu(
                 ActionConstants.R_MENU_CONTEXT,
@@ -87,6 +95,11 @@ public final class TickTable extends JTable
         
         setAutoResizeMode(AUTO_RESIZE_LAST_COLUMN);
         setRowHeight(20);
+        
+        TableComparatorChooser.install(
+                this, 
+                getTickTableModel().getSortedList(),
+                AbstractTableComparatorChooser.MULTIPLE_COLUMN_MOUSE);
     }
 
     @Override
@@ -149,7 +162,7 @@ public final class TickTable extends JTable
      */
     public void setHighlight(int pStartLine, int pEndLine) {
         TickTableModel model = getTickTableModel();
-        if (model.setHighlight(pStartLine, pEndLine)) {
+        if (setHighlight2(pStartLine, pEndLine)) {
             int firstRow = -1;
             int lastRow = -1;
             int row = 0;
@@ -174,6 +187,35 @@ public final class TickTable extends JTable
             }
             repaint();
         }
+    }
+
+    /**
+     * Get first highlighted document row (not table row)
+     */
+    public int getHighlightStartLine() {
+        return mHighlightStartLine;
+    }
+
+    /**
+     * Get last highlighted document row (not table row)
+     */
+    public int getHighlightEndLine() {
+        return mHighlightEndLine;
+    }
+
+    /**
+     * Set highlighted document row range (not table row)
+     * 
+     * @return true if changed
+     */
+    private boolean setHighlight2(int pStartLine, int pEndLine) {
+        boolean changed = false;
+        if (mHighlightStartLine != pStartLine || mHighlightEndLine != pEndLine) {
+            mHighlightStartLine = pStartLine;
+            mHighlightEndLine = pEndLine;
+            changed = true;
+        }
+        return changed;
     }
 
 }

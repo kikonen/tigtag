@@ -304,10 +304,10 @@ public class TickEditorPanel
             } else {
                 TickDefinition current = getTextPane().getTickSet().getCurrent();
                 
-                TickTableModel model = getTickTable().getTickTableModel();
+                TickTable table = getTickTable();
                 if (pTick.getLocation().intersectLines(
-                        model.getHighlightStartLine(),
-                        model.getHighlightEndLine())) {
+                        table.getHighlightStartLine(),
+                        table.getHighlightEndLine())) {
                     result = Highlight.BRIGHT;
                 } else if (!pTick.getDefinition().equals(current)) {
                     result = Highlight.DIM;
@@ -442,7 +442,11 @@ public class TickEditorPanel
                                 loc.mStartPos, 
                                 loc.mEndPos,
                                 5);
-                        textPane.setCaretPosition(loc.mStartPos);
+                        try {
+                            textPane.setCaretPosition(loc.mStartPos);
+                        } catch (Exception e) {
+                            LOG.warn("invalid loc: " + loc, e);
+                        }
                     }
                     textPane.repaint();
                 }

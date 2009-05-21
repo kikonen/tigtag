@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 public interface TickConstants {
     String S = "tick.";
     
-    String VERSION = "0.36 Alpha";
+    String VERSION = "0.37 Alpha";
     String APP_NAME = "TigTag";
     
     Logger LOG = Logger.getLogger("tick");

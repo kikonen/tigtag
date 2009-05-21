@@ -1,135 +1,54 @@
 package org.kari.tick.gui;
 
-import java.awt.Font;
-
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import org.kari.tick.Tick;
-import org.kari.tick.TickDefinition;
-import org.kari.tick.TickLocation;
+
+import ca.odell.glazedlists.BasicEventList;
+import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.SortedList;
+import ca.odell.glazedlists.swing.EventTableModel;
+import ca.odell.glazedlists.util.concurrent.Lock;
 
 /**
  * Table model listing ticks
  * 
  * @author kari
  */
-public final class TickTableModel extends AbstractTableModel 
+public final class TickTableModel extends EventTableModel<Tick> 
     implements TickListener
 {
-    public static final int IDX_NAME = 10;
-    public static final int IDX_MODE  = 12;
-    public static final int IDX_LINE  = 13;
-    public static final int IDX_TEXT = 14;
-    public static final int IDX_COMMENT = 15;
-
-    /**
-     * Render tick definition name
-     *
-     * @author kari
-     */
-    final class NameTableCellRenderer extends DefaultTableCellRenderer {
-        @Override
-        protected void setValue(Object pValue) {
-            Tick tick = (Tick)pValue;
-            TickLocation loc = tick.getLocation();
-            TickDefinition def = tick.getDefinition();
-
-            if (loc.intersectLines(
-                    mHighlightStartLine, 
-                    mHighlightEndLine)) 
-            {
-                setFont(getFont().deriveFont(Font.BOLD));
-            }
-
-            setText(def.getName());
-            setBackground(def.getColor());
-        }
-    }
-
-    /**
-     * Render tick comment
-     *
-     * @author kari
-     */
-    final class CommentTableCellRenderer extends DefaultTableCellRenderer {
-        @Override
-        protected void setValue(Object pValue) {
-            Tick tick = (Tick)pValue;
-            TickLocation loc = tick.getLocation();
-            TickDefinition def = tick.getDefinition();
-
-            if (loc.intersectLines(
-                    mHighlightStartLine, 
-                    mHighlightEndLine)) 
-            {
-                setFont(getFont().deriveFont(Font.BOLD));
-            }
-            
-            setText(tick.getComment());
-//            setBackground(def.getColor());
-        }
-    }
-
-    
-    private final TableColumn[] mColumns = {
-//        new TableColumn(TickTableModel.IDX_LINE),
-        new TableColumn(TickTableModel.IDX_NAME),
-//        new TableColumn(TickTableModel.IDX_MODE),
-        new TableColumn(TickTableModel.IDX_COMMENT),
-        };
-
+    private final SortedList<Tick> mSortedList;
+    private final EventList<Tick> mTickList;
+    private final Lock mWriteLock;
     private TickDocument mTickDocument;
-    
-    private int mHighlightStartLine = -1;
-    private int mHighlightEndLine = -1;
-    
-    
-    public TickTableModel(TickDocument pDocument) {
-        mTickDocument = pDocument;
-        TableColumn nameColumn = mColumns[0];
-        TableColumn commentColumn = mColumns[1];
-        nameColumn.setCellRenderer(new NameTableCellRenderer());
-        nameColumn.setMinWidth(60);
-        nameColumn.setPreferredWidth(160);
-//        nameColumn.setMaxWidth(300);
-        
-        commentColumn.setPreferredWidth(800);
-        commentColumn.setCellRenderer(new CommentTableCellRenderer());
-    }
-    
-    /**
-     * Set highlighted document row range (not table row)
-     * 
-     * @return true if changed
-     */
-    public boolean setHighlight(int pStartLine, int pEndLine) {
-        boolean changed = false;
-        if (mHighlightStartLine != pStartLine || mHighlightEndLine != pEndLine) {
-            mHighlightStartLine = pStartLine;
-            mHighlightEndLine = pEndLine;
-            changed = true;
-        }
-        return changed;
-    }
-    
-    /**
-     * Get first highlighted document row (not table row)
-     */
-    public int getHighlightStartLine() {
-        return mHighlightStartLine;
-    }
 
     /**
-     * Get last highlighted document row (not table row)
+     * Construct new new model
      */
-    public int getHighlightEndLine() {
-        return mHighlightEndLine;
-    }
+    public static TickTableModel create() {
+        BasicEventList<Tick> tickList = new BasicEventList<Tick>();
+        SortedList<Tick> sortedList = new SortedList<Tick>(tickList, null);
+        return new TickTableModel(sortedList, tickList);
 
+    }
+    
+    private TickTableModel(
+            SortedList<Tick> pSortedList, 
+            EventList<Tick> pTickList) 
+    {
+        super(pSortedList, new TickTableFormat());
+        mSortedList = pSortedList;
+        mTickList = pTickList;
+        mWriteLock = mTickList.getReadWriteLock().writeLock();
+    }
+    
+    public SortedList<Tick> getSortedList() {
+        return mSortedList;
+    }
+    
     public TableColumn[] getColumns() {
-        return mColumns;
+        return ((TickTableFormat)getTableFormat()).getColumns();
     }
 
     public TickDocument getTickDocument() {
@@ -144,81 +63,27 @@ public final class TickTableModel extends AbstractTableModel
         if (mTickDocument != null) {
             mTickDocument.addTickListener(this);
         }
-        fireTableDataChanged();
+        
+        mWriteLock.lock();
+        mTickList.addAll(pDocument.getTicks());
+        mWriteLock.unlock();
     }
     
     public Tick getRowElement(int pRow) {
-        return mTickDocument.getTicks().get(pRow);
+        return getElementAt(pRow);
     }
 
-    @Override
     public void tickAdded(TickDocument pDocument, Tick pTick) {
-        fireTableDataChanged();
+        int index = pDocument.getTicks().indexOf(pTick);
+        mWriteLock.lock();
+        mTickList.add(index, pTick);
+        mWriteLock.unlock();
     }
 
-    @Override
     public void tickRemoved(TickDocument pDocument, Tick pTick) {
-        fireTableDataChanged();
-    }
-
-    @Override
-    public int getColumnCount() {
-        return 2;
-    }
-    
-    @Override
-    public String getColumnName(int pColumn) {
-        switch (pColumn) {
-            case IDX_NAME:
-                return "Mark";
-            case IDX_MODE:
-                return "Style";
-            case IDX_LINE:
-                return "Line";
-            case IDX_TEXT:
-                return "Text";
-            case IDX_COMMENT:
-                return "Comment";
-        }
-        return null;
-   }
-
-    @Override
-    public int getRowCount() {
-        return mTickDocument != null
-            ? mTickDocument.getTicks().size()
-            : 0;
-    }
-
-    @Override
-    public Object getValueAt(int pRowIndex, int pColumnIndex) {
-        Object result = null;
-        Tick tick = mTickDocument.getTicks().get(pRowIndex);
-        TickLocation loc = tick.getLocation();
-        switch (pColumnIndex) {
-        case IDX_NAME:
-            result = tick;
-            break;
-        case IDX_MODE:
-            result = loc.mBlockMode.getName();
-            break;
-        case IDX_LINE:
-            if (loc.mStartLine != loc.mEndLine) {
-                result = (loc.mStartLine + 1) + " .. " + (loc.mEndLine + 1);
-            } else {
-                result = Integer.toString(loc.mStartLine + 1);
-            }
-            break;
-        case IDX_TEXT:
-            result = tick.getText();
-            break;
-        case IDX_COMMENT:
-            result = tick;
-            break;
-        default:
-            break;
-    }
-        return result;
+        mWriteLock.lock();
+        mTickList.remove(pTick);
+        mWriteLock.unlock();
     }
 
 }

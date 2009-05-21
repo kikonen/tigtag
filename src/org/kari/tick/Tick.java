@@ -103,7 +103,9 @@ public final class Tick {
      * @return Empty string if not set
      */
     public String getComment() {
-        return mComment;
+        return mComment != null
+            ? mComment
+            : "";
     }
 
     public void setComment(String pComment) {
