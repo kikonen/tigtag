@@ -282,6 +282,9 @@ public class TickEditorPanel
     
     private TickTable mTickTable;
     
+    private boolean mTableChanged;
+    private boolean mEditorChanged;
+    
     private final Border mFocusedBorder = new MatteBorder(1, 1, 1, 1, Color.BLUE);
     private final Border mUnFocusedBorder = new EmptyBorder(1, 1, 1, 1);
     
@@ -410,14 +413,22 @@ public class TickEditorPanel
             mTextPane.addCaretListener(new CaretListener() {
                 @Override
                 public void caretUpdate(CaretEvent pEvent) {
-                    TickSet tickSet = getTextPane().getTickSet();
-                    if (tickSet != null) {
-                        BlockMode mode = tickSet.getCurrentMode();
-                        TickLocation loc = getTextPane().getTickLocation(mode, true);
-                        if (loc != null) {
-                            getTickTable().setHighlight(loc.mStartLine, loc.mEndLine);
+                    mEditorChanged = true;
+                    try {
+                        TickSet tickSet = getTextPane().getTickSet();
+                        if (tickSet != null) {
+                            BlockMode mode = tickSet.getCurrentMode();
+                            TickLocation loc = getTextPane().getTickLocation(mode, true);
+                            if (loc != null) {
+                                getTickTable().setHighlight(
+                                        loc.mStartLine, 
+                                        loc.mEndLine,
+                                        !mTableChanged);
+                            }
+                            ensureRangeVisibility(pEvent.getDot(), pEvent.getDot(), 10);
                         }
-                        ensureRangeVisibility(pEvent.getDot(), pEvent.getDot(), 10);
+                    } finally {
+                        mEditorChanged = false;
                     }
                 }
             });
@@ -431,24 +442,29 @@ public class TickEditorPanel
             mTickTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
                 @Override
                 public void valueChanged(ListSelectionEvent pEvent) {
-                    int selectedRow = mTickTable.getSelectedRow();
-                    TickTextPane textPane = getTextPane();
-                    if (selectedRow != -1) {
-                        TickLocation loc = mTickTable
-                            .getTickTableModel()
-                            .getRowElement(selectedRow)
-                            .getLocation();
-                        ensureRangeVisibility(
-                                loc.mStartPos, 
-                                loc.mEndPos,
-                                5);
-                        try {
-                            textPane.setCaretPosition(loc.mStartPos);
-                        } catch (Exception e) {
-                            LOG.warn("invalid loc: " + loc, e);
+                    mTableChanged = true;
+                    try {
+                        int selectedRow = mTickTable.getSelectedRow();
+                        TickTextPane textPane = getTextPane();
+                        if (selectedRow != -1) {
+                            TickLocation loc = mTickTable
+                                .getTickTableModel()
+                                .getRowElement(selectedRow)
+                                .getLocation();
+                            ensureRangeVisibility(
+                                    loc.mStartPos, 
+                                    loc.mEndPos,
+                                    5);
+                            try {
+                                textPane.setCaretPosition(loc.mStartPos);
+                            } catch (Exception e) {
+                                LOG.warn("invalid loc: " + loc, e);
+                            }
                         }
+                        textPane.repaint();
+                    } finally {
+                        mTableChanged = false;
                     }
-                    textPane.repaint();
                 }
             });
             

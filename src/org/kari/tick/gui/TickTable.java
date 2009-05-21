@@ -160,13 +160,17 @@ public final class TickTable extends JTable
     /**
      * Set highlighted document row range (not table row)
      */
-    public void setHighlight(int pStartLine, int pEndLine) {
+    public void setHighlight(
+        int pStartLine, 
+        int pEndLine,
+        boolean pScrollVisible) 
+    {
         TickTableModel model = getTickTableModel();
-        if (setHighlight2(pStartLine, pEndLine)) {
+        if (setHighlight2(pStartLine, pEndLine) && pScrollVisible) {
             int firstRow = -1;
             int lastRow = -1;
             int row = 0;
-            for (Tick tick : model.getTickDocument().getTicks()) {
+            for (Tick tick : model.getSortedList()) {
                 if (tick.getLocation().intersectLines(pStartLine, pEndLine)) {
                     if (firstRow == -1) {
                         firstRow = row;
