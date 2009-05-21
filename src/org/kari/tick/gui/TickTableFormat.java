@@ -12,9 +12,15 @@ import org.kari.tick.Tick;
 import org.kari.tick.TickDefinition;
 import org.kari.tick.TickLocation;
 
+import ca.odell.glazedlists.SeparatorList;
 import ca.odell.glazedlists.gui.AdvancedTableFormat;
+import ca.odell.glazedlists.gui.WritableTableFormat;
 
-public class TickTableFormat implements AdvancedTableFormat<Tick> {
+public class TickTableFormat 
+    implements 
+        AdvancedTableFormat<Object>,
+        WritableTableFormat<Object>
+{
     private static final TickCommentComparator COMMENT_COMPARATOR = new TickCommentComparator();
     
     public static final int IDX_NAME = 0;
@@ -22,7 +28,14 @@ public class TickTableFormat implements AdvancedTableFormat<Tick> {
     public static final int IDX_LINE  = 13;
     public static final int IDX_TEXT = 14;
     public static final int IDX_COMMENT = 1;
-    
+
+    public static final class DefinitionGroupComparator implements Comparator<Tick> {
+        @Override
+        public int compare(Tick pO1, Tick pO2) {
+            return pO1.getDefinition().getName().compareTo( pO2.getDefinition().getName() );
+        }
+    }
+
     public static final class TickCommentComparator implements Comparator<Tick> {
         @Override
         public int compare(Tick pO1, Tick pO2) {
@@ -173,8 +186,19 @@ public class TickTableFormat implements AdvancedTableFormat<Tick> {
     }
 
     @Override
-    public Object getColumnValue(Tick tick, int pColumnIndex) {
+    public Object getColumnValue(Object baseObject, int pColumnIndex) {
+        if (baseObject == null) return null;
+        if (baseObject instanceof SeparatorList.Separator) {
+            SeparatorList.Separator<Tick> separator = (SeparatorList.Separator<Tick>)baseObject;
+            if (pColumnIndex == 1) {
+                return separator.first().getDefinition().getName();
+            } else {
+                return "------";
+            }
+        }
+        
         Object result = null;
+        Tick tick = (Tick)baseObject;
         TickLocation loc = tick.getLocation();
         switch (pColumnIndex) {
         case IDX_NAME:
@@ -200,6 +224,20 @@ public class TickTableFormat implements AdvancedTableFormat<Tick> {
             break;
         }
         return result;
+    }
+
+    @Override
+    public boolean isEditable(Object pBaseObject, int pColumn) {
+        return pBaseObject instanceof SeparatorList.Separator;
+    }
+
+    @Override
+    public Object setColumnValue(
+        Object pBaseObject,
+        Object pEditedValue,
+        int pColumn)
+    {
+        return null;
     }
     
 }

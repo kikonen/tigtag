@@ -56,6 +56,8 @@ import org.kari.tick.TickLocation;
 import org.kari.tick.TickSet;
 import org.kari.tick.TickDefinition.BlockMode;
 
+import ca.odell.glazedlists.swing.EventSelectionModel;
+
 /**
  * Tick editor
  * 
@@ -439,29 +441,29 @@ public class TickEditorPanel
     public TickTable getTickTable() {
         if (mTickTable == null) {
             mTickTable = new TickTable();
-            mTickTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            final EventSelectionModel<Tick> sm = mTickTable.getEventSelectionModel();
+            
+            sm.addListSelectionListener(new ListSelectionListener() {
                 @Override
                 public void valueChanged(ListSelectionEvent pEvent) {
                     mTableChanged = true;
                     try {
-                        int selectedRow = mTickTable.getSelectedRow();
-                        TickTextPane textPane = getTextPane();
-                        if (selectedRow != -1) {
-                            TickLocation loc = mTickTable
-                                .getTickTableModel()
-                                .getRowElement(selectedRow)
-                                .getLocation();
+                        Tick tick = mTickTable.getSelectedTick();
+                        if (tick != null) {
+                            TickLocation loc = tick.getLocation();
                             ensureRangeVisibility(
                                     loc.mStartPos, 
                                     loc.mEndPos,
                                     5);
+                            
+                            TickTextPane textPane = getTextPane();
                             try {
                                 textPane.setCaretPosition(loc.mStartPos);
                             } catch (Exception e) {
                                 LOG.warn("invalid loc: " + loc, e);
                             }
+                            textPane.repaint();
                         }
-                        textPane.repaint();
                     } finally {
                         mTableChanged = false;
                     }

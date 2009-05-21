@@ -6,6 +6,7 @@ import org.kari.tick.Tick;
 
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.SeparatorList;
 import ca.odell.glazedlists.SortedList;
 import ca.odell.glazedlists.swing.EventTableModel;
 import ca.odell.glazedlists.util.concurrent.Lock;
@@ -18,31 +19,51 @@ import ca.odell.glazedlists.util.concurrent.Lock;
 public final class TickTableModel extends EventTableModel<Tick> 
     implements TickListener
 {
+    private final SeparatorList<Tick> mSeparatorList;
     private final SortedList<Tick> mSortedList;
     private final EventList<Tick> mTickList;
     private final Lock mWriteLock;
     private TickDocument mTickDocument;
 
+
     /**
      * Construct new new model
      */
     public static TickTableModel create() {
-        BasicEventList<Tick> tickList = new BasicEventList<Tick>();
+        EventList<Tick> tickList = new BasicEventList<Tick>();
         SortedList<Tick> sortedList = new SortedList<Tick>(tickList, null);
-        return new TickTableModel(sortedList, tickList);
-
+        SeparatorList<Tick> groupList = new SeparatorList<Tick>(
+                sortedList, 
+                new TickTableFormat.DefinitionGroupComparator(),
+                0,
+                Integer.MAX_VALUE);
+        
+        return new TickTableModel(groupList, sortedList, tickList);
     }
     
     private TickTableModel(
+            SeparatorList<Tick> pSeparatorList,
             SortedList<Tick> pSortedList, 
             EventList<Tick> pTickList) 
     {
-        super(pSortedList, new TickTableFormat());
+        super(pSeparatorList, new TickTableFormat());
+        mSeparatorList = pSeparatorList;
         mSortedList = pSortedList;
         mTickList = pTickList;
         mWriteLock = mTickList.getReadWriteLock().writeLock();
     }
     
+    /**
+     * Get main level source list for table model
+     */
+    public EventList<Tick> getList() {
+        return source;
+    }
+
+    public SeparatorList<Tick> getSeparatorList() {
+        return mSeparatorList;
+    }
+
     public SortedList<Tick> getSortedList() {
         return mSortedList;
     }
@@ -69,10 +90,6 @@ public final class TickTableModel extends EventTableModel<Tick>
         mWriteLock.unlock();
     }
     
-    public Tick getRowElement(int pRow) {
-        return getElementAt(pRow);
-    }
-
     public void tickAdded(TickDocument pDocument, Tick pTick) {
         int index = pDocument.getTicks().indexOf(pTick);
         mWriteLock.lock();

@@ -1,11 +1,29 @@
 package org.kari.tick.gui;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Set;
 
+import javax.swing.AbstractCellEditor;
 import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.border.Border;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
@@ -20,7 +38,11 @@ import org.kari.properties.KPropertiesFrame;
 import org.kari.properties.PropertiesViewer;
 import org.kari.tick.Tick;
 
+import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.ListSelection;
+import ca.odell.glazedlists.SeparatorList;
 import ca.odell.glazedlists.gui.AbstractTableComparatorChooser;
+import ca.odell.glazedlists.swing.EventSelectionModel;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
 
 /**
@@ -28,7 +50,7 @@ import ca.odell.glazedlists.swing.TableComparatorChooser;
  * 
  * @author kari
  */
-public final class TickTable extends JTable 
+public final class TickTable extends JSeparatorTable 
     implements TickHighlighter
 {
     {
@@ -37,7 +59,7 @@ public final class TickTable extends JTable
             public void actionPerformed(ActionContext pCtx) {
                 TickTableModel model = getTickTableModel();
                 int selectedRow = getSelectedRow();
-                Tick tick = model.getRowElement(selectedRow);
+                Tick tick = model.getElementAt(selectedRow);
                 model.getTickDocument().removeTick(tick);
                 if (selectedRow >= getRowCount()) {
                     selectedRow--;
@@ -53,7 +75,7 @@ public final class TickTable extends JTable
             public void actionPerformed(ActionContext pCtx) {
                 try {
                     final int selectedRow = getSelectedRow();
-                    final Tick origTick = getTickTableModel().getRowElement(selectedRow);
+                    final Tick origTick = getTickTableModel().getElementAt(selectedRow);
                     
                     Apply apply = new Apply() {
                         @Override
@@ -86,6 +108,15 @@ public final class TickTable extends JTable
     
     public TickTable() {
         super(TickTableModel.create());
+//        super(TickTableModel.create(), new EventTableColumnModel(new BasicEventList<TableColumn>()));
+        SeparatorList<Tick> separatorList = getTickTableModel().getSeparatorList();
+        setSeparatorRenderer(new TickSeparatorTableCell(separatorList));
+        setSeparatorEditor(new TickSeparatorTableCell(separatorList));
+        
+        ListSelectionModel sm = new EventSelectionModel<Tick>(separatorList);
+        sm.setSelectionMode(ListSelection.MULTIPLE_INTERVAL_SELECTION_DEFENSIVE);
+        setSelectionModel(sm);
+        
         ActionMap actionMap = getActionMap();
         KMenu menu = new KMenu(
                 ActionConstants.R_MENU_CONTEXT,
@@ -100,6 +131,10 @@ public final class TickTable extends JTable
                 this, 
                 getTickTableModel().getSortedList(),
                 AbstractTableComparatorChooser.MULTIPLE_COLUMN_MOUSE);
+    }
+    
+    public EventSelectionModel<Tick> getEventSelectionModel() {
+        return (EventSelectionModel<Tick>)getSelectionModel();
     }
 
     @Override
@@ -122,14 +157,29 @@ public final class TickTable extends JTable
         return (TickTableModel)getModel();
     }
 
+    /**
+     * Get first tick from selection
+     * @return Tick, null if none (or separator)
+     */
+    public Tick getSelectedTick() {
+        EventList<Tick> selected = getEventSelectionModel().getSelected();
+        Tick tick = null;
+        
+        if (!selected.isEmpty()) {
+            Object first = selected.get(0);
+            if (first instanceof Tick) {
+                tick = (Tick)first;
+            }
+        }
+        
+        return tick;
+    }
+    
     @Override
     public Highlight getHighlight(Tick pTick) {
         Highlight result = Highlight.NORMAL;
-        int selectedRow = getSelectedRow();
-        Tick tick = null;
-        if (selectedRow != -1 && isFocusOwner()) {
-            TickTableModel model = getTickTableModel();
-            tick = model.getRowElement(selectedRow);
+        Tick tick = getSelectedTick();
+        if (tick != null && isFocusOwner()) {
             if (tick == pTick) {
                 result = Highlight.BRIGHT;
             } else {
@@ -148,7 +198,7 @@ public final class TickTable extends JTable
         int selectedRow = getSelectedRow();
         Tick tick = null;
         if (selectedRow != -1) {
-            tick = getTickTableModel().getRowElement(selectedRow);
+            tick = getTickTableModel().getElementAt(selectedRow);
         }
         
         return tick != null
@@ -166,16 +216,22 @@ public final class TickTable extends JTable
         boolean pScrollVisible) 
     {
         TickTableModel model = getTickTableModel();
-        if (setHighlight2(pStartLine, pEndLine) && pScrollVisible) {
+        boolean changed = setHighlight2(pStartLine, pEndLine);
+        if (changed && pScrollVisible) {
             int firstRow = -1;
             int lastRow = -1;
             int row = 0;
-            for (Tick tick : model.getSortedList()) {
-                if (tick.getLocation().intersectLines(pStartLine, pEndLine)) {
-                    if (firstRow == -1) {
-                        firstRow = row;
+            
+            EventList<Tick> list = model.getList();
+            for (Object elem : list) {
+                if (elem instanceof Tick) {
+                    Tick tick = (Tick)elem;
+                    if (tick.getLocation().intersectLines(pStartLine, pEndLine)) {
+                        if (firstRow == -1) {
+                            firstRow = row;
+                        }
+                        lastRow = row;
                     }
-                    lastRow = row;
                 }
                 row++;
             }
@@ -189,6 +245,9 @@ public final class TickTable extends JTable
                         0,
                         (lastRect.y + lastRect.height) - firstRect.y));
             }
+        }
+        
+        if (changed) {
             repaint();
         }
     }
@@ -221,5 +280,103 @@ public final class TickTable extends JTable
         }
         return changed;
     }
+    
+    
+    /** application appearance */
+    public static final Color GLAZED_LISTS_DARK_BROWN = new Color(36, 23, 10);
+    public static final Color GLAZED_LISTS_MEDIUM_BROWN = new Color(69, 64, 56);
+    public static final Color GLAZED_LISTS_MEDIUM_LIGHT_BROWN = new Color(150, 140, 130);
+    public static final Color GLAZED_LISTS_LIGHT_BROWN = new Color(246, 237, 220);
+    public static final Color GLAZED_LISTS_LIGHT_BROWN_DARKER = new Color(231, 222, 205);
+//    public static final Icon THROBBER_ACTIVE = loadIcon("resources/throbber-active.gif");
+//    public static final Icon THROBBER_STATIC = loadIcon("resources/throbber-static.gif");
+    public static final Icon EXPANDED_ICON = Icons.triangle(9, SwingConstants.EAST, GLAZED_LISTS_MEDIUM_LIGHT_BROWN);
+    public static final Icon COLLAPSED_ICON = Icons.triangle(9, SwingConstants.SOUTH, GLAZED_LISTS_MEDIUM_LIGHT_BROWN);
+    public static final Icon X_ICON = Icons.x(10, 5, GLAZED_LISTS_MEDIUM_LIGHT_BROWN);
+    public static final Border EMPTY_ONE_PIXEL_BORDER = BorderFactory.createEmptyBorder(1, 1, 1, 1);
+    public static final Border EMPTY_TWO_PIXEL_BORDER = BorderFactory.createEmptyBorder(2, 2, 2, 2);
+    
+    /**
+     * Render the issues separator.
+     */
+    public static class TickSeparatorTableCell
+        extends AbstractCellEditor
+        implements
+            TableCellRenderer,
+            TableCellEditor,
+            ActionListener
+    {
+        private final MessageFormat nameFormat = new MessageFormat("{0} ({1})");
+
+        /** the separator list to lock */
+        private final SeparatorList separatorList;
+
+        private final JPanel panel = new JPanel(new BorderLayout());
+        private final JButton expandButton;
+        private final JLabel nameLabel = new JLabel();
+
+        private SeparatorList.Separator<Tick> separator;
+
+        public TickSeparatorTableCell(SeparatorList separatorList) {
+            this.separatorList = separatorList;
+
+            this.expandButton = new JButton(EXPANDED_ICON);
+            this.expandButton.setOpaque(false);
+            this.expandButton.setBorder(EMPTY_TWO_PIXEL_BORDER);
+            this.expandButton.setIcon(EXPANDED_ICON);
+            this.expandButton.setContentAreaFilled(false);
+
+//            this.nameLabel.setFont(nameLabel.getFont().deriveFont(Font.BOLD));
+            this.nameLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+
+            this.expandButton.addActionListener(this);
+
+            this.panel.setBackground(GLAZED_LISTS_LIGHT_BROWN);
+            this.panel.add(expandButton, BorderLayout.WEST);
+            this.panel.add(nameLabel, BorderLayout.CENTER);
+        }
+
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            configure(value);
+            return panel;
+        }
+
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            configure(value);
+            return panel;
+        }
+
+        public Object getCellEditorValue() {
+            return this.separator;
+        }
+
+        private void configure(Object value) {
+            this.separator = (SeparatorList.Separator<Tick>)value;
+            Tick tick = separator.first();
+            if (tick == null) {
+                // handle 'late' rendering calls after this separator is invalid
+                return; 
+            }
+            expandButton.setIcon(separator.getLimit() == 0 ? EXPANDED_ICON : COLLAPSED_ICON);
+            nameLabel.setText(nameFormat.format(new Object[] {
+                tick.getDefinition().getName(), 
+                new Integer(separator.size())}));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            separatorList.getReadWriteLock().writeLock().lock();
+            boolean collapsed;
+            try {
+                collapsed = separator.getLimit() == 0;
+                separator.setLimit(collapsed ? Integer.MAX_VALUE : 0);
+            } finally {
+                separatorList.getReadWriteLock().writeLock().unlock();
+            }
+            expandButton.setIcon(collapsed ? COLLAPSED_ICON : EXPANDED_ICON);
+        }
+    }
 
 }
+
+
+
