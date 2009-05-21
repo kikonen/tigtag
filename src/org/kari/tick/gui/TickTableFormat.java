@@ -29,6 +29,9 @@ public class TickTableFormat
     public static final int IDX_TEXT = 14;
     public static final int IDX_COMMENT = 1;
 
+    /**
+     * Comparator for grouping ticks by definition
+     */
     public static final class DefinitionGroupComparator implements Comparator<Tick> {
         @Override
         public int compare(Tick pO1, Tick pO2) {
@@ -36,10 +39,16 @@ public class TickTableFormat
         }
     }
 
+    /**
+     * Comparator for sorting based into comments
+     */
     public static final class TickCommentComparator implements Comparator<Tick> {
         @Override
         public int compare(Tick pO1, Tick pO2) {
-            return pO1.getComment().compareTo( pO2.getComment() );
+            int result = pO1.getComment().compareTo( pO2.getComment() );
+            return result == 0
+                ? TickDocument.TICK_RANK_COMPARATOR.compare(pO1, pO2)
+                : result;
         }
     }
 
@@ -73,7 +82,11 @@ public class TickTableFormat
                 setFont(getFont().deriveFont(Font.BOLD));
             }
 
-            setText(def.getName());
+            String text = loc.mStartLine != loc.mEndLine
+                ? (loc.mStartLine + 1) + " .. " + (loc.mEndLine + 1)
+                : Integer.toString(loc.mStartLine + 1);
+                
+            setText(text);
             setBackground(def.getColor());
 
             return this;
@@ -172,7 +185,7 @@ public class TickTableFormat
     public String getColumnName(int pColumn) {
         switch (pColumn) {
             case IDX_NAME:
-                return "Mark";
+                return "Line";
             case IDX_MODE:
                 return "Style";
             case IDX_LINE:
