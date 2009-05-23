@@ -457,13 +457,54 @@ public class TickEditorPanel
      */
     private JTextField createFilterField() {
         final JTextField filterField = new JTextField();
+        String tip = "tickname | comment | line | startline..endline";
+        filterField.setToolTipText(tip);
         DocumentListener listener = new DocumentListener() {
                 final Matcher<Tick> mMatcher = new Matcher<Tick>() {
                     @Override
                     public boolean matches(Tick pItem) {
                         boolean result = true;
                         if (mText.length() > 0) {
-                            result = pItem.getComment().toLowerCase().indexOf(mText) != -1;
+                            result = pItem.getComment().toLowerCase().indexOf(mText) != -1
+                                || pItem.getDefinition().getName().toLowerCase().indexOf(mText) != -1;
+                            if (!result) {
+                                if (Character.isDigit(mText.charAt(0))) {
+                                    TickLocation loc = pItem.getLocation();
+                                    int startLine = -1; 
+                                    int endLine = -1;
+                                    if (mText.indexOf("..") != -1 && !mText.endsWith("..")) {
+                                        String[] split = mText.split("\\.\\.");
+                                        try {
+                                            startLine = Integer.parseInt(split[0]);
+                                        } catch (NumberFormatException e) {
+                                            // irrelevant
+                                        }
+                                        if (split.length > 1) {
+                                            try {
+                                                endLine = Integer.parseInt(split[1]);
+                                            } catch (NumberFormatException e) {
+                                                // irrelevant
+                                            }
+                                        }
+                                    } else {
+                                        try {
+                                            String txt = mText.replace(".", "");
+                                            startLine = Integer.parseInt(txt);
+                                        } catch (NumberFormatException e) {
+                                            // irrelevant
+                                        }
+                                    }
+                                    if (endLine< startLine) {
+                                        endLine = Integer.MAX_VALUE;
+                                    }
+                                    
+                                    result = loc.intersectLines(startLine, endLine);
+                                    if (!result) {
+                                        result = (loc.mStartLine + ".." + loc.mEndLine)
+                                            .indexOf(mText) != -1;
+                                    }
+                                }
+                            }
                         }
                         return result;
                     }
