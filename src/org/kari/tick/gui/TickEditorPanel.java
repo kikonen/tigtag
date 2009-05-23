@@ -498,9 +498,9 @@ public class TickEditorPanel
                                         endLine = Integer.MAX_VALUE;
                                     }
                                     
-                                    result = loc.intersectLines(startLine, endLine);
+                                    result = loc.intersectLines(startLine - 1, endLine - 1);
                                     if (!result) {
-                                        result = (loc.mStartLine + ".." + loc.mEndLine)
+                                        result = ((loc.mStartLine+1) + ".." + (loc.mEndLine+1))
                                             .indexOf(mText) != -1;
                                     }
                                 }
