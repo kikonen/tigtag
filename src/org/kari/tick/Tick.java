@@ -77,7 +77,7 @@ public final class Tick {
     
     @Override
     public String toString() {
-        return "Tick=" + mDefinition + ",loc=" +mLocation;
+        return "Tick=" + mDefinition + ",loc=" +mLocation + ",comment=" + mComment;
     }
 
     public TickDefinition getDefinition() {
