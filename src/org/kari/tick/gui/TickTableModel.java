@@ -6,6 +6,7 @@ import org.kari.tick.Tick;
 
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.SeparatorList;
 import ca.odell.glazedlists.SortedList;
 import ca.odell.glazedlists.swing.EventTableModel;
@@ -21,6 +22,7 @@ public final class TickTableModel extends EventTableModel<Tick>
 {
     private final SeparatorList<Tick> mSeparatorList;
     private final SortedList<Tick> mSortedList;
+    private final FilterList<Tick> mFilterList;
     private final EventList<Tick> mTickList;
     private final Lock mWriteLock;
     private TickDocument mTickDocument;
@@ -34,22 +36,24 @@ public final class TickTableModel extends EventTableModel<Tick>
         SortedList<Tick> sortedList = new SortedList<Tick>(
                 tickList, 
                 TickDocument.TICK_RANK_COMPARATOR);
+        FilterList<Tick> filterList = new FilterList<Tick>(sortedList);
         SeparatorList<Tick> groupList = new SeparatorList<Tick>(
-                sortedList, 
+                filterList, 
                 new TickTableFormat.DefinitionGroupComparator(),
                 0,
                 Integer.MAX_VALUE);
-        
-        return new TickTableModel(groupList, sortedList, tickList);
+        return new TickTableModel(groupList, filterList, sortedList, tickList);
     }
     
     private TickTableModel(
             SeparatorList<Tick> pSeparatorList,
+            FilterList<Tick> pFilterList, 
             SortedList<Tick> pSortedList, 
             EventList<Tick> pTickList) 
     {
         super(pSeparatorList, new TickTableFormat());
         mSeparatorList = pSeparatorList;
+        mFilterList = pFilterList;
         mSortedList = pSortedList;
         mTickList = pTickList;
         mWriteLock = mTickList.getReadWriteLock().writeLock();
@@ -60,6 +64,10 @@ public final class TickTableModel extends EventTableModel<Tick>
      */
     public EventList<Tick> getList() {
         return source;
+    }
+
+    public FilterList<Tick> getFilterList() {
+        return mFilterList;
     }
 
     public SeparatorList<Tick> getSeparatorList() {

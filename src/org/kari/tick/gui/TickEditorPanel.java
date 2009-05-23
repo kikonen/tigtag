@@ -32,6 +32,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTextField;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.TransferHandler;
@@ -40,6 +41,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
@@ -56,6 +59,7 @@ import org.kari.tick.TickLocation;
 import org.kari.tick.TickSet;
 import org.kari.tick.TickDefinition.BlockMode;
 
+import ca.odell.glazedlists.matchers.Matcher;
 import ca.odell.glazedlists.swing.EventSelectionModel;
 
 /**
@@ -282,6 +286,7 @@ public class TickEditorPanel
         }
     };
     
+    private JPanel mTablePanel;
     private TickTable mTickTable;
     
     private boolean mTableChanged;
@@ -379,7 +384,7 @@ public class TickEditorPanel
             mSplitPane = new JSplitPane(
                     JSplitPane.HORIZONTAL_SPLIT,
                     getTopPanel(),
-                    new JScrollPane(getTickTable()));
+                    getTablePanel());
             mSplitPane.setDividerLocation(TickConstants.FRAME_WIDTH - 200);
             mSplitPane.setResizeWeight(1.0);
             mSplitPane.setContinuousLayout(true);
@@ -436,6 +441,57 @@ public class TickEditorPanel
             });
         }
         return mTextPane;
+    }
+
+    public JPanel getTablePanel() {
+        if (mTablePanel == null) {
+            mTablePanel = new JPanel(new BorderLayout());
+            mTablePanel.add(createFilterField(), BorderLayout.NORTH);
+            mTablePanel.add(new JScrollPane(getTickTable()), BorderLayout.CENTER);
+        }
+        return mTablePanel;
+    }
+
+    /**
+     * Create filter for tick table
+     */
+    private JTextField createFilterField() {
+        final JTextField filterField = new JTextField();
+        DocumentListener listener = new DocumentListener() {
+                final Matcher<Tick> mMatcher = new Matcher<Tick>() {
+                    @Override
+                    public boolean matches(Tick pItem) {
+                        boolean result = true;
+                        if (mText.length() > 0) {
+                            result = pItem.getComment().toLowerCase().indexOf(mText) != -1;
+                        }
+                        return result;
+                    }
+                };
+                private String mText = "";
+                
+                @Override
+                public void changedUpdate(DocumentEvent pE) {
+                    updateMatcher();
+                }
+   
+                @Override
+                public void insertUpdate(DocumentEvent pE) {
+                    updateMatcher();
+                }
+   
+                @Override
+                public void removeUpdate(DocumentEvent pE) {
+                    updateMatcher();
+                }
+                
+                private void updateMatcher() {
+                    mText = filterField.getText().toLowerCase();
+                    getTickTable().getTickTableModel().getFilterList().setMatcher(mMatcher);
+                }
+            };
+        filterField.getDocument().addDocumentListener(listener);
+        return filterField;
     }
     
     public TickTable getTickTable() {
