@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 public interface TickConstants {
     String S = "tick.";
     
-    String VERSION = "0.38 Alpha";
+    String VERSION = "0.39 Alpha";
     String APP_NAME = "TigTag";
     
     Logger LOG = Logger.getLogger("tick");
@@ -23,7 +23,7 @@ public interface TickConstants {
     String R_GROW_FONT = S + "GrowFont";
     String R_SHRINK_FONT = S + "ShrinkFont";
 
-    String TICK_FILE_EXT = ".zip";
+    String TICK_FILE_EXT = ".tigtag";
     
     /**
      * file entry inside tick file containing ticks

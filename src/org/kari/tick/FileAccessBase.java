@@ -66,7 +66,7 @@ public abstract class FileAccessBase {
      * @return true if ".ticks file already exists
      */
     public boolean isAlreadyTicked() {
-        return getTickFile().exists();
+        return getTickFile(false).exists();
     }
 
     /**
@@ -74,12 +74,17 @@ public abstract class FileAccessBase {
      * 
      * @return File, may not exist
      */
-    public File getTickFile() {
+    public File getTickFile(boolean pExport) {
         File result;
         if (mFile.getName().endsWith(TickConstants.TICK_FILE_EXT)) {
             result = mFile;
         } else {
-            String filename = TICKS_DIR + "/" + mFile.getName() + TickConstants.TICK_FILE_EXT;
+            String filename;
+            if (pExport) {
+                filename = TICKS_DIR + "/" + mFile.getName() + TickConstants.TICK_FILE_EXT;
+            } else {
+                filename = mFile.getAbsolutePath() + TickConstants.TICK_FILE_EXT;
+            }
             filename = TextUtil.expand(filename);
             result = new File(filename);
         }

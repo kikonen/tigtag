@@ -288,15 +288,33 @@ public class TickFrame extends KApplicationFrame
         public void actionPerformed(ActionContext pCtx) {
             try {
                 TickDocument doc = getEditor().getTextPane().getTickDocument();
-                new FileSaver(doc).save();
+                new FileSaver(doc, false).save();
                 doc.setModified(false);
                 updateActions();
             } catch (Exception e) {
-                LOG.error("Failed to load", e);
+                LOG.error("Failed to save", e);
             }
         }
     };
     
+    
+    /**
+     * Save contents of editor in this window
+     */
+    private final Action mExportAction = new KAction("&Export to TigTag folder") {
+        @Override
+        public void actionPerformed(ActionContext pCtx) {
+            try {
+                TickDocument doc = getEditor().getTextPane().getTickDocument();
+                new FileSaver(doc, true).save();
+                doc.setModified(false);
+                updateActions();
+            } catch (Exception e) {
+                LOG.error("Failed to export", e);
+            }
+        }
+    };
+
     
     public TickFrame() {
         ActionContainer ac = getActionContainer();
@@ -307,6 +325,7 @@ public class TickFrame extends KApplicationFrame
                 KAction.SEPARATOR,
                 mOpenAction,
                 mSaveAction,
+                mExportAction,
                 KAction.SEPARATOR,
                 new CloseWindowAction(),
                 new ExitAction()));

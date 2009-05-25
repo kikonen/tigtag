@@ -24,10 +24,13 @@ import org.kari.util.TextUtil;
  *
  */
 public class FileSaver extends FileAccessBase {
-    public FileSaver(TickDocument pDoc) {
+    private boolean mExport;
+    
+    public FileSaver(TickDocument pDoc, boolean pExport) {
         mText = pDoc.getText();
         mTicks = new ArrayList<Tick>(pDoc.getTicks());
         mFile = pDoc.getFile();
+        mExport = pExport;
     }
     
     /**
@@ -38,7 +41,7 @@ public class FileSaver extends FileAccessBase {
     {
         File tickDir = new File(TextUtil.expand(TICKS_DIR));
 
-        File tickFile = getTickFile();
+        File tickFile = getTickFile(mExport);
         if (!mTicks.isEmpty() 
             || (tickFile.exists() && !tickFile.getParentFile().equals(tickDir))) 
         {

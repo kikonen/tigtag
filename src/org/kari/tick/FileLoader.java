@@ -45,7 +45,7 @@ public class FileLoader extends FileAccessBase {
         mTicks.clear();
         
         if (mLoadTicks && isAlreadyTicked()) {
-            File tickFile = getTickFile();
+            File tickFile = getTickFile(false);
             ZipFile zip = new ZipFile(tickFile);
 
             String basename = null;
