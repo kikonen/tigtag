@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <jnlp
     spec="1.0+"
-    codebase="http://kari.dy.fi/tigtag/dist"
+    codebase="http://test.com/tigtag/dist"
     href="tigtag.jnlp" >
 
     <information>
         <title>Tig Tag</title>
         <vendor>KI - Kari Ikonen</vendor>
-        <homepage href="http://kari.dy.fi"/>
+        <homepage href="http://test.com"/>
         <description>Tig Tag - The Code Review Editor</description>
         <icon href="tigtag_32.png"/>
         <offline-allowed/>
